@@ -76,20 +76,20 @@ export function ProductStory() {
             <AnimatePresence mode="wait" initial={false}>
               <m.div
                 key={number}
-                initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
                 transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/36 sm:text-xs">
+                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60 sm:text-xs">
                   <span className="text-[#e32c49]">{number}</span>
-                  <span className="h-px w-8 bg-white/15" />
+                  <span className="h-px w-8 bg-white/25" />
                   <span>{eyebrow}</span>
                 </div>
                 <h2 className="mt-3 max-w-2xl text-[clamp(2.25rem,10vw,6.25rem)] font-semibold leading-[0.91] tracking-[-0.07em] sm:mt-5 lg:text-[clamp(4.5rem,5.7vw,6.7rem)]">
                   {title}
                 </h2>
-                <p className="mt-4 max-w-xl text-[0.94rem] leading-6 text-white/52 sm:mt-6 sm:text-[1.1rem] sm:leading-8 lg:text-lg">
+                <p className="mt-4 max-w-xl text-[0.94rem] leading-6 text-white/64 sm:mt-6 sm:text-[1.1rem] sm:leading-8 lg:text-lg">
                   {body}
                 </p>
               </m.div>
@@ -105,14 +105,14 @@ export function ProductStory() {
                     className={`rounded-2xl border px-3 py-4 transition-colors duration-500 ${
                       isActive
                         ? "border-[#c8102e]/55 bg-[#c8102e]/10"
-                        : "border-white/[0.06] bg-white/[0.02]"
+                        : "border-white/[0.08] bg-white/[0.025]"
                     }`}
                     aria-current={isActive ? "step" : undefined}
                   >
-                    <p className={`text-[10px] font-bold tracking-[0.15em] ${isActive ? "text-[#e32c49]" : "text-white/24"}`}>
+                    <p className={`text-[10px] font-bold tracking-[0.15em] ${isActive ? "text-[#e32c49]" : "text-white/52"}`}>
                       {chapterNumber}
                     </p>
-                    <p className={`mt-2 text-sm font-semibold ${isActive ? "text-white" : "text-white/38"}`}>
+                    <p className={`mt-2 text-sm font-semibold ${isActive ? "text-white" : "text-white/68"}`}>
                       {chapterLabel}
                     </p>
                   </div>
@@ -123,7 +123,7 @@ export function ProductStory() {
 
           <div className="relative isolate mx-auto flex h-[300px] w-full max-w-[430px] items-end justify-center overflow-hidden rounded-[2rem] border border-white/[0.09] bg-[#0a0a0d] px-4 pt-5 shadow-[0_38px_110px_rgba(0,0,0,.46)] sm:h-[400px] sm:rounded-[2.5rem] sm:px-8 sm:pt-8 lg:h-auto lg:min-h-[720px] lg:max-w-[500px] lg:px-12 lg:pt-12">
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.29),transparent_37%)]" />
-            <div className="pointer-events-none absolute inset-x-8 top-8 hidden items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-white/24 lg:flex">
+            <div className="pointer-events-none absolute inset-x-8 top-8 hidden items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-white/58 lg:flex">
               <span>NOXA live map</span>
               <span>Thessaloniki · online</span>
             </div>
