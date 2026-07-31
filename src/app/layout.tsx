@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | NOXA",
   },
   description:
-    "Discover drivers, car meets, crews and automotive events around you with NOXA.",
+    "Discover drivers, car meets, crews, routes and automotive events around you with NOXA.",
   applicationName: "NOXA",
 };
 
