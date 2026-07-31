@@ -95,7 +95,7 @@ export function WaitlistForm() {
     <form className="mt-9 max-w-2xl" onSubmit={handleSubmit} noValidate>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-white/65">
+          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-white">
             Email
           </span>
           <input
@@ -106,13 +106,13 @@ export function WaitlistForm() {
             required
             disabled={isSubmitting || isComplete}
             placeholder="you@example.com"
-            className="min-h-14 w-full rounded-2xl border border-white/20 bg-black/20 px-5 text-white outline-none transition-colors placeholder:text-white/45 focus:border-white/70 focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-65"
+            className="min-h-14 w-full rounded-2xl border border-white/30 bg-black/25 px-5 text-white outline-none transition-colors placeholder:text-white/65 focus:border-white focus:ring-2 focus:ring-white/25 disabled:cursor-not-allowed disabled:opacity-70"
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-white/65">
-            City <span className="normal-case tracking-normal text-white/40">optional</span>
+          <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-white">
+            City <span className="normal-case tracking-normal text-white/85">optional</span>
           </span>
           <input
             name="city"
@@ -121,7 +121,7 @@ export function WaitlistForm() {
             maxLength={80}
             disabled={isSubmitting || isComplete}
             placeholder="Thessaloniki"
-            className="min-h-14 w-full rounded-2xl border border-white/20 bg-black/20 px-5 text-white outline-none transition-colors placeholder:text-white/45 focus:border-white/70 focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-65"
+            className="min-h-14 w-full rounded-2xl border border-white/30 bg-black/25 px-5 text-white outline-none transition-colors placeholder:text-white/65 focus:border-white focus:ring-2 focus:ring-white/25 disabled:cursor-not-allowed disabled:opacity-70"
           />
         </label>
       </div>
@@ -140,7 +140,7 @@ export function WaitlistForm() {
         />
       </div>
 
-      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/15 bg-black/10 p-4">
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/25 bg-black/15 p-4">
         <input
           name="consent"
           type="checkbox"
@@ -148,7 +148,7 @@ export function WaitlistForm() {
           disabled={isSubmitting || isComplete}
           className="mt-0.5 size-5 shrink-0 accent-black"
         />
-        <span className="text-sm leading-6 text-white/68">
+        <span className="text-sm leading-6 text-white">
           I agree that NOXA may store my email and city to send early-access
           updates. I can unsubscribe at any time.
         </span>
@@ -169,7 +169,7 @@ export function WaitlistForm() {
 
         <p
           className={`min-h-6 text-sm leading-6 ${
-            state === "error" ? "text-white" : "text-white/68"
+            state === "error" ? "text-white" : "text-white/90"
           }`}
           role="status"
           aria-live="polite"
