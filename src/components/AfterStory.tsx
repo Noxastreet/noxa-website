@@ -1,3 +1,5 @@
+import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
+
 export function AfterStory() {
   return (
     <>
@@ -70,12 +72,10 @@ export function AfterStory() {
             <p className="mt-6 max-w-lg text-base leading-7 text-white/70">
               Join the first group of drivers and partners shaping NOXA before public release.
             </p>
-            <form className="mt-9 flex max-w-2xl flex-col gap-3 sm:flex-row">
-              <label className="sr-only" htmlFor="email">Email address</label>
-              <input id="email" name="email" type="email" autoComplete="email" required placeholder="Email address" className="min-h-14 flex-1 rounded-full border border-white/20 bg-black/20 px-5 text-white outline-none placeholder:text-white/55 focus:border-white/70 focus:ring-2 focus:ring-white/25" />
-              <button type="submit" className="min-h-14 rounded-full bg-white px-7 font-semibold text-black outline-none focus-visible:ring-2 focus-visible:ring-black/45">Join NOXA</button>
-            </form>
-            <p className="mt-4 text-xs leading-5 text-white/55">No noise. Only meaningful product updates and early-access information.</p>
+            <WaitlistForm />
+            <p className="mt-4 text-xs leading-5 text-white/55">
+              No noise. Only meaningful product updates and early-access information.
+            </p>
           </div>
         </div>
       </section>
