@@ -17,9 +17,9 @@ concurrency:
 
 jobs:
   validate:
-    name: Typecheck, lint and build
+    name: Typecheck, lint, build and Lighthouse
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -30,8 +30,22 @@ jobs:
         with:
           node-version: 22
 
+      - name: Restore npm and Next.js caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            .next/cache
+          key: ${{ runner.os }}-node22-${{ hashFiles('package.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-node22-${{ hashFiles('package.json') }}-
+            ${{ runner.os }}-node22-
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Dependency inventory
+        run: npm list --depth=0
 
       - name: Typecheck
         run: npm run typecheck
@@ -41,3 +55,18 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Install Lighthouse CI
+        run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
+
+      - name: Lighthouse performance gate
+        run: lhci autorun
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report-${{ github.run_number }}
+          path: .lighthouseci
+          if-no-files-found: ignore
+          retention-days: 14
