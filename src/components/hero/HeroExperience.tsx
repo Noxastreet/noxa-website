@@ -1,0 +1,123 @@
+"use client";
+
+import { useRef } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
+
+import { NoxaPhone } from "@/components/visuals/NoxaPhone";
+
+export function HeroExperience() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 110,
+    damping: 28,
+    mass: 0.25,
+  });
+
+  const copyOpacity = useTransform(smoothProgress, [0, 0.46, 0.76], [1, 1, 0]);
+  const copyY = useTransform(smoothProgress, [0, 0.76], [0, -72]);
+  const copyScale = useTransform(smoothProgress, [0, 0.76], [1, 0.96]);
+  const phoneScale = useTransform(smoothProgress, [0, 0.72, 1], [0.9, 1, 1.08]);
+  const phoneY = useTransform(smoothProgress, [0, 1], [52, -18]);
+  const phoneRotateX = useTransform(smoothProgress, [0, 0.72], [7, 0]);
+  const routeOpacity = useTransform(smoothProgress, [0, 0.62, 1], [0.78, 0.5, 0]);
+  const hintOpacity = useTransform(smoothProgress, [0, 0.2], [1, 0]);
+
+  return (
+    <section ref={sectionRef} id="top" className="relative min-h-[172svh]">
+      <div className="sticky top-0 min-h-[100svh] overflow-hidden">
+        <div className="page-shell relative flex min-h-[100svh] flex-col justify-center pb-8 pt-24 lg:grid lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16 lg:pb-12 lg:pt-28">
+          <motion.div
+            className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[72svh] overflow-hidden"
+            style={shouldReduceMotion ? undefined : { opacity: routeOpacity }}
+            aria-hidden="true"
+          >
+            <div className="absolute left-1/2 top-12 h-72 w-72 -translate-x-1/2 rounded-full bg-[#c8102e]/14 blur-[105px] lg:left-[68%]" />
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1180 720" fill="none">
+              <path
+                d="M-80 155C138 173 174 339 349 329C518 320 548 99 744 151C918 197 839 421 1064 458C1151 472 1219 442 1280 396"
+                stroke="rgba(255,255,255,.055)"
+                strokeWidth="28"
+                strokeLinecap="round"
+              />
+              <motion.path
+                d="M-80 155C138 173 174 339 349 329C518 320 548 99 744 151C918 197 839 421 1064 458C1151 472 1219 442 1280 396"
+                stroke="#C8102E"
+                strokeWidth="3"
+                strokeLinecap="round"
+                initial={shouldReduceMotion ? false : { pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </svg>
+          </motion.div>
+
+          <motion.div
+            className="relative z-10 max-w-2xl"
+            style={
+              shouldReduceMotion
+                ? undefined
+                : { opacity: copyOpacity, y: copyY, scale: copyScale }
+            }
+          >
+            <p className="eyebrow">A social platform for drivers</p>
+            <h1 className="text-[clamp(3.15rem,14vw,6.8rem)] font-semibold leading-[0.89] tracking-[-0.075em]">
+              The road
+              <span className="block text-white/42">becomes social.</span>
+            </h1>
+            <p className="mt-6 max-w-md text-[1.0625rem] leading-7 text-white/58">
+              Discover drivers, meets, crews and automotive events around you — on one live map.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a className="primary-button" href="#waitlist">
+                Join the waitlist
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a className="secondary-button" href="#product">
+                Explore NOXA
+                <span aria-hidden="true">↓</span>
+              </a>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="relative z-10 mx-auto mt-9 w-[224px] origin-bottom sm:mt-12 sm:w-[270px] lg:mt-0 lg:w-[304px]"
+            style={
+              shouldReduceMotion
+                ? undefined
+                : {
+                    scale: phoneScale,
+                    y: phoneY,
+                    rotateX: phoneRotateX,
+                    transformPerspective: 1200,
+                  }
+            }
+          >
+            <div className="pointer-events-none absolute inset-x-[-30%] bottom-[-12%] h-52 rounded-[50%] bg-[#c8102e]/16 blur-[70px]" />
+            <NoxaPhone />
+          </motion.div>
+
+          <motion.a
+            href="#product"
+            className="absolute bottom-5 left-1/2 z-20 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38"
+            style={shouldReduceMotion ? undefined : { opacity: hintOpacity }}
+          >
+            Scroll to explore
+            <span aria-hidden="true">↓</span>
+          </motion.a>
+        </div>
+      </div>
+    </section>
+  );
+}
