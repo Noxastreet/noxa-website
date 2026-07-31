@@ -3,9 +3,7 @@ import path from "node:path";
 
 const reportDirectory = path.resolve("lighthouse-results");
 const entries = await readdir(reportDirectory);
-const reportFiles = entries.filter(
-  (entry) => entry.startsWith("lhr-") && entry.endsWith(".json"),
-);
+const reportFiles = entries.filter((entry) => entry.endsWith(".report.json"));
 
 if (reportFiles.length === 0) {
   throw new Error("No Lighthouse JSON reports were found.");
@@ -44,6 +42,7 @@ for (const category of categories) {
 for (const [auditId, label, suffix] of audits) {
   const values = reports.map((report) => report.audits[auditId].numericValue);
   const value = median(values);
-  const formatted = auditId === "cumulative-layout-shift" ? value.toFixed(3) : value.toFixed(0);
+  const formatted =
+    auditId === "cumulative-layout-shift" ? value.toFixed(3) : value.toFixed(0);
   console.log(`${label}: ${formatted}${suffix}`);
 }
