@@ -149,8 +149,26 @@ export function WaitlistForm() {
           className="mt-0.5 size-5 shrink-0 accent-black"
         />
         <span className="text-sm leading-6 text-white">
-          I agree that NOXA may store my email and city to send early-access
-          updates. I can unsubscribe at any time.
+          I agree that NOXA may store my email and optional city and send
+          early-access updates as described in the{" "}
+          <a
+            className="font-semibold underline decoration-white/40 underline-offset-4 hover:decoration-white"
+            href="/privacy"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Privacy Policy
+          </a>
+          . I have also read the{" "}
+          <a
+            className="font-semibold underline decoration-white/40 underline-offset-4 hover:decoration-white"
+            href="/terms"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Terms of Use
+          </a>
+          . I can withdraw my consent at any time.
         </span>
       </label>
 
