@@ -26,22 +26,26 @@ export function HeroExperience() {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 28,
-    mass: 0.25,
+    stiffness: 160,
+    damping: 30,
+    mass: 0.2,
   });
 
-  const copyOpacity = useTransform(smoothProgress, [0, 0.46, 0.76], [1, 1, 0]);
-  const copyY = useTransform(smoothProgress, [0, 0.76], [0, -72]);
-  const copyScale = useTransform(smoothProgress, [0, 0.76], [1, 0.96]);
-  const phoneScale = useTransform(smoothProgress, [0, 0.72, 1], [0.9, 1, 1.08]);
-  const phoneY = useTransform(smoothProgress, [0, 1], [44, -18]);
-  const phoneRotateX = useTransform(smoothProgress, [0, 0.72], [7, 0]);
-  const routeOpacity = useTransform(smoothProgress, [0, 0.62, 1], [0.78, 0.5, 0]);
-  const hintOpacity = useTransform(smoothProgress, [0, 0.2], [1, 0]);
+  const copyOpacity = useTransform(smoothProgress, [0, 0.1, 0.52], [1, 1, 0]);
+  const copyY = useTransform(smoothProgress, [0, 0.52], [0, -96]);
+  const copyScale = useTransform(smoothProgress, [0, 0.52], [1, 0.95]);
+  const phoneScale = useTransform(smoothProgress, [0, 0.45, 1], [0.94, 1.02, 1.08]);
+  const phoneY = useTransform(smoothProgress, [0, 0.55, 1], [28, -8, -42]);
+  const phoneRotateX = useTransform(smoothProgress, [0, 0.38], [4, 0]);
+  const routeOpacity = useTransform(smoothProgress, [0, 0.5, 1], [0.78, 0.35, 0]);
+  const hintOpacity = useTransform(smoothProgress, [0, 0.08], [1, 0]);
 
   return (
-    <section ref={sectionRef} id="top" className="relative min-h-[172svh]">
+    <section
+      ref={sectionRef}
+      id="top"
+      className="relative min-h-[138svh] sm:min-h-[154svh] lg:min-h-[172svh]"
+    >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="page-shell relative flex h-full flex-col justify-start pb-3 pt-24 sm:justify-center sm:pb-8 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:gap-16 lg:pb-12 lg:pt-24 xl:gap-24">
           <m.div
