@@ -1,0 +1,100 @@
+name: Website CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/mobile-first-foundation
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Typecheck, lint, build, smoke and Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Restore npm and Next.js caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            .next/cache
+          key: ${{ runner.os }}-node22-${{ hashFiles('package.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-node22-${{ hashFiles('package.json') }}-
+            ${{ runner.os }}-node22-
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Dependency inventory
+        run: npm list --depth=0
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Production route smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3000 > /tmp/noxa-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+          READY=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /dev/null; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            cat /tmp/noxa-next.log
+            exit 1
+          fi
+
+          PRODUCTION_URL=http://127.0.0.1:3000 npm run smoke:production
+
+      - name: Install Lighthouse CI
+        run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
+
+      - name: Lighthouse performance gate
+        run: lhci autorun
+
+      - name: Summarize Lighthouse results
+        if: always()
+        run: npm run lighthouse:summary
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report-${{ github.run_number }}
+          path: lighthouse-results
+          if-no-files-found: error
+          retention-days: 14
