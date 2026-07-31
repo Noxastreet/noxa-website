@@ -7,6 +7,8 @@ if (!baseUrl) {
 const userAgent = "NOXA-production-smoke/1.0";
 const checks = [
   ["home", "/", "text/html"],
+  ["privacy", "/privacy", "text/html"],
+  ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
   ["robots", "/robots.txt", "text/plain"],
   ["sitemap", "/sitemap.xml", "application/xml"],
