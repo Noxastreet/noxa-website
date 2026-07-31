@@ -62,11 +62,15 @@ jobs:
       - name: Lighthouse performance gate
         run: lhci autorun
 
+      - name: Summarize Lighthouse results
+        if: always()
+        run: npm run lighthouse:summary
+
       - name: Upload Lighthouse reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-report-${{ github.run_number }}
-          path: .lighthouseci
-          if-no-files-found: ignore
+          path: lighthouse-results
+          if-no-files-found: error
           retention-days: 14
