@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
 
 type NoxaPhoneMode = "discover" | "meet" | "crew" | "drive";
 
@@ -80,7 +81,7 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
               strokeWidth="18"
               strokeLinecap="round"
             />
-            <motion.path
+            <m.path
               d="M-24 116C36 131 56 196 111 205C166 214 191 159 235 177C280 196 245 274 283 309C318 341 333 342 333 342"
               stroke="#C8102E"
               strokeWidth="3.5"
@@ -89,7 +90,10 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
               whileInView={{ pathLength: 1, opacity: 1 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{
-                pathLength: { duration: reduceMotion ? 0 : 1.25, ease: [0.22, 1, 0.36, 1] },
+                pathLength: {
+                  duration: reduceMotion ? 0 : 1.25,
+                  ease: [0.22, 1, 0.36, 1],
+                },
                 opacity: { duration: reduceMotion ? 0 : 0.2 },
               }}
             />
@@ -101,48 +105,72 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
             />
           </svg>
 
-          <motion.div
+          <m.div
             className="absolute left-[17%] top-[23%] size-3.5 rounded-full border-2 border-black bg-[#c8102e] shadow-[0_0_0_9px_rgba(200,16,46,.15),0_0_28px_rgba(200,16,46,.45)]"
             initial={initialMarker}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: reduceMotion ? 0 : 0.35, type: "spring", stiffness: 310, damping: 19 }}
+            transition={{
+              delay: reduceMotion ? 0 : 0.35,
+              type: "spring",
+              stiffness: 310,
+              damping: 19,
+            }}
           />
-          <motion.div
+          <m.div
             className="absolute right-[17%] top-[38%] size-3 rounded-full border-2 border-black bg-white/90 shadow-[0_0_0_8px_rgba(255,255,255,.08)]"
             initial={initialMarker}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: reduceMotion ? 0 : 0.52, type: "spring", stiffness: 310, damping: 19 }}
+            transition={{
+              delay: reduceMotion ? 0 : 0.52,
+              type: "spring",
+              stiffness: 310,
+              damping: 19,
+            }}
           />
-          <motion.div
+          <m.div
             className="absolute bottom-[34%] left-[32%] size-3 rounded-full border-2 border-black bg-white/75 shadow-[0_0_0_8px_rgba(255,255,255,.06)]"
             initial={initialMarker}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: reduceMotion ? 0 : 0.66, type: "spring", stiffness: 310, damping: 19 }}
+            transition={{
+              delay: reduceMotion ? 0 : 0.66,
+              type: "spring",
+              stiffness: 310,
+              damping: 19,
+            }}
           />
-          <motion.div
+          <m.div
             className="absolute right-[30%] top-[54%] flex size-9 items-center justify-center rounded-full border border-white/15 bg-black/75 text-xs font-bold shadow-xl backdrop-blur-lg"
             initial={initialMarker}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: reduceMotion ? 0 : 0.78, type: "spring", stiffness: 310, damping: 19 }}
+            transition={{
+              delay: reduceMotion ? 0 : 0.78,
+              type: "spring",
+              stiffness: 310,
+              damping: 19,
+            }}
           >
             N
-          </motion.div>
+          </m.div>
 
           <div className="absolute left-4 right-4 top-[76px] flex items-center gap-3 rounded-full border border-white/10 bg-black/65 px-4 py-3 text-sm text-white/55 backdrop-blur-xl">
             <span className="size-2 rounded-full bg-[#c8102e]" />
             Search drivers, meets or places
           </div>
 
-          <motion.div
+          <m.div
             className="absolute inset-x-3 bottom-3 rounded-[1.75rem] border border-white/10 bg-black/78 p-4 shadow-2xl backdrop-blur-2xl"
             initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.98 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 0.75, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.6,
+              delay: reduceMotion ? 0 : 0.75,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -152,7 +180,9 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
                 <p className="mt-2 text-[17px] font-semibold leading-5 tracking-[-0.025em]">
                   {content.title}
                 </p>
-                <p className="mt-1.5 text-xs leading-5 text-white/[0.45]">{content.meta}</p>
+                <p className="mt-1.5 text-xs leading-5 text-white/[0.45]">
+                  {content.meta}
+                </p>
               </div>
               <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-black">
                 →
@@ -162,7 +192,7 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
               <span className="text-white/[0.45]">Live on the map</span>
               <span className="font-semibold text-white/85">{content.action}</span>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </div>
