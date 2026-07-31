@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Typecheck, lint, build and Lighthouse
+    name: Typecheck, lint, build, smoke and Lighthouse
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -55,6 +55,30 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Production route smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start -- -p 3000 > /tmp/noxa-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+          READY=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /dev/null; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            cat /tmp/noxa-next.log
+            exit 1
+          fi
+
+          PRODUCTION_URL=http://127.0.0.1:3000 npm run smoke:production
 
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
