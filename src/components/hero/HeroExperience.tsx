@@ -2,12 +2,12 @@
 
 import { useRef } from "react";
 import {
-  motion,
   useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
 } from "motion/react";
+import * as m from "motion/react-m";
 
 import { NoxaPhone } from "@/components/visuals/NoxaPhone";
 
@@ -44,7 +44,7 @@ export function HeroExperience() {
     <section ref={sectionRef} id="top" className="relative min-h-[172svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div className="page-shell relative flex h-full flex-col justify-start pb-6 pt-24 sm:justify-center sm:pb-8 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:gap-16 lg:pb-12 lg:pt-24 xl:gap-24">
-          <motion.div
+          <m.div
             className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[72svh] overflow-hidden lg:top-10 lg:h-[86svh]"
             style={shouldReduceMotion ? undefined : { opacity: routeOpacity }}
             aria-hidden="true"
@@ -57,7 +57,7 @@ export function HeroExperience() {
                 strokeWidth="28"
                 strokeLinecap="round"
               />
-              <motion.path
+              <m.path
                 d="M-80 155C138 173 174 339 349 329C518 320 548 99 744 151C918 197 839 421 1064 458C1151 472 1219 442 1280 396"
                 stroke="#C8102E"
                 strokeWidth="3"
@@ -67,9 +67,9 @@ export function HeroExperience() {
                 transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
               />
             </svg>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="relative z-10 max-w-2xl lg:max-w-[680px]"
             style={
               shouldReduceMotion
@@ -103,9 +103,9 @@ export function HeroExperience() {
               <span className="h-px w-10 bg-white/10" />
               <span className="text-sm text-white/42">Drivers · Meets · Crews · Routes</span>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="relative z-10 mx-auto mt-3 w-[160px] origin-bottom min-[390px]:w-[176px] sm:mt-10 sm:w-[270px] lg:mx-0 lg:mt-0 lg:w-[330px] lg:justify-self-end xl:w-[360px]"
             style={
               shouldReduceMotion
@@ -144,16 +144,16 @@ export function HeroExperience() {
                 <div className="h-full w-[68%] rounded-full bg-[#c8102e]" />
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.a
+          <m.a
             href="#product"
             className="absolute bottom-3 left-1/2 z-20 inline-flex min-h-10 -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38 sm:bottom-5"
             style={shouldReduceMotion ? undefined : { opacity: hintOpacity }}
           >
             Scroll to explore
             <span aria-hidden="true">↓</span>
-          </motion.a>
+          </m.a>
         </div>
       </div>
     </section>
