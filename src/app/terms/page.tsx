@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://noxastreetapp.com/terms" },
 };
 
-const contactEmail = "privacy@noxastreetapp.com";
+const contactEmail = "support@noxastreetapp.com";
 
 export default function TermsPage() {
   return (
