@@ -21,7 +21,7 @@ html {
   background: var(--background-primary);
   color-scheme: dark;
   scroll-behavior: smooth;
-  scroll-padding-top: 72px;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -96,7 +96,8 @@ button {
   transition:
     transform 180ms ease,
     background-color 180ms ease,
-    border-color 180ms ease;
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .primary-button {
@@ -126,10 +127,13 @@ button {
 
 @media (hover: hover) {
   .primary-button:hover {
+    transform: translateY(-2px);
     background: #da1738;
+    box-shadow: 0 12px 34px rgba(200, 16, 46, 0.22);
   }
 
   .secondary-button:hover {
+    transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.065);
   }
@@ -167,9 +171,25 @@ button {
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   :root {
+    --content-max: 1320px;
     --page-gutter: 40px;
+  }
+
+  .section {
+    padding-block: 144px;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --content-max: 1440px;
+    --page-gutter: 48px;
+  }
+
+  .section {
+    padding-block: 160px;
   }
 }
 
