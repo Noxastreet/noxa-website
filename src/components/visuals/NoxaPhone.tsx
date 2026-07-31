@@ -8,6 +8,7 @@ type NoxaPhoneMode = "discover" | "meet" | "crew" | "drive";
 type NoxaPhoneProps = {
   mode?: NoxaPhoneMode;
   className?: string;
+  compact?: boolean;
 };
 
 const previewContent: Record<
@@ -45,7 +46,11 @@ const previewContent: Record<
   },
 };
 
-export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps) {
+export function NoxaPhone({
+  mode = "discover",
+  className = "",
+  compact = false,
+}: NoxaPhoneProps) {
   const content = previewContent[mode];
   const reduceMotion = useReducedMotion();
   const initialMarker = reduceMotion ? false : { opacity: 0, scale: 0.35 };
@@ -56,11 +61,19 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
       role="img"
       aria-label={`NOXA mobile app preview showing ${content.title}`}
     >
-      <div className="relative aspect-[0.49] rounded-[3rem] border border-white/15 bg-[#030304] p-[7px] shadow-[0_38px_90px_rgba(0,0,0,.62)]">
+      <div
+        className={`relative rounded-[3rem] border border-white/15 bg-[#030304] p-[7px] shadow-[0_38px_90px_rgba(0,0,0,.62)] ${
+          compact ? "aspect-[0.56]" : "aspect-[0.49]"
+        }`}
+      >
         <div className="pointer-events-none absolute left-1/2 top-[10px] z-20 h-[25px] w-[92px] -translate-x-1/2 rounded-full bg-black" />
 
         <div className="relative h-full overflow-hidden rounded-[2.55rem] bg-[#0b0c0f]">
-          <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 pb-3 pt-4 text-[10px] font-semibold text-white/70">
+          <div
+            className={`absolute inset-x-0 top-0 z-10 flex items-center justify-between font-semibold text-white/70 ${
+              compact ? "px-5 pb-2 pt-4 text-[8px]" : "px-6 pb-3 pt-4 text-[10px]"
+            }`}
+          >
             <span>9:41</span>
             <span className="tracking-[0.12em]">NOXA</span>
             <span>●●●</span>
@@ -156,13 +169,23 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
             N
           </m.div>
 
-          <div className="absolute left-4 right-4 top-[76px] flex items-center gap-3 rounded-full border border-white/10 bg-black/65 px-4 py-3 text-sm text-white/55 backdrop-blur-xl">
-            <span className="size-2 rounded-full bg-[#c8102e]" />
-            Search drivers, meets or places
+          <div
+            className={`absolute left-4 right-4 flex min-w-0 items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-black/65 text-white/55 backdrop-blur-xl ${
+              compact
+                ? "top-[60px] px-3 py-2 text-[10px]"
+                : "top-[76px] gap-3 px-4 py-3 text-sm"
+            }`}
+          >
+            <span className="size-2 shrink-0 rounded-full bg-[#c8102e]" />
+            <span className="min-w-0 truncate whitespace-nowrap">
+              {compact ? "Search the live map" : "Search drivers, meets or places"}
+            </span>
           </div>
 
           <m.div
-            className="absolute inset-x-3 bottom-3 rounded-[1.75rem] border border-white/10 bg-black/78 p-4 shadow-2xl backdrop-blur-2xl"
+            className={`absolute inset-x-3 bottom-3 border border-white/10 bg-black/78 shadow-2xl backdrop-blur-2xl ${
+              compact ? "rounded-[1.4rem] p-3" : "rounded-[1.75rem] p-4"
+            }`}
             initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.98 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.35 }}
@@ -172,26 +195,47 @@ export function NoxaPhone({ mode = "discover", className = "" }: NoxaPhoneProps)
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#e32c49]">
+            <div className="flex min-w-0 items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p
+                  className={`font-bold uppercase tracking-[0.18em] text-[#e32c49] ${
+                    compact ? "text-[8px]" : "text-[10px]"
+                  }`}
+                >
                   {content.label}
                 </p>
-                <p className="mt-2 text-[17px] font-semibold leading-5 tracking-[-0.025em]">
+                <p
+                  className={`mt-2 font-semibold tracking-[-0.025em] ${
+                    compact
+                      ? "line-clamp-2 text-[13px] leading-4"
+                      : "text-[17px] leading-5"
+                  }`}
+                >
                   {content.title}
                 </p>
-                <p className="mt-1.5 text-xs leading-5 text-white/[0.45]">
+                <p
+                  className={`mt-1.5 text-white/[0.52] ${
+                    compact ? "text-[9px] leading-4" : "text-xs leading-5"
+                  }`}
+                >
                   {content.meta}
                 </p>
               </div>
-              <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-black">
+              <span
+                className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-white font-bold text-black ${
+                  compact ? "size-8 text-xs" : "size-9 text-sm"
+                }`}
+              >
                 →
               </span>
             </div>
-            <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
-              <span className="text-white/[0.45]">Live on the map</span>
-              <span className="font-semibold text-white/85">{content.action}</span>
-            </div>
+
+            {!compact && (
+              <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
+                <span className="text-white/[0.45]">Live on the map</span>
+                <span className="font-semibold text-white/85">{content.action}</span>
+              </div>
+            )}
           </m.div>
         </div>
       </div>
