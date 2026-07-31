@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type SubmissionState =
   | "idle"
@@ -25,9 +25,13 @@ const errorMessages: Record<string, string> = {
 };
 
 export function WaitlistForm() {
-  const startedAt = useRef(Date.now());
+  const startedAt = useRef(0);
   const [state, setState] = useState<SubmissionState>("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
