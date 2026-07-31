@@ -125,6 +125,23 @@ button {
   scroll-margin-top: 88px;
 }
 
+/* Preserve subtle hierarchy while keeping secondary text above WCAG contrast targets. */
+#business .text-white\/45,
+#business .text-white\/46,
+#business .text-white\/35,
+#community .text-white\/35,
+#community .text-white\/38 {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+#waitlist .text-white\/40,
+#waitlist .text-white\/55,
+#waitlist .text-white\/65,
+#waitlist .text-white\/68,
+#waitlist .text-white\/70 {
+  color: rgba(255, 255, 255, 0.92);
+}
+
 @media (hover: hover) {
   .primary-button:hover {
     transform: translateY(-2px);
