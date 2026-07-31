@@ -56,10 +56,10 @@ export function ProductStory() {
 
   return (
     <section ref={sectionRef} id="product" className="relative min-h-[440svh] border-y border-white/[0.06] bg-[#070709]">
-      <div className="sticky top-0 flex min-h-[100svh] items-center overflow-hidden pb-7 pt-24">
-        <div className="page-shell grid w-full gap-7 lg:grid-cols-[1fr_.9fr] lg:items-center lg:gap-20">
-          <div className="relative z-10 min-h-[270px] sm:min-h-[300px] lg:min-h-[440px]">
-            <div className="mb-7 flex items-center gap-2" aria-hidden="true">
+      <div className="sticky top-16 flex h-[calc(100svh-4rem)] items-stretch overflow-hidden pb-4 pt-5 sm:pb-6 sm:pt-7 lg:top-0 lg:h-auto lg:min-h-[100svh] lg:items-center lg:pb-7 lg:pt-24">
+        <div className="page-shell grid h-full w-full content-between gap-3 lg:h-auto lg:grid-cols-[1fr_.9fr] lg:items-center lg:gap-20">
+          <div className="relative z-10 min-h-[205px] sm:min-h-[250px] lg:min-h-[440px]">
+            <div className="mb-4 flex items-center gap-2 sm:mb-7" aria-hidden="true">
               {chapters.map(([chapterNumber], index) => (
                 <span
                   key={chapterNumber}
@@ -72,32 +72,32 @@ export function ProductStory() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={number}
-                initial={{ opacity: 0, y: 28, filter: "blur(8px)" }}
+                initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -22, filter: "blur(6px)" }}
-                transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, y: -18, filter: "blur(6px)" }}
+                transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-white/36">
+                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/36 sm:text-xs">
                   <span className="text-[#e32c49]">{number}</span>
                   <span className="h-px w-8 bg-white/15" />
                   <span>{eyebrow}</span>
                 </div>
-                <h2 className="mt-5 max-w-2xl text-[clamp(2.75rem,12vw,6.25rem)] font-semibold leading-[0.91] tracking-[-0.07em]">{title}</h2>
-                <p className="mt-6 max-w-xl text-[1.04rem] leading-7 text-white/52 sm:text-[1.1rem] sm:leading-8">{body}</p>
+                <h2 className="mt-3 max-w-2xl text-[clamp(2.25rem,10vw,6.25rem)] font-semibold leading-[0.91] tracking-[-0.07em] sm:mt-5">{title}</h2>
+                <p className="mt-4 max-w-xl text-[0.94rem] leading-6 text-white/52 sm:mt-6 sm:text-[1.1rem] sm:leading-8">{body}</p>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          <div className="relative isolate mx-auto flex w-full max-w-[430px] items-end justify-center overflow-hidden rounded-[2.5rem] border border-white/[0.09] bg-[#0a0a0d] px-5 pt-8 shadow-[0_38px_110px_rgba(0,0,0,.46)] sm:px-10 lg:min-h-[690px]">
+          <div className="relative isolate mx-auto flex h-[300px] w-full max-w-[430px] items-end justify-center overflow-hidden rounded-[2rem] border border-white/[0.09] bg-[#0a0a0d] px-4 pt-5 shadow-[0_38px_110px_rgba(0,0,0,.46)] sm:h-[400px] sm:rounded-[2.5rem] sm:px-8 sm:pt-8 lg:h-auto lg:min-h-[690px] lg:px-10">
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.27),transparent_37%)]" />
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={mode}
-                className="w-[226px] origin-bottom sm:w-[276px] lg:w-[304px]"
-                initial={{ opacity: 0, y: 46, scale: 0.94 }}
-                animate={{ opacity: 1, y: 38, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.97 }}
-                transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
+                className="w-[150px] origin-bottom sm:w-[210px] lg:w-[304px]"
+                initial={{ opacity: 0, y: 38, scale: 0.94 }}
+                animate={{ opacity: 1, y: 34, scale: 1 }}
+                exit={{ opacity: 0, y: 18, scale: 0.97 }}
+                transition={{ duration: 0.54, ease: [0.22, 1, 0.36, 1] }}
               >
                 <NoxaPhone mode={mode} />
               </motion.div>
