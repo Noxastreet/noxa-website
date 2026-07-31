@@ -3,11 +3,11 @@
 import { useRef, useState } from "react";
 import {
   AnimatePresence,
-  motion,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
 } from "motion/react";
+import * as m from "motion/react-m";
 
 import { FeatureChapter } from "@/components/FeatureChapter";
 import { NoxaPhone } from "@/components/visuals/NoxaPhone";
@@ -74,7 +74,7 @@ export function ProductStory() {
 
             <p className="eyebrow">One automotive world</p>
             <AnimatePresence mode="wait" initial={false}>
-              <motion.div
+              <m.div
                 key={number}
                 initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -92,7 +92,7 @@ export function ProductStory() {
                 <p className="mt-4 max-w-xl text-[0.94rem] leading-6 text-white/52 sm:mt-6 sm:text-[1.1rem] sm:leading-8 lg:text-lg">
                   {body}
                 </p>
-              </motion.div>
+              </m.div>
             </AnimatePresence>
 
             <div className="mt-12 hidden border-t border-white/[0.08] pt-4 lg:grid lg:grid-cols-4 lg:gap-2">
@@ -130,7 +130,7 @@ export function ProductStory() {
             <div className="pointer-events-none absolute left-8 top-20 hidden h-px w-24 bg-gradient-to-r from-[#c8102e] to-transparent lg:block" />
 
             <AnimatePresence mode="wait" initial={false}>
-              <motion.div
+              <m.div
                 key={mode}
                 className="w-[150px] origin-bottom sm:w-[210px] lg:w-[330px]"
                 initial={{ opacity: 0, y: 38, scale: 0.94 }}
@@ -139,7 +139,7 @@ export function ProductStory() {
                 transition={{ duration: 0.54, ease: [0.22, 1, 0.36, 1] }}
               >
                 <NoxaPhone mode={mode} className="lg:max-w-[330px]" />
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
         </div>
