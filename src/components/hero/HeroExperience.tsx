@@ -43,7 +43,7 @@ export function HeroExperience() {
   return (
     <section ref={sectionRef} id="top" className="relative min-h-[172svh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
-        <div className="page-shell relative flex h-full flex-col justify-start pb-6 pt-24 sm:justify-center sm:pb-8 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:gap-16 lg:pb-12 lg:pt-24 xl:gap-24">
+        <div className="page-shell relative flex h-full flex-col justify-start pb-3 pt-24 sm:justify-center sm:pb-8 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:gap-16 lg:pb-12 lg:pt-24 xl:gap-24">
           <m.div
             className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[72svh] overflow-hidden lg:top-10 lg:h-[86svh]"
             style={shouldReduceMotion ? undefined : { opacity: routeOpacity }}
@@ -106,7 +106,7 @@ export function HeroExperience() {
           </m.div>
 
           <m.div
-            className="relative z-10 mx-auto mt-3 w-[160px] origin-bottom min-[390px]:w-[176px] sm:mt-10 sm:w-[270px] lg:mx-0 lg:mt-0 lg:w-[330px] lg:justify-self-end xl:w-[360px]"
+            className="relative z-10 mx-auto mt-5 w-[184px] origin-bottom min-[390px]:w-[198px] sm:mt-10 sm:w-[270px] lg:mx-0 lg:mt-0 lg:w-[330px] lg:justify-self-end xl:w-[360px]"
             style={
               shouldReduceMotion
                 ? undefined
@@ -119,7 +119,7 @@ export function HeroExperience() {
             }
           >
             <div className="pointer-events-none absolute inset-x-[-38%] bottom-[-12%] h-52 rounded-[50%] bg-[#c8102e]/16 blur-[70px] lg:h-72" />
-            <NoxaPhone className="lg:max-w-[330px] xl:max-w-[350px]" />
+            <NoxaPhone compact className="lg:max-w-[330px] xl:max-w-[350px]" />
 
             <div className="pointer-events-none absolute -left-44 top-[18%] hidden w-44 space-y-3 xl:block">
               {desktopSignals.slice(0, 2).map(([label, value]) => (
@@ -148,7 +148,7 @@ export function HeroExperience() {
 
           <m.a
             href="#product"
-            className="absolute bottom-3 left-1/2 z-20 inline-flex min-h-10 -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38 sm:bottom-5"
+            className="absolute bottom-5 left-1/2 z-20 hidden min-h-10 -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38 sm:inline-flex"
             style={shouldReduceMotion ? undefined : { opacity: hintOpacity }}
           >
             Scroll to explore
