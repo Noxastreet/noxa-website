@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://noxastreetapp.com/privacy" },
 };
 
-const privacyEmail = "privacy@noxastreetapp.com";
+const privacyEmail = "support@noxastreetapp.com";
 
 export default function PrivacyPage() {
   return (
