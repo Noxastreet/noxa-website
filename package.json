@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "lighthouse:summary": "node scripts/summarize-lighthouse.mjs"
+    "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
+    "smoke:production": "node scripts/smoke-production.mjs"
   },
   "dependencies": {
     "motion": "12.43.0",
