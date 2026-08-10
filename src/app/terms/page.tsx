@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { LegalDocument } from "@/components/legal/LegalDocument";
 
@@ -204,12 +205,12 @@ export default function TermsPage() {
             <p>
               Personal data submitted through the website is handled according
               to the{" "}
-              <a
+              <Link
                 className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
                 href="/privacy"
               >
                 NOXA Privacy Policy
-              </a>
+              </Link>
               , which forms part of the website information provided to you.
             </p>
           ),

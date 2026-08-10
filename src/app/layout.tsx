@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { isLocale } from "@/i18n/site-copy";
 
 import "./globals.css";
 
@@ -47,13 +49,17 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const requestedLocale = requestHeaders.get("x-noxa-locale");
+  const locale = isLocale(requestedLocale) ? requestedLocale : "en";
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
         <MotionProvider>{children}</MotionProvider>
       </body>
