@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - main
+      - feature/mobile-first-foundation
 
 permissions:
   contents: read

@@ -160,10 +160,7 @@ export async function POST(request: NextRequest) {
   const email = cleanText(payload.email, 254)?.toLowerCase() ?? "";
   const city = cleanText(payload.city, 80);
   const consent = payload.consent === true;
-  const locale =
-    payload.locale === "el" || payload.locale === "ru"
-      ? payload.locale
-      : "en";
+  const locale = payload.locale === "el" ? "el" : "en";
 
   if (!EMAIL_PATTERN.test(email)) {
     return json({ ok: false, code: "invalid_email" }, 400);

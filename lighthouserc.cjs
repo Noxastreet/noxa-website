@@ -1,10 +1,10 @@
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: "npm run start -- -H 127.0.0.1 -p 3000",
+      startServerCommand: "npm run start -- -p 3000",
       startServerReadyPattern: "Ready in|Local:",
       startServerReadyTimeout: 30000,
-      url: ["http://127.0.0.1:3000/el"],
+      url: ["http://127.0.0.1:3000/"],
       numberOfRuns: 3,
       settings: {
         chromeFlags: "--headless --no-sandbox",

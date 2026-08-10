@@ -7,9 +7,6 @@ if (!baseUrl) {
 const userAgent = "NOXA-production-smoke/1.0";
 const checks = [
   ["home", "/", "text/html"],
-  ["greek", "/el", "text/html"],
-  ["english", "/en", "text/html"],
-  ["russian", "/ru", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
@@ -52,27 +49,6 @@ if (health.status !== "ok" || health.service !== "noxa-website") {
 const homeResponse = await fetch(new URL("/", baseUrl), {
   headers: { "User-Agent": userAgent },
 });
-
-const localizedChecks = [
-  ["el", "Ο δρόμος"],
-  ["en", "The road"],
-  ["ru", "Дорога"],
-];
-
-for (const [locale, marker] of localizedChecks) {
-  const localizedResponse = await fetch(new URL(`/${locale}`, baseUrl), {
-    headers: { "User-Agent": userAgent },
-  });
-  const html = await localizedResponse.text();
-
-  if (!html.includes(`<html lang="${locale}">`)) {
-    throw new Error(`/${locale} did not render the expected html lang attribute.`);
-  }
-
-  if (!html.includes(marker)) {
-    throw new Error(`/${locale} did not render its localized product copy.`);
-  }
-}
 const expectedHeaders = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
