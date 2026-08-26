@@ -6,12 +6,17 @@ import { ProductStory } from "@/components/product/ProductStory";
 
 export default function Home() {
   return (
-    <main className="overflow-x-clip">
+    <>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <SiteHeader />
-      <HeroExperience />
-      <ProductStory />
-      <AfterStory />
-      <LegalFooterBar />
-    </main>
+      <main id="main-content" className="overflow-x-clip">
+        <HeroExperience />
+        <ProductStory />
+        <AfterStory />
+        <LegalFooterBar />
+      </main>
+    </>
   );
 }
