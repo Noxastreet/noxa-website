@@ -1,12 +1,14 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { NoxaPhone } from "@/components/visuals/NoxaPhone";
+import type { LandingCopy, NoxaPhoneMode } from "@/i18n/landing-copy";
 
 type FeatureChapterProps = {
   number: string;
   eyebrow: string;
   title: string;
   body: string;
-  mode: "discover" | "meet" | "crew" | "drive";
+  mode: NoxaPhoneMode;
+  phoneCopy: LandingCopy["phone"];
   reversed?: boolean;
 };
 
@@ -16,6 +18,7 @@ export function FeatureChapter({
   title,
   body,
   mode,
+  phoneCopy,
   reversed = false,
 }: FeatureChapterProps) {
   return (
@@ -41,7 +44,11 @@ export function FeatureChapter({
           <div className="relative isolate overflow-hidden rounded-[2.35rem] border border-white/10 bg-[#0a0a0d] px-5 pb-0 pt-10 shadow-[0_30px_90px_rgba(0,0,0,.28)] sm:px-10 sm:pt-12">
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_14%,rgba(200,16,46,.22),transparent_36%)]" />
             <div className="pointer-events-none absolute inset-x-10 top-8 -z-10 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <NoxaPhone mode={mode} className="translate-y-12" />
+            <NoxaPhone
+              copy={phoneCopy}
+              mode={mode}
+              className="translate-y-12"
+            />
           </div>
         </Reveal>
       </div>

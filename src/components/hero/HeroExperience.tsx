@@ -10,14 +10,15 @@ import {
 import * as m from "motion/react-m";
 
 import { NoxaPhone } from "@/components/visuals/NoxaPhone";
+import type { LandingCopy } from "@/i18n/landing-copy";
 
-const desktopSignals = [
-  ["Nearby now", "18 drivers"],
-  ["Tonight", "6 active meets"],
-  ["Live route", "12.6 km"],
-] as const;
+type HeroExperienceProps = {
+  copy: LandingCopy["hero"];
+  phoneCopy: LandingCopy["phone"];
+};
 
-export function HeroExperience() {
+export function HeroExperience({ copy, phoneCopy }: HeroExperienceProps) {
+  const desktopSignals = copy.signals;
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [allowScrollMotion, setAllowScrollMotion] = useState(false);
@@ -73,32 +74,32 @@ export function HeroExperience() {
                 : undefined
             }
           >
-            <p className="eyebrow">A social platform for drivers</p>
+            <p className="eyebrow">{copy.eyebrow}</p>
             <h1 className="hero-title font-semibold lg:max-w-none lg:text-[clamp(5.4rem,7vw,7.8rem)] lg:leading-[0.94]">
-              The road
-              <span className="block text-white/42">becomes social.</span>
+              {copy.titleFirst}
+              <span className="block text-white/42">{copy.titleSecond}</span>
             </h1>
             <p className="hero-copy mt-5 text-[var(--color-text-secondary)] sm:mt-6 lg:max-w-lg lg:text-lg lg:leading-8">
-              Discover drivers, meets, crews and automotive events around you — on one live map.
+              {copy.body}
             </p>
             <div className="mt-6 flex gap-3 sm:mt-8">
               <a className="primary-button hero-primary-action" href="#waitlist">
-                Join the waitlist
+                {copy.join}
                 <span aria-hidden="true">↗</span>
               </a>
               <a className="secondary-button hidden sm:inline-flex" href="#product">
-                Explore NOXA
+                {copy.explore}
                 <span aria-hidden="true">↓</span>
               </a>
             </div>
 
             <div className="mt-10 hidden items-center gap-6 border-t border-white/[0.08] pt-5 lg:flex">
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
-                Built around real roads
+                {copy.builtAround}
               </span>
               <span className="h-px w-10 bg-white/10" aria-hidden="true" />
               <span className="text-sm text-[var(--color-text-secondary)]">
-                Drivers · Meets · Crews · Routes
+                {copy.pillars}
               </span>
             </div>
           </m.div>
@@ -116,7 +117,11 @@ export function HeroExperience() {
                 : undefined
             }
           >
-            <NoxaPhone compact className="lg:max-w-[330px] xl:max-w-[350px]" />
+            <NoxaPhone
+              compact
+              copy={phoneCopy}
+              className="lg:max-w-[330px] xl:max-w-[350px]"
+            />
 
             <div className="pointer-events-none absolute -left-44 top-[18%] hidden w-44 space-y-3 xl:block">
               {desktopSignals.slice(0, 2).map(([label, value]) => (
@@ -148,7 +153,7 @@ export function HeroExperience() {
             className="desktop-scroll-hint absolute bottom-5 left-1/2 z-20 min-h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]"
             style={useScrollMotion ? { opacity: hintOpacity } : undefined}
           >
-            Scroll to explore
+            {copy.scroll}
             <span aria-hidden="true">↓</span>
           </m.a>
         </div>

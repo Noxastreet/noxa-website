@@ -15,15 +15,7 @@ import {
 import * as m from "motion/react-m";
 
 import { NoxaPhone } from "@/components/visuals/NoxaPhone";
-
-const chapters = [
-  ["01", "Discover", "See what moves around you.", "Drivers, meets, events and automotive places appear on one focused live map.", "discover"],
-  ["02", "Meet", "Turn activity into a real connection.", "Open a meet, see who is joining and start the route without leaving NOXA.", "meet"],
-  ["03", "Belong", "Find the crew that feels like yours.", "Build local communities around shared cars, roads and culture.", "crew"],
-  ["04", "Drive", "From discovery to the road.", "Plan the route, enter follow mode and move together in real time.", "drive"],
-] as const;
-
-type ChapterMode = (typeof chapters)[number][4];
+import type { LandingCopy } from "@/i18n/landing-copy";
 
 function useDesktopStoryMode() {
   const [isDesktopStory, setIsDesktopStory] = useState(false);
@@ -49,18 +41,24 @@ function useDesktopStoryMode() {
   return isDesktopStory;
 }
 
-export function ProductStory() {
+type ProductStoryProps = {
+  copy: LandingCopy["product"];
+  phoneCopy: LandingCopy["phone"];
+};
+
+export function ProductStory({ copy, phoneCopy }: ProductStoryProps) {
   const isDesktopStory = useDesktopStoryMode();
   const reduceMotion = useReducedMotion();
 
   return isDesktopStory && !reduceMotion ? (
-    <DesktopProductStory />
+    <DesktopProductStory copy={copy} phoneCopy={phoneCopy} />
   ) : (
-    <MobileProductStory />
+    <MobileProductStory copy={copy} phoneCopy={phoneCopy} />
   );
 }
 
-function MobileProductStory() {
+function MobileProductStory({ copy, phoneCopy }: ProductStoryProps) {
+  const chapters = copy.chapters;
   const [activeIndex, setActiveIndex] = useState(0);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const reduceMotion = useReducedMotion();
@@ -106,12 +104,12 @@ function MobileProductStory() {
       className="section border-y border-white/[0.06] bg-[#070709]"
     >
       <div className="page-shell">
-        <p className="eyebrow">One automotive world</p>
+        <p className="eyebrow">{copy.eyebrow}</p>
 
         <div
           className="mobile-tablist"
           role="tablist"
-          aria-label="NOXA product chapters"
+          aria-label={copy.tablistLabel}
         >
           {chapters.map(([number, label], index) => {
             const isActive = index === activeIndex;
@@ -175,7 +173,7 @@ function MobileProductStory() {
 
         <div className="product-preview-card relative isolate mx-auto mt-8 w-full max-w-[430px] overflow-hidden border bg-[#0a0a0d] px-5 pt-7">
           <div className="mx-auto w-[clamp(168px,52vw,220px)]">
-            <NoxaPhone mode={activeMode as ChapterMode} />
+            <NoxaPhone copy={phoneCopy} mode={activeMode} />
           </div>
         </div>
       </div>
@@ -183,7 +181,8 @@ function MobileProductStory() {
   );
 }
 
-function DesktopProductStory() {
+function DesktopProductStory({ copy, phoneCopy }: ProductStoryProps) {
+  const chapters = copy.chapters;
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const reduceMotion = useReducedMotion();
@@ -209,7 +208,7 @@ function DesktopProductStory() {
       <div className="sticky top-[calc(var(--header-row-height)+env(safe-area-inset-top))] flex h-[calc(100svh-var(--header-row-height)-env(safe-area-inset-top))] items-center overflow-hidden py-8">
         <div className="page-shell grid w-full grid-cols-[minmax(0,1fr)_minmax(360px,500px)] items-center gap-16 xl:gap-24">
           <div className="relative z-10 flex min-h-[560px] flex-col justify-center">
-            <p className="eyebrow">One automotive world</p>
+            <p className="eyebrow">{copy.eyebrow}</p>
             <AnimatePresence mode="wait" initial={false}>
               <m.div
                 key={number}
@@ -263,8 +262,8 @@ function DesktopProductStory() {
 
           <div className="product-preview-card relative isolate mx-auto flex min-h-[680px] w-full max-w-[500px] items-end justify-center overflow-hidden border bg-[#0a0a0d] px-10 pt-10">
             <div className="pointer-events-none absolute inset-x-8 top-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-text-secondary)]" aria-hidden="true">
-              <span>NOXA live map</span>
-              <span>Thessaloniki · online</span>
+              <span>{copy.liveMap}</span>
+              <span>{copy.online}</span>
             </div>
             <AnimatePresence mode="wait" initial={false}>
               <m.div
@@ -278,7 +277,11 @@ function DesktopProductStory() {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <NoxaPhone mode={mode as ChapterMode} className="max-w-[320px]" />
+                <NoxaPhone
+                  copy={phoneCopy}
+                  mode={mode}
+                  className="max-w-[320px]"
+                />
               </m.div>
             </AnimatePresence>
           </div>
