@@ -41,6 +41,39 @@ const previewContent: Record<
   },
 };
 
+function PreviewIcon({ mode }: { mode: NoxaPhoneMode }) {
+  if (mode === "meet") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 3v3M17 3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (mode === "crew") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM15.5 10a2.5 2.5 0 1 0 0-5M3.5 19a5 5 0 0 1 10 0M14 14.5a4.5 4.5 0 0 1 6.5 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (mode === "drive") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m5 19 3.2-8.2L19 5l-5.8 10.8L5 19Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="10" r="2.3" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
 export function NoxaPhone({
   mode = "discover",
   className = "",
@@ -68,64 +101,32 @@ export function NoxaPhone({
           >
             <span>9:41</span>
             <span className="tracking-[0.12em]">NOXA</span>
-            <span>●●●</span>
+            <span className="h-1.5 w-4 rounded-sm border border-white/55" aria-hidden="true" />
           </div>
 
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_16%,rgba(200,16,46,.16),transparent_34%),linear-gradient(145deg,#111218_0%,#090a0d_58%,#121319_100%)]" />
-          <div className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:34px_34px]" />
-
-          <svg
-            className="absolute inset-0 h-full w-full"
-            viewBox="0 0 300 610"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M-24 116C36 131 56 196 111 205C166 214 191 159 235 177C280 196 245 274 283 309C318 341 333 342 333 342"
-              stroke="rgba(255,255,255,.09)"
-              strokeWidth="18"
-              strokeLinecap="round"
-            />
-            <path
-              d="M-24 116C36 131 56 196 111 205C166 214 191 159 235 177C280 196 245 274 283 309C318 341 333 342 333 342"
-              stroke="#C8102E"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M34 480C77 440 94 405 126 397C171 386 194 433 236 417C265 406 278 377 324 372"
-              stroke="rgba(255,255,255,.07)"
-              strokeWidth="13"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          <div className="absolute left-[17%] top-[23%] size-3.5 rounded-full border-2 border-black bg-[#c8102e] shadow-[0_0_0_9px_rgba(200,16,46,.15),0_0_28px_rgba(200,16,46,.45)]" />
-          <div className="absolute right-[17%] top-[38%] size-3 rounded-full border-2 border-black bg-white/90 shadow-[0_0_0_8px_rgba(255,255,255,.08)]" />
-          <div className="absolute bottom-[34%] left-[32%] size-3 rounded-full border-2 border-black bg-white/75 shadow-[0_0_0_8px_rgba(255,255,255,.06)]" />
-          <div className="adaptive-backdrop absolute right-[30%] top-[54%] flex size-9 items-center justify-center rounded-full border border-white/15 bg-black/75 text-xs font-bold shadow-xl backdrop-blur-[12px]">
-            N
-          </div>
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,#111114_0%,#09090c_100%)]" />
 
           <div
-            className={`adaptive-backdrop absolute left-4 right-4 flex min-w-0 items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-black/70 text-white/70 backdrop-blur-[12px] ${
+            className={`absolute left-4 right-4 flex min-w-0 items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-[#111114] text-white/70 ${
               compact
                 ? "top-[60px] px-3 py-2 text-[10px]"
                 : "top-[76px] gap-3 px-4 py-3 text-sm"
             }`}
           >
-            <span className="size-2 shrink-0 rounded-full bg-[#c8102e]" />
+            <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.8" />
+              <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
             <span className="min-w-0 truncate whitespace-nowrap">
               {compact ? "Search the live map" : "Search drivers, meets or places"}
             </span>
           </div>
 
-          <div
-            className={`adaptive-backdrop absolute inset-x-3 bottom-3 border border-white/10 bg-black/82 shadow-2xl backdrop-blur-[12px] ${
-              compact ? "rounded-[1.4rem] p-3" : "rounded-[1.75rem] p-4"
-            }`}
-          >
-            <div className="flex min-w-0 items-start justify-between gap-2">
+          <div className={`absolute inset-x-3 flex flex-col ${compact ? "bottom-3 top-[104px] gap-2" : "bottom-4 top-[138px] gap-3"}`}>
+            <div className={`flex min-w-0 items-start gap-3 rounded-[1.4rem] border border-white/10 bg-[#111114] ${compact ? "p-3" : "p-4"}`}>
+              <span className={`flex shrink-0 items-center justify-center rounded-full bg-[#c8102e] text-white ${compact ? "size-8 p-2" : "size-10 p-2.5"}`}>
+                <PreviewIcon mode={mode} />
+              </span>
               <div className="min-w-0">
                 <p
                   className={`font-bold uppercase tracking-[0.18em] text-[#e32c49] ${
@@ -143,29 +144,24 @@ export function NoxaPhone({
                 >
                   {content.title}
                 </p>
-                <p
-                  className={`mt-1.5 text-white/70 ${
-                    compact ? "text-[9px] leading-4" : "text-xs leading-5"
-                  }`}
-                >
-                  {content.meta}
-                </p>
               </div>
-              <span
-                className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-white font-bold text-black ${
-                  compact ? "size-8 text-xs" : "size-9 text-sm"
-                }`}
-              >
-                →
-              </span>
             </div>
 
-            {!compact && (
-              <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-3 text-xs">
+            <div className={`rounded-[1.25rem] border border-white/10 bg-[#111114] ${compact ? "px-3 py-2.5" : "px-4 py-3"}`}>
+              <p className={`${compact ? "text-[9px] leading-4" : "text-xs leading-5"} text-white/70`}>
+                {content.meta}
+              </p>
+            </div>
+
+            <div className={`mt-auto rounded-[1.25rem] border border-white/10 bg-[#111114] ${compact ? "px-3 py-2.5" : "px-4 py-3"}`}>
+              <div className={`flex items-center justify-between gap-2 ${compact ? "text-[9px]" : "text-xs"}`}>
                 <span className="text-white/70">Live on the map</span>
-                <span className="font-semibold text-white/90">{content.action}</span>
+                <span className="flex items-center gap-1.5 font-semibold text-white/90">
+                  {content.action}
+                  <span aria-hidden="true">→</span>
+                </span>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

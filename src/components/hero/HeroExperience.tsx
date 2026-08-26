@@ -58,7 +58,6 @@ export function HeroExperience() {
   const phoneScale = useTransform(smoothProgress, [0, 0.45, 1], [0.94, 1.02, 1.08]);
   const phoneY = useTransform(smoothProgress, [0, 0.55, 1], [28, -8, -42]);
   const phoneRotateX = useTransform(smoothProgress, [0, 0.38], [4, 0]);
-  const routeOpacity = useTransform(smoothProgress, [0, 0.5, 1], [0.78, 0.35, 0]);
   const hintOpacity = useTransform(smoothProgress, [0, 0.08], [1, 0]);
   const useScrollMotion = allowScrollMotion && !shouldReduceMotion;
 
@@ -66,28 +65,6 @@ export function HeroExperience() {
     <section ref={sectionRef} id="top" className="hero-section">
       <div className="hero-stage">
         <div className="page-shell relative flex min-h-0 flex-col justify-start lg:grid lg:h-full lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,.95fr)] lg:items-center lg:gap-16 xl:gap-24">
-          <m.div
-            className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[72svh] overflow-hidden lg:top-10 lg:h-[86svh]"
-            style={useScrollMotion ? { opacity: routeOpacity } : undefined}
-            aria-hidden="true"
-          >
-            <div className="decorative-glow absolute left-1/2 top-12 h-72 w-72 -translate-x-1/2 rounded-full bg-[#c8102e]/14 blur-[48px] lg:left-[72%] lg:top-[22%] lg:h-[430px] lg:w-[430px] lg:blur-[105px]" />
-            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1180 720" fill="none">
-              <path
-                d="M-80 155C138 173 174 339 349 329C518 320 548 99 744 151C918 197 839 421 1064 458C1151 472 1219 442 1280 396"
-                stroke="rgba(255,255,255,.055)"
-                strokeWidth="28"
-                strokeLinecap="round"
-              />
-              <path
-                d="M-80 155C138 173 174 339 349 329C518 320 548 99 744 151C918 197 839 421 1064 458C1151 472 1219 442 1280 396"
-                stroke="#C8102E"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </m.div>
-
           <m.div
             className="relative z-10 max-w-2xl lg:max-w-[680px]"
             style={
@@ -139,7 +116,6 @@ export function HeroExperience() {
                 : undefined
             }
           >
-            <div className="decorative-glow pointer-events-none absolute inset-x-[-38%] bottom-[-12%] h-52 rounded-[50%] bg-[#c8102e]/16 blur-[48px] lg:h-72 lg:blur-[70px]" />
             <NoxaPhone compact className="lg:max-w-[330px] xl:max-w-[350px]" />
 
             <div className="pointer-events-none absolute -left-44 top-[18%] hidden w-44 space-y-3 xl:block">

@@ -140,9 +140,7 @@ body {
   margin: 0;
   min-width: 0;
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(200, 16, 46, 0.09), transparent 34rem),
-    var(--color-bg-primary);
+  background: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-body-size);
@@ -295,6 +293,11 @@ button:disabled {
 .hero-section {
   position: relative;
   min-height: auto;
+  background: linear-gradient(
+    to bottom,
+    #0a0a0a 65%,
+    rgba(200, 16, 46, 0.08) 100%
+  );
 }
 
 .hero-stage {

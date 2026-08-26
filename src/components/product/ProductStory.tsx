@@ -174,11 +174,7 @@ function MobileProductStory() {
         </div>
 
         <div className="product-preview-card relative isolate mx-auto mt-8 w-full max-w-[430px] overflow-hidden border bg-[#0a0a0d] px-5 pt-7">
-          <div
-            className="decorative-glow pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.24),transparent_37%)]"
-            aria-hidden="true"
-          />
-          <div className="mx-auto w-[clamp(168px,52vw,220px)] translate-y-6">
+          <div className="mx-auto w-[clamp(168px,52vw,220px)]">
             <NoxaPhone mode={activeMode as ChapterMode} />
           </div>
         </div>
@@ -266,16 +262,10 @@ function DesktopProductStory() {
           </div>
 
           <div className="product-preview-card relative isolate mx-auto flex min-h-[680px] w-full max-w-[500px] items-end justify-center overflow-hidden border bg-[#0a0a0d] px-10 pt-10">
-            <div
-              className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.29),transparent_37%)]"
-              aria-hidden="true"
-            />
             <div className="pointer-events-none absolute inset-x-8 top-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-text-secondary)]" aria-hidden="true">
               <span>NOXA live map</span>
               <span>Thessaloniki · online</span>
             </div>
-            <div className="pointer-events-none absolute left-8 top-20 h-px w-24 bg-gradient-to-r from-[#c8102e] to-transparent" aria-hidden="true" />
-
             <AnimatePresence mode="wait" initial={false}>
               <m.div
                 key={mode}
