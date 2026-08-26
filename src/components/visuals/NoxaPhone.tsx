@@ -1,44 +1,15 @@
-type NoxaPhoneMode = "discover" | "meet" | "crew" | "drive";
+"use client";
+
+import type {
+  LandingCopy,
+  NoxaPhoneMode,
+} from "@/i18n/landing-copy";
 
 type NoxaPhoneProps = {
   mode?: NoxaPhoneMode;
   className?: string;
   compact?: boolean;
-};
-
-const previewContent: Record<
-  NoxaPhoneMode,
-  {
-    label: string;
-    title: string;
-    meta: string;
-    action: string;
-  }
-> = {
-  discover: {
-    label: "Nearby",
-    title: "Night Run Thessaloniki",
-    meta: "2.4 km · 18 drivers",
-    action: "Open meet",
-  },
-  meet: {
-    label: "Car meet",
-    title: "Harbour Night Session",
-    meta: "Tonight · 21:30 · 34 joined",
-    action: "Join event",
-  },
-  crew: {
-    label: "Crew",
-    title: "Northern Drivers",
-    meta: "128 members · Thessaloniki",
-    action: "View crew",
-  },
-  drive: {
-    label: "Live drive",
-    title: "Following the coastal route",
-    meta: "18 min · 12.6 km remaining",
-    action: "Follow route",
-  },
+  copy: LandingCopy["phone"];
 };
 
 function PreviewIcon({ mode }: { mode: NoxaPhoneMode }) {
@@ -78,13 +49,14 @@ export function NoxaPhone({
   mode = "discover",
   className = "",
   compact = false,
+  copy,
 }: NoxaPhoneProps) {
-  const content = previewContent[mode];
+  const content = copy.previews[mode];
   return (
     <div
       className={`relative mx-auto w-full max-w-[304px] ${className}`}
       role="img"
-      aria-label={`NOXA mobile app preview showing ${content.title}`}
+      aria-label={`${copy.previewAriaPrefix} ${content.title}`}
     >
       <div
         className={`relative rounded-[3rem] border border-white/15 bg-[#030304] p-[7px] shadow-[0_38px_90px_rgba(0,0,0,.62)] ${
@@ -118,7 +90,7 @@ export function NoxaPhone({
               <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
             <span className="min-w-0 truncate whitespace-nowrap">
-              {compact ? "Search the live map" : "Search drivers, meets or places"}
+              {compact ? copy.searchCompact : copy.search}
             </span>
           </div>
 
@@ -136,10 +108,10 @@ export function NoxaPhone({
                   {content.label}
                 </p>
                 <p
-                  className={`mt-2 font-semibold tracking-[-0.025em] ${
+                  className={`mt-2 min-w-0 [overflow-wrap:anywhere] font-semibold tracking-[-0.025em] ${
                     compact
-                      ? "line-clamp-2 text-[13px] leading-4"
-                      : "text-[17px] leading-5"
+                      ? "line-clamp-2 text-[10px] leading-[13px]"
+                      : "text-[13px] leading-4 md:text-[17px] md:leading-5"
                   }`}
                 >
                   {content.title}
@@ -155,7 +127,7 @@ export function NoxaPhone({
 
             <div className={`mt-auto rounded-[1.25rem] border border-white/10 bg-[#111114] ${compact ? "px-3 py-2.5" : "px-4 py-3"}`}>
               <div className={`flex items-center justify-between gap-2 ${compact ? "text-[9px]" : "text-xs"}`}>
-                <span className="text-white/70">Live on the map</span>
+                <span className="text-white/70">{copy.liveOnMap}</span>
                 <span className="flex items-center gap-1.5 font-semibold text-white/90">
                   {content.action}
                   <span aria-hidden="true">→</span>

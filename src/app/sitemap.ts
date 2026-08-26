@@ -11,6 +11,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: "https://noxastreetapp.com/el",
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: "https://noxastreetapp.com/privacy",
       lastModified,
       changeFrequency: "monthly",

@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const navigationItems = [
-  ["Product", "#product"],
-  ["Community", "#community"],
-  ["For Business", "#business"],
-] as const;
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import type { LandingCopy, Locale } from "@/i18n/landing-copy";
+
+const navigationHrefs = ["#product", "#community", "#business"] as const;
 
 const focusableSelector = [
   "a[href]",
@@ -17,7 +16,18 @@ const focusableSelector = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  languageCopy: LandingCopy["language"];
+  locale: Locale;
+  navigationCopy: LandingCopy["navigation"];
+};
+
+export function SiteHeader({
+  languageCopy,
+  locale,
+  navigationCopy,
+}: SiteHeaderProps) {
+  const navigationItems = navigationCopy.items;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -31,8 +41,8 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
-    const sections = navigationItems
-      .map(([, href]) => document.querySelector<HTMLElement>(href))
+    const sections = navigationHrefs
+      .map((href) => document.querySelector<HTMLElement>(href))
       .filter((section): section is HTMLElement => Boolean(section));
 
     if (!sections.length) return;
@@ -116,14 +126,14 @@ export function SiteHeader() {
           <a
             className="inline-flex min-h-12 shrink-0 items-center rounded-md pr-2 text-sm font-bold tracking-[0.24em]"
             href="#top"
-            aria-label="NOXA home"
+            aria-label={navigationCopy.homeLabel}
           >
             NOXA
           </a>
 
           <nav
             className="ml-auto hidden items-center gap-1 min-[1025px]:flex"
-            aria-label="Primary navigation"
+            aria-label={navigationCopy.primaryLabel}
           >
             {navigationItems.map(([label, href]) => {
               const isActive = activeHref === href;
@@ -145,11 +155,19 @@ export function SiteHeader() {
             })}
           </nav>
 
+          <div className="ml-2 hidden min-[1025px]:block">
+            <LanguageSwitch
+              activeHref={activeHref}
+              copy={languageCopy}
+              locale={locale}
+            />
+          </div>
+
           <a
             className="ml-auto inline-flex min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] min-[1025px]:ml-2 min-[1025px]:px-5"
             href="#waitlist"
           >
-            Join NOXA
+            {navigationCopy.join}
             <span className="ml-2 hidden sm:inline" aria-hidden="true">
               ↗
             </span>
@@ -159,12 +177,12 @@ export function SiteHeader() {
             ref={menuButtonRef}
             type="button"
             className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] min-[1025px]:hidden"
-            aria-label="Open navigation menu"
+            aria-label={navigationCopy.openMenu}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation-sheet"
             onClick={() => setIsMenuOpen(true)}
           >
-            <span className="sr-only">Menu</span>
+            <span className="sr-only">{navigationCopy.openMenu}</span>
             <svg
               width="20"
               height="20"
@@ -202,12 +220,12 @@ export function SiteHeader() {
         >
           <div className="flex items-center justify-between gap-4">
             <h2 id="mobile-navigation-title" className="text-base font-semibold">
-              Navigation
+              {navigationCopy.menuTitle}
             </h2>
             <button
               type="button"
               className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-border-strong)] bg-white/[0.04]"
-              aria-label="Close navigation menu"
+              aria-label={navigationCopy.closeMenu}
               onClick={() => closeMenu(true)}
             >
               <svg
@@ -226,7 +244,7 @@ export function SiteHeader() {
             </button>
           </div>
 
-          <nav className="mt-4 grid gap-2" aria-label="Mobile navigation">
+          <nav className="mt-4 grid gap-2" aria-label={navigationCopy.mobileLabel}>
             {navigationItems.map(([label, href]) => {
               const isActive = activeHref === href;
 
@@ -247,6 +265,14 @@ export function SiteHeader() {
               );
             })}
           </nav>
+
+          <div className="mt-5 border-t border-white/[0.08] pt-5">
+            <LanguageSwitch
+              activeHref={activeHref}
+              copy={languageCopy}
+              locale={locale}
+            />
+          </div>
         </div>
       </div>
     </>

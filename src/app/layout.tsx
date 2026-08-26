@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   applicationName: "NOXA",
   alternates: {
     canonical: "/",
+    languages: {
+      en: "/",
+      el: "/el",
+    },
   },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
