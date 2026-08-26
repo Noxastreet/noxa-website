@@ -64,6 +64,7 @@ function MobileProductStory() {
   const [activeIndex, setActiveIndex] = useState(0);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const reduceMotion = useReducedMotion();
+  const activeMode = chapters[activeIndex][4];
 
   function selectTab(index: number, focus = false) {
     setActiveIndex(index);
@@ -140,7 +141,7 @@ function MobileProductStory() {
         </div>
 
         <div className="mt-8">
-          {chapters.map(([number, eyebrow, title, body, mode], index) => {
+          {chapters.map(([number, eyebrow, title, body], index) => {
             const isActive = index === activeIndex;
             const tabId = `product-tab-${number}`;
             const panelId = `product-panel-${number}`;
@@ -153,35 +154,33 @@ function MobileProductStory() {
                 aria-labelledby={tabId}
                 tabIndex={0}
                 hidden={!isActive}
-                className="mobile-tabpanel"
+                className="mobile-tabpanel min-w-0"
                 style={reduceMotion ? { animation: "none" } : undefined}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
-                    <span className="text-[#e32c49]">{number}</span>
-                    <span className="h-px w-8 bg-white/25" aria-hidden="true" />
-                    <span>{eyebrow}</span>
-                  </div>
-                  <h2 className="mt-4 max-w-[38rem] text-[clamp(36px,10vw,56px)] font-semibold leading-[0.94] tracking-[-0.055em] [text-wrap:balance]">
-                    {title}
-                  </h2>
-                  <p className="mt-5 max-w-[38rem] text-base leading-6 text-[var(--color-text-secondary)]">
-                    {body}
-                  </p>
+                <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
+                  <span className="text-[#e32c49]">{number}</span>
+                  <span className="h-px w-8 bg-white/25" aria-hidden="true" />
+                  <span>{eyebrow}</span>
                 </div>
-
-                <div className="product-preview-card relative isolate mx-auto mt-8 w-full max-w-[430px] overflow-hidden border bg-[#0a0a0d] px-5 pt-7">
-                  <div
-                    className="decorative-glow pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.24),transparent_37%)]"
-                    aria-hidden="true"
-                  />
-                  <div className="mx-auto w-[clamp(168px,52vw,220px)] translate-y-6">
-                    <NoxaPhone mode={mode as ChapterMode} />
-                  </div>
-                </div>
+                <h2 className="mt-4 max-w-[38rem] text-[clamp(36px,10vw,56px)] font-semibold leading-[0.94] tracking-[-0.055em] [text-wrap:balance]">
+                  {title}
+                </h2>
+                <p className="mt-5 max-w-[38rem] text-base leading-6 text-[var(--color-text-secondary)]">
+                  {body}
+                </p>
               </div>
             );
           })}
+        </div>
+
+        <div className="product-preview-card relative isolate mx-auto mt-8 w-full max-w-[430px] overflow-hidden border bg-[#0a0a0d] px-5 pt-7">
+          <div
+            className="decorative-glow pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_12%,rgba(200,16,46,.24),transparent_37%)]"
+            aria-hidden="true"
+          />
+          <div className="mx-auto w-[clamp(168px,52vw,220px)] translate-y-6">
+            <NoxaPhone mode={activeMode as ChapterMode} />
+          </div>
         </div>
       </div>
     </section>
