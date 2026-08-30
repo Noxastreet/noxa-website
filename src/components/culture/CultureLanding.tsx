@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
@@ -407,8 +409,8 @@ export function CultureLanding({ locale }: CultureLandingProps) {
           </div>
           <div>
             <strong>{copy.footer.legal}</strong>
-            <a href="/privacy">{baseCopy.legalFooter.privacy}</a>
-            <a href="/terms">{baseCopy.legalFooter.terms}</a>
+            <Link href="/privacy">{baseCopy.legalFooter.privacy}</Link>
+            <Link href="/terms">{baseCopy.legalFooter.terms}</Link>
           </div>
         </div>
         <div className={`${styles.shell} ${styles.footerBottom}`}>
