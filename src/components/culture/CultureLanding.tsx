@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
+import enhancements from "./CultureLandingEnhancements.module.css";
 import styles from "./CultureLanding.module.css";
 
 type CultureLandingProps = {
@@ -306,7 +307,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
                     id={card.id}
                     key={card.id}
                     href={card.href}
-                    className={`${styles.featureCard} ${styles[card.className]}`}
+                    className={`${styles.featureCard} ${styles[card.className]} ${enhancements.clickableCard}`}
                     aria-label={`${card.title}: ${card.body}`}
                   >
                     <div className={styles.cardShade} />
@@ -378,7 +379,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
             <a href="#top" aria-label="NOXA home">NOXA</a>
             <p>{copy.footer.tagline}</p>
             <a
-              className={styles.instagramLink}
+              className={enhancements.instagramLink}
               href="https://www.instagram.com/noxa_app/"
               target="_blank"
               rel="noreferrer"
@@ -413,7 +414,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
         <div className={`${styles.shell} ${styles.footerBottom}`}>
           <span>© 2026 NOXA.</span>
           <span>{copy.footer.built}</span>
-          <span className={styles.signature}>S. KARAKETIDIS</span>
+          <span className={enhancements.signature}>S. KARAKETIDIS</span>
         </div>
       </footer>
     </div>
