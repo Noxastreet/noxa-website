@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
+  const featurePages = ["meets", "crews", "routes"];
 
   return [
     {
@@ -16,6 +17,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    ...featurePages.flatMap((feature) => [
+      {
+        url: `https://noxastreetapp.com/${feature}`,
+        lastModified,
+        changeFrequency: "weekly" as const,
+        priority: 0.82,
+      },
+      {
+        url: `https://noxastreetapp.com/el/${feature}`,
+        lastModified,
+        changeFrequency: "weekly" as const,
+        priority: 0.78,
+      },
+    ]),
     {
       url: "https://noxastreetapp.com/privacy",
       lastModified,
