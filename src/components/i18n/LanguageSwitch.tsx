@@ -8,12 +8,16 @@ type LanguageSwitchProps = {
   activeHref: string | null;
   copy: LandingCopy["language"];
   locale: Locale;
+  destinations?: Partial<Record<Locale, string>>;
+  compact?: boolean;
 };
 
 export function LanguageSwitch({
   activeHref,
   copy,
   locale,
+  destinations,
+  compact = false,
 }: LanguageSwitchProps) {
   function preserveAttribution(
     event: MouseEvent<HTMLAnchorElement>,
@@ -25,14 +29,17 @@ export function LanguageSwitch({
 
   return (
     <div
-      className="inline-flex rounded-full border border-[var(--color-border-strong)] bg-white/[0.035] p-1"
+      className={`inline-flex rounded-full border border-[var(--color-border-strong)] bg-white/[0.035] p-1 ${
+        compact ? "gap-0" : ""
+      }`}
       role="group"
       aria-label={copy.label}
     >
       {(["en", "el"] as const).map((option: Locale) => {
         const isActive = locale === option;
         const languageName = option === "en" ? copy.english : copy.greek;
-        const destination = option === "en" ? "/" : "/el";
+        const destination =
+          destinations?.[option] ?? (option === "en" ? "/" : "/el");
 
         return (
           <a
@@ -41,10 +48,13 @@ export function LanguageSwitch({
             hrefLang={option}
             lang={option}
             aria-label={languageName}
+            title={languageName}
             aria-current={isActive ? "page" : undefined}
-            className={`inline-flex min-h-12 min-w-12 items-center justify-center rounded-full px-3 text-xs font-bold tracking-[0.12em] transition-colors duration-[180ms] ${
+            className={`inline-flex min-h-10 items-center justify-center rounded-full text-xs font-bold tracking-[0.12em] transition-[background-color,color,transform] duration-[180ms] ${
+              compact ? "min-w-10 px-2" : "min-h-12 min-w-12 px-3"
+            } ${
               isActive
-                ? "bg-white text-black"
+                ? "bg-white text-black shadow-[0_5px_20px_rgba(255,255,255,.08)]"
                 : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
             }`}
             onClick={(event) => preserveAttribution(event, destination)}
