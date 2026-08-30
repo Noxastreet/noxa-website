@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   images: {
+    qualities: [75, 76, 78, 82],
     remotePatterns: [
       {
         protocol: "https",
