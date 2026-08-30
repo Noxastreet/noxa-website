@@ -1,8 +1,11 @@
+import Link from "next/link";
+
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
+import enhancements from "./CultureLandingEnhancements.module.css";
 import styles from "./CultureLanding.module.css";
 
 type CultureLandingProps = {
@@ -12,10 +15,10 @@ type CultureLandingProps = {
 const en = {
   nav: {
     community: "Community",
-    meets: "Meets",
+    meets: "Meetups",
     crews: "Crews",
+    routes: "Routes",
     business: "Business",
-    waitlist: "Waitlist",
     join: "Join Waitlist",
   },
   hero: {
@@ -46,18 +49,21 @@ const en = {
         title: "MEETUPS",
         body: "Discover local car meets and automotive events. See what is happening around you and join the people already going.",
         className: "meetCard",
+        href: "/meets",
       },
       {
         id: "crews",
         title: "CREWS",
         body: "Build your crew. Represent your scene. Connect with people who share the same cars, roads and culture.",
         className: "crewCard",
+        href: "/crews",
       },
       {
         id: "routes",
         title: "ROUTES & DRIVES",
         body: "Turn a meetup into a drive. Plan routes, move together and make the road part of the community.",
         className: "routeCard",
+        href: "/routes",
       },
     ],
   },
@@ -85,6 +91,7 @@ const en = {
     company: "NOXA",
     legal: "Legal",
     built: "Built for the culture. Made to move.",
+    instagram: "Instagram · @noxa_app",
   },
 } as const;
 
@@ -93,8 +100,8 @@ const el = {
     community: "Κοινότητα",
     meets: "Συναντήσεις",
     crews: "Ομάδες",
+    routes: "Διαδρομές",
     business: "Επιχειρήσεις",
-    waitlist: "Early access",
     join: "Μπες στη λίστα",
   },
   hero: {
@@ -125,18 +132,21 @@ const el = {
         title: "MEETUPS",
         body: "Βρες τοπικά car meets και automotive events. Δες τι συμβαίνει γύρω σου και ποιοι ήδη συμμετέχουν.",
         className: "meetCard",
+        href: "/el/meets",
       },
       {
         id: "crews",
         title: "CREWS",
         body: "Χτίσε την ομάδα σου, εκπροσώπησε τη σκηνή σου και συνδέσου με ανθρώπους που μοιράζονται την ίδια κουλτούρα.",
         className: "crewCard",
+        href: "/el/crews",
       },
       {
         id: "routes",
         title: "ROUTES & DRIVES",
         body: "Μετέτρεψε ένα meet σε κοινή διαδρομή. Οργάνωσε routes, κινηθείτε μαζί και κάντε τον δρόμο μέρος της κοινότητας.",
         className: "routeCard",
+        href: "/el/routes",
       },
     ],
   },
@@ -164,6 +174,7 @@ const el = {
     company: "NOXA",
     legal: "Νομικά",
     built: "Built for the culture. Made to move.",
+    instagram: "Instagram · @noxa_app",
   },
 } as const;
 
@@ -202,13 +213,21 @@ function RouteIcon() {
 export function CultureLanding({ locale }: CultureLandingProps) {
   const baseCopy = landingCopy[locale];
   const copy = locale === "el" ? el : en;
-  const navigationItems = [
-    [copy.nav.community, "#community"],
-    [copy.nav.meets, "#meets"],
-    [copy.nav.crews, "#crews"],
-    [copy.nav.business, "#business"],
-    [copy.nav.waitlist, "#waitlist"],
-  ] as const;
+  const navigationItems = locale === "el"
+    ? ([
+        [copy.nav.community, "#community"],
+        [copy.nav.meets, "/el/meets"],
+        [copy.nav.crews, "/el/crews"],
+        [copy.nav.routes, "/el/routes"],
+        [copy.nav.business, "#business"],
+      ] as const)
+    : ([
+        [copy.nav.community, "#community"],
+        [copy.nav.meets, "/meets"],
+        [copy.nav.crews, "/crews"],
+        [copy.nav.routes, "/routes"],
+        [copy.nav.business, "#business"],
+      ] as const);
 
   const navigationCopy = {
     ...baseCopy.navigation,
@@ -286,10 +305,12 @@ export function CultureLanding({ locale }: CultureLandingProps) {
               {copy.features.cards.map((card, index) => {
                 const Icon = index === 0 ? CommunityIcon : index === 1 ? ShieldIcon : RouteIcon;
                 return (
-                  <article
+                  <a
                     id={card.id}
                     key={card.id}
-                    className={`${styles.featureCard} ${styles[card.className]}`}
+                    href={card.href}
+                    className={`${styles.featureCard} ${styles[card.className]} ${enhancements.clickableCard}`}
+                    aria-label={`${card.title}: ${card.body}`}
                   >
                     <div className={styles.cardShade} />
                     <div className={styles.featureContent}>
@@ -302,7 +323,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
                         →
                       </span>
                     </div>
-                  </article>
+                  </a>
                 );
               })}
             </div>
@@ -359,12 +380,21 @@ export function CultureLanding({ locale }: CultureLandingProps) {
           <div className={styles.footerBrand}>
             <a href="#top" aria-label="NOXA home">NOXA</a>
             <p>{copy.footer.tagline}</p>
+            <a
+              className={enhancements.instagramLink}
+              href="https://www.instagram.com/noxa_app/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="NOXA on Instagram @noxa_app"
+            >
+              {copy.footer.instagram} <span aria-hidden="true">↗</span>
+            </a>
           </div>
           <div>
             <strong>{copy.footer.community}</strong>
-            <a href="#meets">{copy.nav.meets}</a>
-            <a href="#crews">{copy.nav.crews}</a>
-            <a href="#routes">Routes</a>
+            <a href={locale === "el" ? "/el/meets" : "/meets"}>{copy.nav.meets}</a>
+            <a href={locale === "el" ? "/el/crews" : "/crews"}>{copy.nav.crews}</a>
+            <a href={locale === "el" ? "/el/routes" : "/routes"}>{copy.nav.routes}</a>
           </div>
           <div>
             <strong>{copy.footer.business}</strong>
@@ -379,13 +409,14 @@ export function CultureLanding({ locale }: CultureLandingProps) {
           </div>
           <div>
             <strong>{copy.footer.legal}</strong>
-            <a href="/privacy">{baseCopy.legalFooter.privacy}</a>
-            <a href="/terms">{baseCopy.legalFooter.terms}</a>
+            <Link href="/privacy">{baseCopy.legalFooter.privacy}</Link>
+            <Link href="/terms">{baseCopy.legalFooter.terms}</Link>
           </div>
         </div>
         <div className={`${styles.shell} ${styles.footerBottom}`}>
           <span>© 2026 NOXA.</span>
           <span>{copy.footer.built}</span>
+          <span className={enhancements.signature}>S. KARAKETIDIS</span>
         </div>
       </footer>
     </div>

@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Privacy at NOXA"
       title="Privacy Policy"
-      updated="31 July 2026"
+      updated="30 August 2026"
       intro={
         <p>
           This policy explains how NOXA collects and uses personal data through
@@ -80,6 +80,7 @@ export default function PrivacyPage() {
               <p>We use waitlist data to:</p>
               <ul className="list-disc space-y-2 pl-5 marker:text-[#e32c49]">
                 <li>register and manage your early-access request;</li>
+                <li>notify the NOXA team when a new early-access request is received;</li>
                 <li>send relevant launch, testing and product updates;</li>
                 <li>understand general geographic and campaign interest;</li>
                 <li>prevent spam, automated submissions and misuse;</li>
@@ -117,16 +118,25 @@ export default function PrivacyPage() {
           content: (
             <>
               <p>
-                The website is hosted by Vercel, and waitlist records are stored
-                using Supabase. These providers process information on our
-                behalf to deliver hosting, database, security and infrastructure
-                services.
+                The website is hosted by Vercel, waitlist records are stored
+                using Supabase, and transactional email delivery may be handled
+                by Resend. These providers process only the information needed
+                on our behalf to deliver hosting, database, security,
+                infrastructure and email-notification services.
               </p>
               <p>
-                Their infrastructure may involve processing outside Greece or
-                the European Economic Area. Where required, transfers are made
-                using contractual or other safeguards recognised by applicable
-                data-protection law.
+                When an early-access request is submitted, relevant waitlist
+                details such as email address, optional city, selected language
+                and campaign/referrer context may be included in a private NOXA
+                team notification email. This does not change the purpose for
+                which the information was submitted and is not used by NOXA for
+                third-party advertising.
+              </p>
+              <p>
+                Provider infrastructure may involve processing outside Greece
+                or the European Economic Area. Where required, transfers are
+                made using contractual or other safeguards recognised by
+                applicable data-protection law.
               </p>
               <p>
                 We may disclose information when required by law, court order or

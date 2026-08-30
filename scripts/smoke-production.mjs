@@ -7,6 +7,13 @@ if (!baseUrl) {
 const userAgent = "NOXA-production-smoke/1.0";
 const checks = [
   ["home", "/", "text/html"],
+  ["greek-home", "/el", "text/html"],
+  ["meetups", "/meets", "text/html"],
+  ["crews", "/crews", "text/html"],
+  ["routes", "/routes", "text/html"],
+  ["greek-meetups", "/el/meets", "text/html"],
+  ["greek-crews", "/el/crews", "text/html"],
+  ["greek-routes", "/el/routes", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
@@ -49,6 +56,44 @@ if (health.status !== "ok" || health.service !== "noxa-website") {
 const homeResponse = await fetch(new URL("/", baseUrl), {
   headers: { "User-Agent": userAgent },
 });
+const homeHtml = await homeResponse.text();
+
+for (const expectedContent of [
+  "instagram.com/noxa_app",
+  "S. KARAKETIDIS",
+  "aria-label=\"English\"",
+  "aria-label=\"Greek\"",
+  "href=\"/meets\"",
+  "href=\"/crews\"",
+  "href=\"/routes\"",
+]) {
+  if (!homeHtml.includes(expectedContent)) {
+    throw new Error(`Home page is missing expected content: ${expectedContent}`);
+  }
+}
+
+const featureContentChecks = [
+  ["meetups", "/meets", "What Meetups mean inside NOXA"],
+  ["crews", "/crews", "What Crews mean inside NOXA"],
+  ["routes", "/routes", "What Routes &amp; Drives mean inside NOXA"],
+  ["greek-meetups", "/el/meets", "Τι σημαίνουν τα Meetups μέσα στο NOXA"],
+];
+
+for (const [name, pathname, expectedContent] of featureContentChecks) {
+  const response = await fetch(new URL(pathname, baseUrl), {
+    headers: { "User-Agent": userAgent },
+  });
+  const html = await response.text();
+
+  if (!html.includes(expectedContent)) {
+    throw new Error(`${name} page is missing expected content: ${expectedContent}`);
+  }
+
+  if (!html.includes("S. KARAKETIDIS") || !html.includes("instagram.com/noxa_app")) {
+    throw new Error(`${name} page is missing founder or Instagram footer content.`);
+  }
+}
+
 const expectedHeaders = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",

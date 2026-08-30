@@ -20,12 +20,18 @@ type SiteHeaderProps = {
   languageCopy: LandingCopy["language"];
   locale: Locale;
   navigationCopy: LandingCopy["navigation"];
+  languagePaths?: Partial<Record<Locale, string>>;
+  homeHref?: string;
+  joinHref?: string;
 };
 
 export function SiteHeader({
   languageCopy,
   locale,
   navigationCopy,
+  languagePaths,
+  homeHref = "#top",
+  joinHref = "#waitlist",
 }: SiteHeaderProps) {
   const navigationItems = navigationCopy.items;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -125,7 +131,7 @@ export function SiteHeader({
         <div className="page-shell site-header-row flex items-center gap-2">
           <a
             className="inline-flex min-h-12 shrink-0 items-center rounded-md pr-2 text-sm font-bold tracking-[0.24em]"
-            href="#top"
+            href={homeHref}
             aria-label={navigationCopy.homeLabel}
           >
             NOXA
@@ -160,18 +166,29 @@ export function SiteHeader({
               activeHref={activeHref}
               copy={languageCopy}
               locale={locale}
+              destinations={languagePaths}
             />
           </div>
 
           <a
-            className="ml-auto inline-flex min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] min-[1025px]:ml-2 min-[1025px]:px-5"
-            href="#waitlist"
+            className="ml-auto hidden min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] sm:inline-flex min-[1025px]:ml-2 min-[1025px]:px-5"
+            href={joinHref}
           >
             {navigationCopy.join}
-            <span className="ml-2 hidden sm:inline" aria-hidden="true">
+            <span className="ml-2 hidden min-[1025px]:inline" aria-hidden="true">
               ↗
             </span>
           </a>
+
+          <div className="ml-auto min-[1025px]:hidden sm:ml-0">
+            <LanguageSwitch
+              activeHref={null}
+              copy={languageCopy}
+              locale={locale}
+              destinations={languagePaths}
+              compact
+            />
+          </div>
 
           <button
             ref={menuButtonRef}
@@ -266,13 +283,13 @@ export function SiteHeader({
             })}
           </nav>
 
-          <div className="mt-5 border-t border-white/[0.08] pt-5">
-            <LanguageSwitch
-              activeHref={activeHref}
-              copy={languageCopy}
-              locale={locale}
-            />
-          </div>
+          <a
+            href={joinHref}
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#c8102e] px-4 text-base font-semibold text-white"
+            onClick={handleMenuAnchorClick}
+          >
+            {navigationCopy.join}
+          </a>
         </div>
       </div>
     </>
