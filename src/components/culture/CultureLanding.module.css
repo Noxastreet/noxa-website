@@ -1,6 +1,5 @@
 .site {
   --noxa-black: #050505;
-  --noxa-panel: #0a0a0b;
   --noxa-text: #f5f5f7;
   --noxa-muted: #a1a1a6;
   --noxa-red: #c8102e;
@@ -56,7 +55,7 @@
   background-image:
     linear-gradient(90deg, rgba(3, 3, 4, 0.94) 0%, rgba(3, 3, 4, 0.72) 36%, rgba(3, 3, 4, 0.2) 68%, rgba(3, 3, 4, 0.12) 100%),
     linear-gradient(0deg, #050505 0%, rgba(5, 5, 5, 0.12) 42%, rgba(5, 5, 5, 0.18) 100%),
-    url("https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=2200");
+    url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg&w=1920&q=82");
   background-position: center;
   background-size: cover;
 }
@@ -246,7 +245,7 @@
 .culturePhoto {
   background-image:
     linear-gradient(90deg, rgba(7, 7, 8, 0.1), rgba(7, 7, 8, 0.02)),
-    url("https://images.pexels.com/photos/36421096/pexels-photo-36421096.jpeg?auto=compress&cs=tinysrgb&w=2000");
+    url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F36421096%2Fpexels-photo-36421096.jpeg&w=1920&q=82");
 }
 
 .featuresSection {
@@ -282,15 +281,15 @@
 }
 
 .meetCard {
-  background-image: url("https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=1200");
+  background-image: url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg&w=1200&q=78");
 }
 
 .crewCard {
-  background-image: url("https://images.pexels.com/photos/36421096/pexels-photo-36421096.jpeg?auto=compress&cs=tinysrgb&w=1200");
+  background-image: url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F36421096%2Fpexels-photo-36421096.jpeg&w=1200&q=78");
 }
 
 .routeCard {
-  background-image: url("https://images.pexels.com/photos/6325583/pexels-photo-6325583.jpeg?auto=compress&cs=tinysrgb&w=1200");
+  background-image: url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F6325583%2Fpexels-photo-6325583.jpeg&w=1200&q=78");
 }
 
 .cardShade {
@@ -349,7 +348,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  background-image: url("https://images.pexels.com/photos/6325583/pexels-photo-6325583.jpeg?auto=compress&cs=tinysrgb&w=2200");
+  background-image: url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F6325583%2Fpexels-photo-6325583.jpeg&w=1920&q=82");
   background-position: center;
   background-size: cover;
 }
@@ -381,14 +380,14 @@
 .businessPhoto {
   background-image:
     linear-gradient(90deg, rgba(6, 6, 7, 0.02), rgba(6, 6, 7, 0.12)),
-    url("https://images.pexels.com/photos/10559704/pexels-photo-10559704.jpeg?auto=compress&cs=tinysrgb&w=2000");
+    url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F10559704%2Fpexels-photo-10559704.jpeg&w=1920&q=82");
 }
 
 .waitlistSection {
   position: relative;
   overflow: hidden;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background-image: url("https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=2200");
+  background-image: url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg&w=1920&q=76");
   background-position: center;
   background-size: cover;
 }
@@ -474,7 +473,7 @@
   text-transform: uppercase;
 }
 
-.footerGrid a:not(.footerBrand > a) {
+.footerGrid > div:not(.footerBrand) a {
   color: var(--noxa-muted);
   font-size: 13px;
 }
@@ -551,10 +550,9 @@
 
   .hero {
     min-height: 720px;
-    align-items: flex-end;
     background-image:
       linear-gradient(180deg, rgba(3, 3, 4, 0.22) 0%, rgba(3, 3, 4, 0.45) 38%, rgba(3, 3, 4, 0.98) 84%, #050505 100%),
-      url("https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=1200");
+      url("/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg&w=1080&q=78");
     background-position: 58% center;
   }
 
