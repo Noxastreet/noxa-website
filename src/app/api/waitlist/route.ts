@@ -9,6 +9,7 @@ const MAX_FORM_TIME_MS = 24 * 60 * 60 * 1_000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1_000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const EMAIL_PATTERN = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const WAITLIST_NOTIFICATION_EMAIL = "noxastreetapp@gmail.com";
 
 const globalRateLimit = globalThis as typeof globalThis & {
   __noxaWaitlistAttempts?: Map<string, number[]>;
@@ -33,6 +34,18 @@ type WaitlistPayload = {
   referrer?: unknown;
 };
 
+type WaitlistNotification = {
+  email: string;
+  city: string | null;
+  locale: "en" | "el";
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  referrer: string | null;
+  submittedAt: string;
+};
+
 function json(
   body: Record<string, unknown>,
   status = 200,
@@ -54,6 +67,16 @@ function cleanText(value: unknown, maxLength: number): string | null {
   if (!normalized) return null;
 
   return normalized.slice(0, maxLength);
+}
+
+function escapeHtml(value: string | null): string {
+  if (!value) return "—";
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function getClientKey(request: NextRequest): string {
@@ -113,6 +136,100 @@ function consumeRateLimit(clientKey: string): {
   return { allowed: true, retryAfterSeconds: 0 };
 }
 
+async function sendWaitlistNotification(data: WaitlistNotification): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.warn(
+      "Waitlist notification email was not sent because RESEND_API_KEY is not configured.",
+    );
+    return false;
+  }
+
+  const from =
+    process.env.WAITLIST_FROM_EMAIL ?? "NOXA Waitlist <onboarding@resend.dev>";
+
+  const html = `
+    <!doctype html>
+    <html>
+      <body style="margin:0;background:#050505;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        <div style="max-width:680px;margin:0 auto;padding:40px 20px;">
+          <div style="border:1px solid #242428;border-radius:20px;overflow:hidden;background:#0b0b0d;">
+            <div style="padding:28px 30px;border-bottom:1px solid #242428;background:linear-gradient(135deg,#13070a,#0b0b0d);">
+              <div style="font-size:12px;letter-spacing:.18em;font-weight:800;color:#e32c49;">NOXA · NEW EARLY ACCESS LEAD</div>
+              <h1 style="margin:12px 0 0;font-size:28px;line-height:1.2;color:#ffffff;">Новая заявка с noxastreetapp.com</h1>
+            </div>
+            <div style="padding:30px;">
+              <table role="presentation" style="width:100%;border-collapse:collapse;font-size:15px;line-height:1.6;">
+                <tr><td style="padding:10px 0;color:#8d8d93;width:155px;vertical-align:top;">Email</td><td style="padding:10px 0;color:#ffffff;font-weight:700;">${escapeHtml(data.email)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">City</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.city)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">Language</td><td style="padding:10px 0;color:#ffffff;">${data.locale === "el" ? "Greek" : "English"}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">Submitted</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.submittedAt)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">UTM source</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.utmSource)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">UTM medium</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.utmMedium)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">UTM campaign</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.utmCampaign)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">UTM content</td><td style="padding:10px 0;color:#ffffff;">${escapeHtml(data.utmContent)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">Referrer</td><td style="padding:10px 0;color:#ffffff;word-break:break-word;">${escapeHtml(data.referrer)}</td></tr>
+                <tr><td style="padding:10px 0;color:#8d8d93;vertical-align:top;">Consent</td><td style="padding:10px 0;color:#ffffff;">Confirmed</td></tr>
+              </table>
+              <div style="margin-top:24px;padding:18px;border-radius:14px;background:#111114;border:1px solid #242428;color:#b7b7bc;font-size:13px;line-height:1.6;">
+                Заявка уже сохранена в Supabase. Это письмо — уведомление для быстрого ответа и контроля новых early-access лидов.
+              </div>
+            </div>
+            <div style="padding:18px 30px;border-top:1px solid #242428;color:#66666c;font-size:11px;letter-spacing:.08em;">
+              NOXA · AUTOMOTIVE CULTURE
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>`;
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [WAITLIST_NOTIFICATION_EMAIL],
+        reply_to: data.email,
+        subject: `NOXA · New early-access lead${data.city ? ` · ${data.city}` : ""}`,
+        html,
+        text: [
+          "NOXA · New early-access lead",
+          `Email: ${data.email}`,
+          `City: ${data.city ?? "—"}`,
+          `Language: ${data.locale}`,
+          `Submitted: ${data.submittedAt}`,
+          `UTM source: ${data.utmSource ?? "—"}`,
+          `UTM medium: ${data.utmMedium ?? "—"}`,
+          `UTM campaign: ${data.utmCampaign ?? "—"}`,
+          `UTM content: ${data.utmContent ?? "—"}`,
+          `Referrer: ${data.referrer ?? "—"}`,
+          "Consent: Confirmed",
+        ].join("\n"),
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error("Waitlist notification email failed", {
+        status: response.status,
+        body: body.slice(0, 500),
+      });
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Waitlist notification email threw an error", error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   if (!isAllowedOrigin(request)) {
     return json({ ok: false, code: "origin_not_allowed" }, 403);
@@ -131,8 +248,6 @@ export async function POST(request: NextRequest) {
     return json({ ok: false, code: "invalid_json" }, 400);
   }
 
-  // Honeypot fields should remain empty for real users. Return a neutral success
-  // response so automated submitters receive no useful feedback.
   if (cleanText(payload.website, 200)) {
     return json({ ok: true });
   }
@@ -161,6 +276,12 @@ export async function POST(request: NextRequest) {
   const city = cleanText(payload.city, 80);
   const consent = payload.consent === true;
   const locale = payload.locale === "el" ? "el" : "en";
+  const submittedAt = new Date().toISOString();
+  const utmSource = cleanText(payload.utmSource, 120);
+  const utmMedium = cleanText(payload.utmMedium, 120);
+  const utmCampaign = cleanText(payload.utmCampaign, 120);
+  const utmContent = cleanText(payload.utmContent, 120);
+  const referrer = cleanText(payload.referrer, 500);
 
   if (!EMAIL_PATTERN.test(email)) {
     return json({ ok: false, code: "invalid_email" }, 400);
@@ -195,19 +316,31 @@ export async function POST(request: NextRequest) {
       city,
       interests: [],
       consent: true,
-      consented_at: new Date().toISOString(),
+      consented_at: submittedAt,
       locale,
-      utm_source: cleanText(payload.utmSource, 120),
-      utm_medium: cleanText(payload.utmMedium, 120),
-      utm_campaign: cleanText(payload.utmCampaign, 120),
-      utm_content: cleanText(payload.utmContent, 120),
-      referrer: cleanText(payload.referrer, 500),
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      utm_content: utmContent,
+      referrer,
     }),
     cache: "no-store",
   });
 
   if (response.ok) {
-    return json({ ok: true, alreadyJoined: false }, 201);
+    const notificationSent = await sendWaitlistNotification({
+      email,
+      city,
+      locale,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmContent,
+      referrer,
+      submittedAt,
+    });
+
+    return json({ ok: true, alreadyJoined: false, notificationSent }, 201);
   }
 
   const errorText = await response.text();
