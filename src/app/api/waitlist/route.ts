@@ -10,6 +10,7 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1_000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const EMAIL_PATTERN = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 const WAITLIST_NOTIFICATION_EMAIL = "noxastreetapp@gmail.com";
+const RESEND_API_URL = "https://api.resend.com/emails";
 
 const globalRateLimit = globalThis as typeof globalThis & {
   __noxaWaitlistAttempts?: Map<string, number[]>;
@@ -19,6 +20,8 @@ const attempts =
   globalRateLimit.__noxaWaitlistAttempts ?? new Map<string, number[]>();
 
 globalRateLimit.__noxaWaitlistAttempts = attempts;
+
+type Locale = "en" | "el";
 
 type WaitlistPayload = {
   email?: unknown;
@@ -37,13 +40,22 @@ type WaitlistPayload = {
 type WaitlistNotification = {
   email: string;
   city: string | null;
-  locale: "en" | "el";
+  locale: Locale;
   utmSource: string | null;
   utmMedium: string | null;
   utmCampaign: string | null;
   utmContent: string | null;
   referrer: string | null;
   submittedAt: string;
+};
+
+type ResendMessage = {
+  from: string;
+  to: string[];
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
 };
 
 function json(
@@ -136,16 +148,54 @@ function consumeRateLimit(clientKey: string): {
   return { allowed: true, retryAfterSeconds: 0 };
 }
 
-async function sendWaitlistNotification(data: WaitlistNotification): Promise<boolean> {
+async function sendResendEmail(
+  label: string,
+  message: ResendMessage,
+): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.warn(
-      "Waitlist notification email was not sent because RESEND_API_KEY is not configured.",
-    );
+    console.warn(`${label} was not sent because RESEND_API_KEY is not configured.`);
     return false;
   }
 
+  try {
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: message.from,
+        to: message.to,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+        ...(message.replyTo ? { reply_to: message.replyTo } : {}),
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(`${label} failed`, {
+        status: response.status,
+        body: body.slice(0, 500),
+      });
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`${label} threw an error`, error);
+    return false;
+  }
+}
+
+async function sendWaitlistNotification(
+  data: WaitlistNotification,
+): Promise<boolean> {
   const from =
     process.env.WAITLIST_FROM_EMAIL ?? "NOXA Waitlist <onboarding@resend.dev>";
 
@@ -184,50 +234,140 @@ async function sendWaitlistNotification(data: WaitlistNotification): Promise<boo
       </body>
     </html>`;
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [WAITLIST_NOTIFICATION_EMAIL],
-        reply_to: data.email,
-        subject: `NOXA · New early-access lead${data.city ? ` · ${data.city}` : ""}`,
-        html,
-        text: [
-          "NOXA · New early-access lead",
-          `Email: ${data.email}`,
-          `City: ${data.city ?? "—"}`,
-          `Language: ${data.locale}`,
-          `Submitted: ${data.submittedAt}`,
-          `UTM source: ${data.utmSource ?? "—"}`,
-          `UTM medium: ${data.utmMedium ?? "—"}`,
-          `UTM campaign: ${data.utmCampaign ?? "—"}`,
-          `UTM content: ${data.utmContent ?? "—"}`,
-          `Referrer: ${data.referrer ?? "—"}`,
-          "Consent: Confirmed",
-        ].join("\n"),
-      }),
-      cache: "no-store",
-    });
+  return sendResendEmail("Waitlist notification email", {
+    from,
+    to: [WAITLIST_NOTIFICATION_EMAIL],
+    replyTo: data.email,
+    subject: `NOXA · New early-access lead${data.city ? ` · ${data.city}` : ""}`,
+    html,
+    text: [
+      "NOXA · New early-access lead",
+      `Email: ${data.email}`,
+      `City: ${data.city ?? "—"}`,
+      `Language: ${data.locale}`,
+      `Submitted: ${data.submittedAt}`,
+      `UTM source: ${data.utmSource ?? "—"}`,
+      `UTM medium: ${data.utmMedium ?? "—"}`,
+      `UTM campaign: ${data.utmCampaign ?? "—"}`,
+      `UTM content: ${data.utmContent ?? "—"}`,
+      `Referrer: ${data.referrer ?? "—"}`,
+      "Consent: Confirmed",
+    ].join("\n"),
+  });
+}
 
-    if (!response.ok) {
-      const body = await response.text();
-      console.error("Waitlist notification email failed", {
-        status: response.status,
-        body: body.slice(0, 500),
-      });
-      return false;
-    }
+async function sendWaitlistConfirmation(
+  email: string,
+  locale: Locale,
+): Promise<boolean> {
+  const from = process.env.WAITLIST_FROM_EMAIL?.trim();
 
-    return true;
-  } catch (error) {
-    console.error("Waitlist notification email threw an error", error);
+  if (!from || from.toLowerCase().includes("@resend.dev")) {
+    console.warn(
+      "Waitlist confirmation email was not sent because WAITLIST_FROM_EMAIL is not configured with a verified NOXA domain sender.",
+    );
     return false;
   }
+
+  const isGreek = locale === "el";
+  const subject = isGreek
+    ? "Καλώς ήρθες στο NOXA Early Access"
+    : "Welcome to NOXA Early Access";
+  const headline = isGreek ? "Είσαι στη λίστα." : "You're on the list.";
+  const intro = isGreek
+    ? "Λάβαμε την αίτησή σου για early access. Το NOXA χτίζεται για οδηγούς, αναβάτες, crews και την automotive κουλτούρα που τους ενώνει."
+    : "We received your early-access request. NOXA is being built for drivers, riders, crews and the automotive culture that brings them together.";
+  const nextTitle = isGreek ? "Τι ακολουθεί" : "What happens next";
+  const nextItems = isGreek
+    ? [
+        "Θα σε ενημερώσουμε όταν ανοίξει το επόμενο στάδιο του NOXA Early Access.",
+        "Ακολούθησε το @noxa_app στο Instagram για νέα, meets και updates από την κοινότητα.",
+        "Η θέση σου στη λίστα έχει αποθηκευτεί — δεν χρειάζεται να κάνεις κάτι άλλο τώρα.",
+      ]
+    : [
+        "We'll contact you when the next stage of NOXA Early Access opens.",
+        "Follow @noxa_app on Instagram for news, meets and community updates.",
+        "Your place on the list is saved — there is nothing else you need to do right now.",
+      ];
+  const instagramLabel = isGreek ? "Ακολούθησε το NOXA" : "Follow NOXA";
+  const footer = isGreek
+    ? "Έλαβες αυτό το email επειδή γράφτηκες στο NOXA Early Access μέσω του noxastreetapp.com."
+    : "You received this email because you joined NOXA Early Access through noxastreetapp.com.";
+
+  const html = `
+    <!doctype html>
+    <html>
+      <body style="margin:0;background:#050505;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        <div style="max-width:680px;margin:0 auto;padding:40px 20px;">
+          <div style="border:1px solid #242428;border-radius:24px;overflow:hidden;background:#0b0b0d;box-shadow:0 24px 70px rgba(0,0,0,.35);">
+            <div style="padding:34px 32px;border-bottom:1px solid #242428;background:linear-gradient(135deg,#18070c 0%,#0b0b0d 58%,#101014 100%);">
+              <div style="font-size:12px;letter-spacing:.2em;font-weight:800;color:#e32c49;">NOXA · EARLY ACCESS</div>
+              <h1 style="margin:14px 0 0;font-size:34px;line-height:1.08;color:#ffffff;letter-spacing:-.02em;">${headline}</h1>
+            </div>
+            <div style="padding:32px;">
+              <p style="margin:0;color:#d6d6da;font-size:17px;line-height:1.7;">${intro}</p>
+
+              <div style="margin-top:28px;border:1px solid #242428;border-radius:18px;background:#111114;padding:22px;">
+                <div style="font-size:12px;letter-spacing:.14em;font-weight:800;color:#8d8d93;">${nextTitle.toUpperCase()}</div>
+                <ol style="margin:16px 0 0;padding-left:22px;color:#f5f5f7;font-size:15px;line-height:1.75;">
+                  <li style="padding-left:5px;margin-bottom:10px;">${nextItems[0]}</li>
+                  <li style="padding-left:5px;margin-bottom:10px;">${nextItems[1]}</li>
+                  <li style="padding-left:5px;">${nextItems[2]}</li>
+                </ol>
+              </div>
+
+              <a href="https://www.instagram.com/noxa_app/" style="display:inline-block;margin-top:28px;background:#c8102e;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:14px 20px;border-radius:999px;">${instagramLabel} · @noxa_app</a>
+
+              <p style="margin:30px 0 0;color:#8d8d93;font-size:13px;line-height:1.65;">${footer}</p>
+            </div>
+            <div style="padding:18px 32px;border-top:1px solid #242428;color:#66666c;font-size:11px;letter-spacing:.1em;">
+              NOXA · AUTOMOTIVE CULTURE · S. KARAKETIDIS
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>`;
+
+  const text = isGreek
+    ? [
+        "NOXA · EARLY ACCESS",
+        "",
+        "Είσαι στη λίστα.",
+        intro,
+        "",
+        "Τι ακολουθεί:",
+        `1. ${nextItems[0]}`,
+        `2. ${nextItems[1]}`,
+        `3. ${nextItems[2]}`,
+        "",
+        "Instagram: https://www.instagram.com/noxa_app/",
+        "",
+        footer,
+      ].join("\n")
+    : [
+        "NOXA · EARLY ACCESS",
+        "",
+        "You're on the list.",
+        intro,
+        "",
+        "What happens next:",
+        `1. ${nextItems[0]}`,
+        `2. ${nextItems[1]}`,
+        `3. ${nextItems[2]}`,
+        "",
+        "Instagram: https://www.instagram.com/noxa_app/",
+        "",
+        footer,
+      ].join("\n");
+
+  return sendResendEmail("Waitlist confirmation email", {
+    from,
+    to: [email],
+    replyTo: WAITLIST_NOTIFICATION_EMAIL,
+    subject,
+    html,
+    text,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -275,7 +415,7 @@ export async function POST(request: NextRequest) {
   const email = cleanText(payload.email, 254)?.toLowerCase() ?? "";
   const city = cleanText(payload.city, 80);
   const consent = payload.consent === true;
-  const locale = payload.locale === "el" ? "el" : "en";
+  const locale: Locale = payload.locale === "el" ? "el" : "en";
   const submittedAt = new Date().toISOString();
   const utmSource = cleanText(payload.utmSource, 120);
   const utmMedium = cleanText(payload.utmMedium, 120);
@@ -303,32 +443,39 @@ export async function POST(request: NextRequest) {
     return json({ ok: false, code: "service_unavailable" }, 503);
   }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/prelaunch_waitlist`, {
-    method: "POST",
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify({
-      email,
-      city,
-      interests: [],
-      consent: true,
-      consented_at: submittedAt,
-      locale,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-      utm_content: utmContent,
-      referrer,
-    }),
-    cache: "no-store",
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${supabaseUrl}/rest/v1/prelaunch_waitlist`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        email,
+        city,
+        interests: [],
+        consent: true,
+        consented_at: submittedAt,
+        locale,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
+        utm_content: utmContent,
+        referrer,
+      }),
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("Supabase waitlist insert request failed", error);
+    return json({ ok: false, code: "service_unavailable" }, 503);
+  }
 
   if (response.ok) {
-    const notificationSent = await sendWaitlistNotification({
+    const notificationData: WaitlistNotification = {
       email,
       city,
       locale,
@@ -338,9 +485,22 @@ export async function POST(request: NextRequest) {
       utmContent,
       referrer,
       submittedAt,
-    });
+    };
 
-    return json({ ok: true, alreadyJoined: false, notificationSent }, 201);
+    const [notificationSent, confirmationSent] = await Promise.all([
+      sendWaitlistNotification(notificationData),
+      sendWaitlistConfirmation(email, locale),
+    ]);
+
+    return json(
+      {
+        ok: true,
+        alreadyJoined: false,
+        notificationSent,
+        confirmationSent,
+      },
+      201,
+    );
   }
 
   const errorText = await response.text();
