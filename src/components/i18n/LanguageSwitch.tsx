@@ -54,9 +54,17 @@ export function LanguageSwitch({
               compact ? "min-w-10 px-2" : "min-h-12 min-w-12 px-3"
             } ${
               isActive
-                ? "bg-white text-black shadow-[0_5px_20px_rgba(255,255,255,.08)]"
+                ? "bg-[#f5f5f7] text-[#050505] shadow-[0_5px_20px_rgba(255,255,255,.08)]"
                 : "text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white"
             }`}
+            style={
+              isActive
+                ? {
+                    color: "#050505",
+                    WebkitTextFillColor: "#050505",
+                  }
+                : undefined
+            }
             onClick={(event) => preserveAttribution(event, destination)}
           >
             {option.toUpperCase()}
