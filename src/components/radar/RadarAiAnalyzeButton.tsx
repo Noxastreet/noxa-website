@@ -5,6 +5,8 @@ import { useState, useSyncExternalStore } from "react";
 import styles from "./RadarAiAnalyzeButton.module.css";
 
 const SESSION_KEY = "noxa-radar-admin-session-v1";
+const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 
 type StoredSession = {
   accessToken?: string;
@@ -17,6 +19,16 @@ type AnalyzeResponse = {
   requested?: number;
   pending?: number;
   model?: string;
+  error?: string;
+};
+
+type CollectorResponse = {
+  ok?: boolean;
+  status?: string;
+  sourcesChecked?: number;
+  candidatesCreated?: number;
+  duplicatesSkipped?: number;
+  errorCount?: number;
   error?: string;
 };
 
@@ -53,19 +65,62 @@ export function RadarAiAnalyzeButton() {
     getClientSessionSnapshot,
     getServerSessionSnapshot,
   );
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<"collector" | "ai" | null>(null);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  async function analyze() {
+  function requireAccessToken() {
     const accessToken = readAccessToken();
     if (!accessToken) {
       setIsError(true);
       setMessage("Admin session expired. Sign in again.");
-      return;
+      return null;
     }
+    return accessToken;
+  }
 
-    setBusy(true);
+  async function runCollector() {
+    const accessToken = requireAccessToken();
+    if (!accessToken) return;
+
+    setBusyAction("collector");
+    setIsError(false);
+    setMessage("Checking active Radar sources…");
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/radar-collector`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mode: "manual" }),
+      });
+      const payload = await response.json().catch(() => ({})) as CollectorResponse;
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? `Collector failed (${response.status}).`);
+      }
+
+      const sources = payload.sourcesChecked ?? 0;
+      const created = payload.candidatesCreated ?? 0;
+      const duplicates = payload.duplicatesSkipped ?? 0;
+      setMessage(`Checked ${sources} source${sources === 1 ? "" : "s"} · ${created} new · ${duplicates} duplicate${duplicates === 1 ? "" : "s"}. Refreshing…`);
+      window.setTimeout(() => window.location.reload(), 1100);
+    } catch (error) {
+      setIsError(true);
+      setMessage(error instanceof Error ? error.message : "Collector failed.");
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function analyze() {
+    const accessToken = requireAccessToken();
+    if (!accessToken) return;
+
+    setBusyAction("ai");
     setIsError(false);
     setMessage("Analyzing the next batch…");
 
@@ -94,7 +149,7 @@ export function RadarAiAnalyzeButton() {
       setIsError(true);
       setMessage(error instanceof Error ? error.message : "AI analysis failed.");
     } finally {
-      setBusy(false);
+      setBusyAction(null);
     }
   }
 
@@ -107,10 +162,16 @@ export function RadarAiAnalyzeButton() {
           {message}
         </div>
       ) : null}
-      <button disabled={busy} onClick={() => void analyze()} type="button">
-        <span aria-hidden="true">✦</span>
-        {busy ? "AI analyzing…" : "AI analyze"}
-      </button>
+      <div className={styles.actions}>
+        <button disabled={busyAction !== null} onClick={() => void runCollector()} type="button">
+          <span aria-hidden="true">↻</span>
+          {busyAction === "collector" ? "Scanning…" : "Run collector"}
+        </button>
+        <button className={styles.aiButton} disabled={busyAction !== null} onClick={() => void analyze()} type="button">
+          <span aria-hidden="true">✦</span>
+          {busyAction === "ai" ? "AI analyzing…" : "AI analyze"}
+        </button>
+      </div>
     </div>
   );
 }
