@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { radarEvents, type RadarEvent } from "./radarEvents";
+import type { RadarEvent } from "./radarEvents";
 import styles from "./RadarCountryGate.module.css";
 
 const COUNTRY_CODES = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
@@ -57,7 +57,7 @@ function EventCard({ event }: { event: RadarEvent }) {
       <dl className={styles.eventDetails}>
         <div>
           <dt>Where</dt>
-          <dd>{event.location} · {event.city}</dd>
+          <dd>{event.location}{event.city ? ` · ${event.city}` : ""}</dd>
         </div>
         <div>
           <dt>When</dt>
@@ -80,9 +80,10 @@ function EventCard({ event }: { event: RadarEvent }) {
 
 type RadarCountryGateProps = {
   detectedCountryCode: string;
+  events: RadarEvent[];
 };
 
-export function RadarCountryGate({ detectedCountryCode }: RadarCountryGateProps) {
+export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGateProps) {
   const detectedCode = normalizeCountryCode(detectedCountryCode);
   const [selectedCode, setSelectedCode] = useState(detectedCode);
   const [gateOpen, setGateOpen] = useState(true);
@@ -91,8 +92,8 @@ export function RadarCountryGate({ detectedCountryCode }: RadarCountryGateProps)
 
   const selectedName = useMemo(() => countryName(selectedCode), [selectedCode]);
   const selectedEvents = useMemo(
-    () => radarEvents.filter((event) => event.countryCode === selectedCode),
-    [selectedCode],
+    () => events.filter((event) => event.countryCode === selectedCode),
+    [events, selectedCode],
   );
   const filteredCountries = useMemo(() => {
     const query = search.trim().toLowerCase();
