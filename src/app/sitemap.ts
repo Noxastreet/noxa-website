@@ -17,6 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    {
+      url: "https://noxastreetapp.com/radar",
+      lastModified,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
     ...featurePages.flatMap((feature) => [
       {
         url: `https://noxastreetapp.com/${feature}`,
