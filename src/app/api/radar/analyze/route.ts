@@ -5,8 +5,7 @@ export const dynamic = "force-dynamic";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
-const AI_GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
-const AI_MODEL = process.env.RADAR_AI_MODEL ?? "openai/gpt-5.4";
+const GEMINI_MODEL = process.env.RADAR_AI_MODEL ?? "gemini-2.5-flash-lite";
 const MAX_BATCH = 16;
 
 const EVENT_TYPES = [
@@ -153,28 +152,43 @@ function sanitizeResult(value: unknown, candidateIds: Set<string>): AnalysisResu
   };
 }
 
-function gatewayCredential(request: NextRequest) {
-  const apiKey = process.env.AI_GATEWAY_API_KEY?.trim();
-  if (apiKey) return { token: apiKey, source: "api_key" as const };
-
-  // Vercel injects the OIDC token into the Node.js Function request context.
-  // Reading the request-scoped value avoids depending only on a static env snapshot.
-  const requestOidcToken = request.headers.get("x-vercel-oidc-token")?.trim();
-  if (requestOidcToken) return { token: requestOidcToken, source: "request_oidc" as const };
-
-  const environmentOidcToken = process.env.VERCEL_OIDC_TOKEN?.trim();
-  if (environmentOidcToken) return { token: environmentOidcToken, source: "environment_oidc" as const };
-
-  return null;
+function responseSchema() {
+  return {
+    type: "object",
+    properties: {
+      results: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            candidate_id: { type: "string" },
+            is_event: { type: "boolean" },
+            title: { type: "string" },
+            event_type: { type: "string", enum: [...EVENT_TYPES] },
+            summary: { type: "string" },
+            confidence: { type: "number", minimum: 0, maximum: 1 },
+            reason: { type: "string" },
+          },
+          required: [
+            "candidate_id",
+            "is_event",
+            "title",
+            "event_type",
+            "summary",
+            "confidence",
+            "reason",
+          ],
+        },
+      },
+    },
+    required: ["results"],
+  };
 }
 
-async function analyzeWithGateway(request: NextRequest, candidates: Candidate[]) {
-  const credential = gatewayCredential(request);
-
-  if (!credential) {
-    throw new Error(
-      "Vercel AI Gateway authentication is unavailable: no API key or request-scoped OIDC token was provided to this Function.",
-    );
+async function analyzeWithGemini(candidates: Candidate[]) {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("Gemini API is not configured. Add GEMINI_API_KEY to Vercel and redeploy.");
   }
 
   const compactCandidates = candidates.map((candidate) => ({
@@ -194,7 +208,7 @@ async function analyzeWithGateway(request: NextRequest, candidates: Candidate[])
     raw_payload: candidate.raw_payload,
   }));
 
-  const system = [
+  const systemInstruction = [
     "You are the NOXA Radar event analyst for automotive and motorcycle culture.",
     "Analyze only the evidence supplied for each candidate. Never invent a date, place, organizer, or event claim.",
     "Your job is classification and editorial normalization, not publication.",
@@ -202,54 +216,78 @@ async function analyzeWithGateway(request: NextRequest, candidates: Candidate[])
     "Keep titles factual and concise. Preserve proper names. Normalize excessive uppercase when appropriate.",
     `event_type must be one of: ${EVENT_TYPES.join(", ")}.`,
     "confidence is from 0 to 1 and reflects confidence that the candidate is a real relevant public automotive/moto event and the normalization is supported by evidence.",
-    "Return JSON only, with shape: {\"results\":[{\"candidate_id\":string,\"is_event\":boolean,\"title\":string,\"event_type\":string,\"summary\":string|null,\"confidence\":number,\"reason\":string}]}.",
+    "For summary, return an empty string when the supplied evidence is insufficient for a factual summary.",
   ].join(" ");
 
-  const response = await fetch(AI_GATEWAY_URL, {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${credential.token}`,
       "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: JSON.stringify({ candidates: compactCandidates }) },
+      systemInstruction: {
+        parts: [{ text: systemInstruction }],
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: JSON.stringify({ candidates: compactCandidates }) }],
+        },
       ],
-      stream: false,
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json",
+        responseSchema: responseSchema(),
+      },
     }),
     cache: "no-store",
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`AI Gateway returned ${response.status}${body ? `: ${body.slice(0, 240)}` : ""}`);
+    if (response.status === 429) {
+      throw new Error("Gemini Free Tier rate limit reached. Try AI analyze again later.");
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Gemini API key is invalid or does not have access to the Gemini API.");
+    }
+    if (response.status === 404) {
+      throw new Error(`Gemini model ${GEMINI_MODEL} is not available for this API key.`);
+    }
+    throw new Error(`Gemini API request failed (${response.status}).`);
   }
 
   const payload = await response.json() as {
-    choices?: Array<{ message?: { content?: string | null } }>;
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
   };
-  const content = payload.choices?.[0]?.message?.content;
-  if (!content) throw new Error("AI Gateway returned an empty analysis.");
+
+  const content = payload.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text ?? "")
+    .join("")
+    .trim();
+
+  if (!content) throw new Error("Gemini returned an empty analysis.");
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(content);
   } catch {
-    throw new Error("AI Gateway returned invalid JSON.");
+    throw new Error("Gemini returned invalid JSON.");
   }
 
   const rows = parsed && typeof parsed === "object" && Array.isArray((parsed as { results?: unknown[] }).results)
     ? (parsed as { results: unknown[] }).results
     : [];
   const candidateIds = new Set(candidates.map((candidate) => candidate.id));
-  return {
-    results: rows
-      .map((row) => sanitizeResult(row, candidateIds))
-      .filter((row): row is AnalysisResult => row !== null),
-    credentialSource: credential.source,
-  };
+
+  return rows
+    .map((row) => sanitizeResult(row, candidateIds))
+    .filter((row): row is AnalysisResult => row !== null);
 }
 
 async function updateCandidate(accessToken: string, result: AnalysisResult) {
@@ -269,7 +307,7 @@ async function updateCandidate(accessToken: string, result: AnalysisResult) {
         ai_confidence: result.confidence,
         ai_reason: reason,
         ai_analyzed_at: new Date().toISOString(),
-        ai_model: AI_MODEL,
+        ai_model: GEMINI_MODEL,
         status: "new",
         updated_at: new Date().toISOString(),
       }),
@@ -292,22 +330,22 @@ export async function POST(request: NextRequest) {
   try {
     const candidates = await loadPendingCandidates(accessToken);
     if (candidates.length === 0) {
-      return NextResponse.json({ ok: true, analyzed: 0, pending: 0, model: AI_MODEL });
+      return NextResponse.json({ ok: true, analyzed: 0, pending: 0, model: GEMINI_MODEL });
     }
 
-    const analysis = await analyzeWithGateway(request, candidates);
-    if (analysis.results.length === 0) {
-      throw new Error("AI analysis did not return any valid candidate results.");
+    const results = await analyzeWithGemini(candidates);
+    if (results.length === 0) {
+      throw new Error("Gemini analysis did not return any valid candidate results.");
     }
 
-    await Promise.all(analysis.results.map((result) => updateCandidate(accessToken, result)));
+    await Promise.all(results.map((result) => updateCandidate(accessToken, result)));
 
     return NextResponse.json({
       ok: true,
-      analyzed: analysis.results.length,
+      analyzed: results.length,
       requested: candidates.length,
-      model: AI_MODEL,
-      authentication: analysis.credentialSource,
+      model: GEMINI_MODEL,
+      provider: "google-gemini",
     });
   } catch (error) {
     console.error("Radar AI analysis failed", error);
