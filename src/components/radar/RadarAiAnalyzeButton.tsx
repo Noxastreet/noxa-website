@@ -62,12 +62,16 @@ function getServerSessionSnapshot() {
 function friendlyAnalyzeError(message: string | undefined, status: number) {
   const value = message ?? "";
 
-  if (/valid credit card|add-credit-card|unlock your free credits/i.test(value)) {
-    return "AI Gateway needs a billing method in Vercel. Add a valid card in Vercel → AI Gateway, then try again.";
+  if (/not configured|GEMINI_API_KEY/i.test(value)) {
+    return "Gemini AI is not configured yet. Add the server-side Gemini API key, then redeploy.";
   }
 
-  if (/authentication is not available|authentication is unavailable|OIDC token/i.test(value)) {
-    return "AI Gateway authentication is unavailable in this deployment.";
+  if (/rate limit/i.test(value)) {
+    return "Gemini Free Tier limit reached. Try AI analyze again later.";
+  }
+
+  if (/invalid|does not have access/i.test(value)) {
+    return "Gemini API key is invalid or does not have access to Gemini.";
   }
 
   if (value && value.length <= 220) return value;
@@ -137,7 +141,7 @@ export function RadarAiAnalyzeButton() {
 
     setBusyAction("ai");
     setIsError(false);
-    setMessage("Analyzing the next batch…");
+    setMessage("Analyzing the next batch with Gemini…");
 
     try {
       const response = await fetch("/api/radar/analyze", {
@@ -158,7 +162,7 @@ export function RadarAiAnalyzeButton() {
         return;
       }
 
-      setMessage(`AI analyzed ${payload.analyzed} candidate${payload.analyzed === 1 ? "" : "s"}. Refreshing…`);
+      setMessage(`Gemini analyzed ${payload.analyzed} candidate${payload.analyzed === 1 ? "" : "s"}. Refreshing…`);
       window.setTimeout(() => window.location.reload(), 900);
     } catch (error) {
       setIsError(true);
