@@ -510,7 +510,14 @@ export async function POST(request: NextRequest) {
     errorText.toLowerCase().includes("duplicate");
 
   if (isDuplicate) {
-    return json({ ok: true, alreadyJoined: true });
+    const confirmationSent = await sendWaitlistConfirmation(email, locale);
+
+    return json({
+      ok: true,
+      alreadyJoined: true,
+      notificationSent: false,
+      confirmationSent,
+    });
   }
 
   console.error("Supabase waitlist insert failed", {
