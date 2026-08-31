@@ -153,13 +153,28 @@ function sanitizeResult(value: unknown, candidateIds: Set<string>): AnalysisResu
   };
 }
 
-async function analyzeWithGateway(candidates: Candidate[]) {
-  const oidcToken = process.env.VERCEL_OIDC_TOKEN;
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
-  const gatewayToken = apiKey || oidcToken;
+function gatewayCredential(request: NextRequest) {
+  const apiKey = process.env.AI_GATEWAY_API_KEY?.trim();
+  if (apiKey) return { token: apiKey, source: "api_key" as const };
 
-  if (!gatewayToken) {
-    throw new Error("Vercel AI Gateway authentication is not available in this deployment.");
+  // Vercel injects the OIDC token into the Node.js Function request context.
+  // Reading the request-scoped value avoids depending only on a static env snapshot.
+  const requestOidcToken = request.headers.get("x-vercel-oidc-token")?.trim();
+  if (requestOidcToken) return { token: requestOidcToken, source: "request_oidc" as const };
+
+  const environmentOidcToken = process.env.VERCEL_OIDC_TOKEN?.trim();
+  if (environmentOidcToken) return { token: environmentOidcToken, source: "environment_oidc" as const };
+
+  return null;
+}
+
+async function analyzeWithGateway(request: NextRequest, candidates: Candidate[]) {
+  const credential = gatewayCredential(request);
+
+  if (!credential) {
+    throw new Error(
+      "Vercel AI Gateway authentication is unavailable: no API key or request-scoped OIDC token was provided to this Function.",
+    );
   }
 
   const compactCandidates = candidates.map((candidate) => ({
@@ -193,7 +208,7 @@ async function analyzeWithGateway(candidates: Candidate[]) {
   const response = await fetch(AI_GATEWAY_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${gatewayToken}`,
+      Authorization: `Bearer ${credential.token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -229,9 +244,12 @@ async function analyzeWithGateway(candidates: Candidate[]) {
     ? (parsed as { results: unknown[] }).results
     : [];
   const candidateIds = new Set(candidates.map((candidate) => candidate.id));
-  return rows
-    .map((row) => sanitizeResult(row, candidateIds))
-    .filter((row): row is AnalysisResult => row !== null);
+  return {
+    results: rows
+      .map((row) => sanitizeResult(row, candidateIds))
+      .filter((row): row is AnalysisResult => row !== null),
+    credentialSource: credential.source,
+  };
 }
 
 async function updateCandidate(accessToken: string, result: AnalysisResult) {
@@ -277,18 +295,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, analyzed: 0, pending: 0, model: AI_MODEL });
     }
 
-    const results = await analyzeWithGateway(candidates);
-    if (results.length === 0) {
+    const analysis = await analyzeWithGateway(request, candidates);
+    if (analysis.results.length === 0) {
       throw new Error("AI analysis did not return any valid candidate results.");
     }
 
-    await Promise.all(results.map((result) => updateCandidate(accessToken, result)));
+    await Promise.all(analysis.results.map((result) => updateCandidate(accessToken, result)));
 
     return NextResponse.json({
       ok: true,
-      analyzed: results.length,
+      analyzed: analysis.results.length,
       requested: candidates.length,
       model: AI_MODEL,
+      authentication: analysis.credentialSource,
     });
   } catch (error) {
     console.error("Radar AI analysis failed", error);
