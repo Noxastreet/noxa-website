@@ -59,6 +59,21 @@ function getServerSessionSnapshot() {
   return false;
 }
 
+function friendlyAnalyzeError(message: string | undefined, status: number) {
+  const value = message ?? "";
+
+  if (/valid credit card|add-credit-card|unlock your free credits/i.test(value)) {
+    return "AI Gateway needs a billing method in Vercel. Add a valid card in Vercel → AI Gateway, then try again.";
+  }
+
+  if (/authentication is not available|authentication is unavailable|OIDC token/i.test(value)) {
+    return "AI Gateway authentication is unavailable in this deployment.";
+  }
+
+  if (value && value.length <= 220) return value;
+  return `AI analysis failed (${status}).`;
+}
+
 export function RadarAiAnalyzeButton() {
   const visible = useSyncExternalStore(
     subscribeToSession,
@@ -135,7 +150,7 @@ export function RadarAiAnalyzeButton() {
       const payload = await response.json().catch(() => ({})) as AnalyzeResponse;
 
       if (!response.ok) {
-        throw new Error(payload.error ?? `AI analysis failed (${response.status}).`);
+        throw new Error(friendlyAnalyzeError(payload.error, response.status));
       }
 
       if ((payload.analyzed ?? 0) === 0) {
