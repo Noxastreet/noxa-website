@@ -235,6 +235,10 @@ async function analyzeWithGateway(candidates: Candidate[]) {
 }
 
 async function updateCandidate(accessToken: string, result: AnalysisResult) {
+  const reason = result.is_event
+    ? result.reason
+    : `AI flagged this candidate as potentially not relevant. ${result.reason}`;
+
   const response = await fetch(
     `${SUPABASE_URL}/rest/v1/radar_candidates?id=eq.${encodeURIComponent(result.candidate_id)}`,
     {
@@ -245,10 +249,10 @@ async function updateCandidate(accessToken: string, result: AnalysisResult) {
         event_type: result.event_type,
         summary: result.summary,
         ai_confidence: result.confidence,
-        ai_reason: result.reason,
+        ai_reason: reason,
         ai_analyzed_at: new Date().toISOString(),
         ai_model: AI_MODEL,
-        status: result.is_event && result.confidence >= 0.65 ? "new" : "needs_review",
+        status: "new",
         updated_at: new Date().toISOString(),
       }),
     },
