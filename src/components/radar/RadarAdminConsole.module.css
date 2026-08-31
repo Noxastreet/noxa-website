@@ -5,6 +5,10 @@
   color: #f5f5f7;
 }
 
+.consolePage {
+  overflow-x: clip;
+}
+
 .authPage {
   display: grid;
   place-items: center;
@@ -176,6 +180,7 @@
 
 .consoleHeader > div:first-child {
   display: grid;
+  min-width: 0;
   gap: 2px;
 }
 
@@ -192,6 +197,7 @@
 
 .headerActions {
   display: flex;
+  flex: 0 0 auto;
   gap: 7px;
 }
 
@@ -216,9 +222,11 @@
 
 .consoleShell {
   display: block;
+  min-width: 0;
 }
 
 .sidebar {
+  min-width: 0;
   border-bottom: 1px solid rgba(255,255,255,.08);
   background: #090a0b;
   padding: 13px 14px;
@@ -230,8 +238,10 @@
 
 .sidebar nav {
   display: flex;
+  max-width: 100%;
   gap: 7px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   scrollbar-width: none;
 }
 
@@ -270,6 +280,8 @@
 }
 
 .content {
+  min-width: 0;
+  overflow-x: hidden;
   padding: 24px 16px calc(60px + env(safe-area-inset-bottom));
 }
 
@@ -283,16 +295,20 @@
 
 .sectionHeading {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
 }
 
 .sectionHeading h1 {
+  min-width: 0;
   margin: 7px 0 0;
   font-size: 34px;
   letter-spacing: -.05em;
   line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .liveBadge,
@@ -318,6 +334,7 @@
 }
 
 .metricGrid article {
+  min-width: 0;
   min-height: 130px;
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 17px;
@@ -350,6 +367,7 @@
 
 .splitGrid {
   display: grid;
+  min-width: 0;
   gap: 12px;
   margin-top: 12px;
 }
@@ -358,6 +376,7 @@
 .candidateCard,
 .emptyPanel,
 .sourceForm {
+  min-width: 0;
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 18px;
   background: #0b0c0e;
@@ -367,18 +386,22 @@
 
 .panelTitle {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
 .panelTitle h2 {
+  min-width: 0;
   margin: 0;
   font-size: 17px;
   letter-spacing: -.025em;
 }
 
 .panelTitle button {
+  flex: 0 0 auto;
   border: 0;
   background: transparent;
   color: #9d9fa5;
@@ -387,10 +410,11 @@
 }
 
 .compactRow {
-  display: flex;
+  display: grid;
+  min-width: 0;
   min-height: 64px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   border-top: 1px solid rgba(255,255,255,.06);
 }
@@ -399,9 +423,21 @@
 .compactRow > div { min-width: 0; }
 .compactRow strong,
 .compactRow span { display: block; }
-.compactRow strong { overflow: hidden; color: #e7e7e9; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.compactRow strong {
+  color: #e7e7e9;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 .compactRow span { margin-top: 4px; color: #72747a; font-size: 10px; }
-.compactRow > b { flex: 0 0 auto; color: #dadadd; font-size: 10px; }
+.compactRow > b {
+  min-width: 36px;
+  justify-self: end;
+  color: #dadadd;
+  font-size: 10px;
+  text-align: right;
+}
 
 .okText { color: #71cf98 !important; }
 .dangerText { color: #ff7187 !important; }
@@ -411,6 +447,7 @@
 .tableList,
 .activityList {
   display: grid;
+  min-width: 0;
   gap: 10px;
   margin-top: 22px;
 }
@@ -431,8 +468,10 @@
 
 .candidateTopline {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   color: #797b82;
   font-size: 9px;
   font-weight: 800;
@@ -442,23 +481,27 @@
 .candidateTopline strong { color: #e55a71; }
 
 .candidateCard h2 {
-  max-width: 20ch;
+  max-width: none;
   margin: 14px 0 0;
-  font-size: 26px;
+  font-size: clamp(22px, 7vw, 26px);
   letter-spacing: -.045em;
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .candidateMeta {
   display: grid;
+  min-width: 0;
   gap: 7px;
   margin-top: 15px;
   color: #9b9ca1;
   font-size: 11px;
+  overflow-wrap: anywhere;
 }
 
 .candidateActions {
   display: grid;
+  min-width: 0;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 18px;
@@ -467,12 +510,14 @@
 .candidateActions a,
 .candidateActions button {
   display: inline-flex;
+  min-width: 0;
   min-height: 44px;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 11px;
   background: #111214;
+  padding-inline: 10px;
   color: #e6e6e8;
   font-size: 11px;
   font-weight: 750;
@@ -495,6 +540,7 @@
 
 .tableList article {
   display: grid;
+  min-width: 0;
   gap: 13px;
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 15px;
@@ -509,14 +555,19 @@
   gap: 11px;
 }
 
-.tablePrimary > span { font-size: 24px; }
+.tablePrimary > span { flex: 0 0 auto; font-size: 24px; }
 .tablePrimary > div { min-width: 0; }
 .tablePrimary strong,
 .tablePrimary small { display: block; }
-.tablePrimary strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.tablePrimary strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .tablePrimary small { margin-top: 4px; color: #74767c; font-size: 9px; text-transform: uppercase; }
 .tableList time { color: #b7b8bd; font-size: 11px; }
-.tableList a { color: #a9abb1; font-size: 10px; text-decoration: none; }
+.tableList a { color: #a9abb1; font-size: 10px; overflow-wrap: anywhere; text-decoration: none; }
 .tableList > article > button {
   min-height: 40px;
   border: 1px solid rgba(255,255,255,.09);
@@ -527,9 +578,9 @@
   font-weight: 750;
 }
 
-.sourceStatus { display: grid; gap: 4px; }
+.sourceStatus { display: grid; min-width: 0; gap: 4px; }
 .sourceStatus b { font-size: 9px; letter-spacing: .08em; }
-.sourceStatus small { color: #686a70; font-size: 9px; }
+.sourceStatus small { color: #686a70; font-size: 9px; overflow-wrap: anywhere; }
 
 .sourceForm {
   display: grid;
@@ -542,7 +593,8 @@
 
 .activityList article {
   display: grid;
-  grid-template-columns: 12px 1fr;
+  min-width: 0;
+  grid-template-columns: 12px minmax(0, 1fr);
   gap: 12px;
   border-bottom: 1px solid rgba(255,255,255,.07);
   padding: 14px 2px 17px;
@@ -558,8 +610,8 @@
 }
 
 .activityError { background: #e32c49; }
-.activityList strong { font-size: 11px; }
-.activityList p { margin: 5px 0 0; color: #85878d; font-size: 10px; line-height: 1.45; }
+.activityList strong { font-size: 11px; overflow-wrap: anywhere; }
+.activityList p { margin: 5px 0 0; color: #85878d; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
 .activityList small { display: block; margin-top: 5px; color: #66686e; font-size: 9px; }
 
 @media (min-width: 760px) {
