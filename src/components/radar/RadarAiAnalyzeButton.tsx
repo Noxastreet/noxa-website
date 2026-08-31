@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import styles from "./RadarAiAnalyzeButton.module.css";
 
@@ -33,15 +33,29 @@ function readAccessToken() {
   }
 }
 
+function subscribeToSession(callback: () => void) {
+  const handler = () => callback();
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
+}
+
+function getClientSessionSnapshot() {
+  return Boolean(readAccessToken());
+}
+
+function getServerSessionSnapshot() {
+  return false;
+}
+
 export function RadarAiAnalyzeButton() {
-  const [visible, setVisible] = useState(false);
+  const visible = useSyncExternalStore(
+    subscribeToSession,
+    getClientSessionSnapshot,
+    getServerSessionSnapshot,
+  );
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
-
-  useEffect(() => {
-    setVisible(Boolean(readAccessToken()));
-  }, []);
 
   async function analyze() {
     const accessToken = readAccessToken();
