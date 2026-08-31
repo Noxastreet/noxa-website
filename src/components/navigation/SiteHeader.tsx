@@ -209,10 +209,9 @@ export function SiteHeader({
             target="_blank"
             rel="noreferrer"
             aria-label="Open NOXA Instagram @noxa_app"
-            className="inline-flex min-h-12 shrink-0 items-center gap-1.5 rounded-full border border-[#c8102e]/70 bg-[#c8102e]/10 px-3 text-xs font-bold tracking-[0.08em] text-white transition-colors duration-[180ms] active:bg-[#c8102e]/20 min-[1025px]:hidden"
+            className="inline-flex size-12 shrink-0 items-center justify-center text-[#e32c49] transition-transform duration-[180ms] active:scale-95 min-[1025px]:hidden"
           >
-            <InstagramIcon className="size-[18px] shrink-0 text-[#e32c49]" />
-            <span>IG</span>
+            <InstagramIcon className="size-6 shrink-0" />
           </a>
 
           <button
