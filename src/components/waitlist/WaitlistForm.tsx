@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 
+import { InstagramIcon } from "@/components/social/InstagramIcon";
 import type { LandingCopy, Locale } from "@/i18n/landing-copy";
 
 type SubmissionState =
@@ -26,6 +27,8 @@ type WaitlistFormProps = {
   copy: LandingCopy["waitlist"];
   locale: Locale;
 };
+
+const INSTAGRAM_HREF = "https://www.instagram.com/noxa_app/";
 
 export function WaitlistForm({ copy: formCopy, locale }: WaitlistFormProps) {
   const startedAt = useRef(0);
@@ -161,6 +164,10 @@ export function WaitlistForm({ copy: formCopy, locale }: WaitlistFormProps) {
   const message = messageCode
     ? (messages[messageCode] ?? formCopy.errors.submission_failed)
     : "";
+  const instagramLabel =
+    locale === "el"
+      ? "Ακολούθησε το @noxa_app στο Instagram"
+      : "Follow @noxa_app on Instagram";
 
   return (
     <form className="mt-9 max-w-2xl" onSubmit={handleSubmit} noValidate>
@@ -286,6 +293,18 @@ export function WaitlistForm({ copy: formCopy, locale }: WaitlistFormProps) {
           {message}
         </p>
       </div>
+
+      <a
+        href={INSTAGRAM_HREF}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Open NOXA Instagram @noxa_app"
+        className="mt-5 inline-flex min-h-12 items-center gap-3 rounded-full border border-[#c8102e]/80 bg-[#c8102e]/10 px-5 text-sm font-semibold text-white transition-colors duration-[180ms] hover:border-[#e32c49] hover:bg-[#c8102e]/20"
+      >
+        <InstagramIcon className="size-5 shrink-0 text-[#e32c49]" />
+        <span>{instagramLabel}</span>
+        <span className="text-white/70" aria-hidden="true">↗</span>
+      </a>
     </form>
   );
 }
