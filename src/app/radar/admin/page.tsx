@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { RadarAdminConsole } from "@/components/radar/RadarAdminConsole";
+import { RadarAiAnalyzeButton } from "@/components/radar/RadarAiAnalyzeButton";
 
 export const metadata: Metadata = {
   title: "NOXA Radar Admin",
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function RadarAdminPage() {
-  return <RadarAdminConsole />;
+  return (
+    <>
+      <RadarAdminConsole />
+      <RadarAiAnalyzeButton />
+    </>
+  );
 }
