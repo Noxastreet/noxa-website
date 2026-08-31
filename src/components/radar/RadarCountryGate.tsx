@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { radarEvents, type RadarEvent } from "./radarEvents";
 import styles from "./RadarCountryGate.module.css";
 
 const COUNTRY_CODES = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
@@ -42,6 +43,41 @@ function NoxaMark() {
   );
 }
 
+function EventCard({ event }: { event: RadarEvent }) {
+  return (
+    <article className={styles.eventCard}>
+      <div className={styles.eventTopline}>
+        <span className={styles.eventDate}>{event.dateLabel}</span>
+        <span className={styles.eventCategory}>{event.category}</span>
+      </div>
+
+      <h3>{event.title}</h3>
+      <p className={styles.eventDescription}>{event.description}</p>
+
+      <dl className={styles.eventDetails}>
+        <div>
+          <dt>Where</dt>
+          <dd>{event.location} · {event.city}</dd>
+        </div>
+        <div>
+          <dt>When</dt>
+          <dd>{event.dateDetail}</dd>
+        </div>
+      </dl>
+
+      <div className={styles.eventSourceRow}>
+        <div>
+          <span className={styles.verifiedDot} aria-hidden="true" />
+          <span>Public source · {event.sourceName}</span>
+        </div>
+        <a href={event.sourceUrl} target="_blank" rel="noreferrer">
+          Original source <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </article>
+  );
+}
+
 type RadarCountryGateProps = {
   detectedCountryCode: string;
 };
@@ -54,6 +90,10 @@ export function RadarCountryGate({ detectedCountryCode }: RadarCountryGateProps)
   const [search, setSearch] = useState("");
 
   const selectedName = useMemo(() => countryName(selectedCode), [selectedCode]);
+  const selectedEvents = useMemo(
+    () => radarEvents.filter((event) => event.countryCode === selectedCode),
+    [selectedCode],
+  );
   const filteredCountries = useMemo(() => {
     const query = search.trim().toLowerCase();
     return COUNTRY_CODES.map((code) => ({ code, name: countryName(code) }))
@@ -104,7 +144,7 @@ export function RadarCountryGate({ detectedCountryCode }: RadarCountryGateProps)
         <section className={styles.feed} aria-labelledby="country-events-heading">
           <div className={styles.feedHeading}>
             <div>
-              <p className={styles.eyebrow}>YOUR COUNTRY</p>
+              <p className={styles.eyebrow}>UPCOMING IN</p>
               <h2 id="country-events-heading">{selectedName}</h2>
             </div>
             <button className={styles.inlineChange} onClick={() => setGateOpen(true)} type="button">
@@ -112,11 +152,25 @@ export function RadarCountryGate({ detectedCountryCode }: RadarCountryGateProps)
             </button>
           </div>
 
-          <div className={styles.emptyState}>
-            <span className={styles.emptyFlag} aria-hidden="true">{countryFlag(selectedCode)}</span>
-            <h3>No events found at the moment.</h3>
-            <p>New public meets and events will appear here when they are discovered.</p>
-          </div>
+          {selectedEvents.length > 0 ? (
+            <>
+              <div className={styles.feedIntro}>
+                <p>{selectedEvents.length} public event{selectedEvents.length === 1 ? "" : "s"} currently listed.</p>
+                <span>Always confirm details with the original organizer before travelling.</span>
+              </div>
+              <div className={styles.eventList}>
+                {selectedEvents.map((event) => (
+                  <EventCard event={event} key={event.id} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className={styles.emptyState}>
+              <span className={styles.emptyFlag} aria-hidden="true">{countryFlag(selectedCode)}</span>
+              <h3>No events found at the moment.</h3>
+              <p>New public meets and events will appear here when they are discovered.</p>
+            </div>
+          )}
         </section>
       </main>
 
