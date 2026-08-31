@@ -67,7 +67,7 @@
 
 .hero {
   position: relative;
-  min-height: 58svh;
+  min-height: 46svh;
   overflow: hidden;
   background-image:
     linear-gradient(180deg, rgba(5, 5, 5, 0.12) 0%, rgba(5, 5, 5, 0.54) 58%, #050505 100%),
@@ -86,10 +86,10 @@
   position: relative;
   z-index: 1;
   display: flex;
-  min-height: 58svh;
+  min-height: 46svh;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 32px 22px 50px;
+  padding: 28px 22px 38px;
 }
 
 .eyebrow {
@@ -103,23 +103,23 @@
 
 .heroContent h1 {
   max-width: 9ch;
-  margin: 16px 0 0;
-  font-size: clamp(46px, 13vw, 64px);
+  margin: 14px 0 0;
+  font-size: clamp(42px, 11.8vw, 58px);
   font-weight: 720;
   letter-spacing: -0.06em;
-  line-height: 0.93;
+  line-height: 0.94;
 }
 
 .heroContent > p:last-child {
   max-width: 34rem;
-  margin: 22px 0 0;
+  margin: 18px 0 0;
   color: rgba(255, 255, 255, 0.76);
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .feed {
-  padding: 34px 20px calc(56px + env(safe-area-inset-bottom));
+  padding: 30px 20px calc(58px + env(safe-area-inset-bottom));
 }
 
 .feedHeading {
@@ -143,6 +143,166 @@
   color: #f5f5f7;
   font-size: 14px;
   font-weight: 700;
+}
+
+.feedIntro {
+  display: grid;
+  gap: 5px;
+  margin-top: 18px;
+}
+
+.feedIntro p,
+.feedIntro span {
+  margin: 0;
+}
+
+.feedIntro p {
+  color: #d9d9dc;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.feedIntro span {
+  color: #777980;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.eventList {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.eventCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  background: #0b0c0e;
+  padding: 20px;
+}
+
+.eventCard::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: #c8102e;
+  content: "";
+}
+
+.eventTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eventDate {
+  color: #f5f5f7;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.eventCategory {
+  border: 1px solid rgba(227, 44, 73, 0.34);
+  border-radius: 999px;
+  background: rgba(200, 16, 46, 0.08);
+  padding: 6px 9px;
+  color: #e55a71;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.eventCard h3 {
+  max-width: 19ch;
+  margin: 20px 0 0;
+  font-size: 27px;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.eventDescription {
+  margin: 12px 0 0;
+  color: #a6a7ac;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.eventDetails {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.eventDetails div {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.eventDetails dt,
+.eventDetails dd {
+  margin: 0;
+}
+
+.eventDetails dt {
+  color: #66686e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eventDetails dd {
+  color: #e6e6e8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.eventSourceRow {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 16px;
+}
+
+.eventSourceRow > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7d7f85;
+  font-size: 11px;
+}
+
+.verifiedDot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #c8102e;
+}
+
+.eventSourceRow a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: #111214;
+  color: #f5f5f7;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .emptyState {
@@ -464,6 +624,28 @@
     padding: 56px 0 90px;
   }
 
+  .eventList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .eventCard {
+    padding: 24px;
+  }
+
+  .eventCard h3 {
+    font-size: 31px;
+  }
+
+  .eventSourceRow {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .eventSourceRow a {
+    min-width: 150px;
+    padding-inline: 16px;
+  }
+
   .emptyState {
     min-height: 260px;
   }
@@ -481,6 +663,12 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: 26px;
     bottom: 28px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .eventList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
