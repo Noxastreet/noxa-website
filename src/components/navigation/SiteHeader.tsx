@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { InstagramIcon } from "@/components/social/InstagramIcon";
 import type { LandingCopy, Locale } from "@/i18n/landing-copy";
 
 const navigationHrefs = ["#product", "#community", "#business"] as const;
+const INSTAGRAM_HREF = "https://www.instagram.com/noxa_app/";
 
 const focusableSelector = [
   "a[href]",
@@ -171,7 +173,19 @@ export function SiteHeader({
           </div>
 
           <a
-            className="ml-auto hidden min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] sm:inline-flex min-[1025px]:ml-2 min-[1025px]:px-5"
+            href={INSTAGRAM_HREF}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open NOXA Instagram @noxa_app"
+            className="ml-1 hidden min-h-12 shrink-0 items-center gap-2 rounded-full border border-[#c8102e]/70 bg-[#c8102e]/10 px-4 text-sm font-semibold text-white transition-colors duration-[180ms] hover:border-[#e32c49] hover:bg-[#c8102e]/20 min-[1025px]:inline-flex"
+          >
+            <InstagramIcon className="size-5 shrink-0 text-[#e32c49]" />
+            <span>Instagram</span>
+            <span className="hidden text-white/70 min-[1280px]:inline">@noxa_app</span>
+          </a>
+
+          <a
+            className="ml-auto hidden min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] sm:inline-flex min-[1025px]:ml-0 min-[1025px]:px-5"
             href={joinHref}
           >
             {navigationCopy.join}
@@ -284,8 +298,21 @@ export function SiteHeader({
           </nav>
 
           <a
+            href={INSTAGRAM_HREF}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open NOXA Instagram @noxa_app"
+            className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-[#c8102e]/80 bg-[#c8102e]/10 px-4 text-base font-semibold text-white transition-colors hover:bg-[#c8102e]/20"
+            onClick={handleMenuAnchorClick}
+          >
+            <InstagramIcon className="size-5 shrink-0 text-[#e32c49]" />
+            <span>Instagram @noxa_app</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+
+          <a
             href={joinHref}
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#c8102e] px-4 text-base font-semibold text-white"
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#c8102e] px-4 text-base font-semibold text-white"
             onClick={handleMenuAnchorClick}
           >
             {navigationCopy.join}
