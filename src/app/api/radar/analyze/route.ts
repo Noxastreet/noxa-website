@@ -202,7 +202,7 @@ async function analyzeWithGateway(candidates: Candidate[]) {
         { role: "system", content: system },
         { role: "user", content: JSON.stringify({ candidates: compactCandidates }) },
       ],
-      response_format: { type: "json_object" },
+      stream: false,
     }),
     cache: "no-store",
   });
