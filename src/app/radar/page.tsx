@@ -138,6 +138,7 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
   return {
     id: row.id,
     countryCode: row.country_code,
+    eventType: row.event_type,
     title: row.title,
     category,
     dateLabel,
