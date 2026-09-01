@@ -39,6 +39,32 @@ function matchesFilter(event: RadarEvent, filter: EventFilter) {
   return event.eventType === "moto_meet";
 }
 
+function PinIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+      <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="10" r="2.2" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 7.5V12l3.2 2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+      <path d="m9 6 6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 function NoxaMark() {
   return (
     <svg aria-label="NOXA" className={styles.logoMark} role="img" viewBox="180 220 650 590">
@@ -54,39 +80,41 @@ function EventCard({ event }: { event: RadarEvent }) {
     : event.location;
 
   return (
-    <article className={styles.eventCard}>
+    <article className={`${styles.eventCard} !rounded-[18px] !p-4`}>
       <div className={styles.eventTopline}>
         <span className={styles.eventDate}>{event.dateLabel}</span>
-        <span className={styles.eventCategory}>{event.category}</span>
+        <span className={`${styles.eventCategory} !rounded-lg !px-2.5 !py-1.5`}>{event.category}</span>
       </div>
 
-      <h3>{event.title}</h3>
+      <h3 className="!mt-4 !max-w-none !text-[24px] !leading-[1.05]">{event.title}</h3>
 
-      <dl className={styles.eventDetails}>
-        <div>
-          <dt>Where</dt>
-          <dd>{place}</dd>
+      <dl className="mt-4 grid gap-2.5">
+        <div className="grid grid-cols-[20px_1fr] items-start gap-3">
+          <span className="mt-0.5 size-4 text-white/45"><PinIcon /></span>
+          <dt className="sr-only">Where</dt>
+          <dd className="m-0 text-[13px] leading-5 text-white/85">{place}</dd>
         </div>
-        <div>
-          <dt>When</dt>
-          <dd>{event.dateDetail}</dd>
+        <div className="grid grid-cols-[20px_1fr] items-start gap-3">
+          <span className="mt-0.5 size-4 text-white/45"><ClockIcon /></span>
+          <dt className="sr-only">When</dt>
+          <dd className="m-0 text-[13px] leading-5 text-white/85">{event.dateDetail}</dd>
         </div>
       </dl>
 
-      <details className="mt-5 border-t border-white/[.07] pt-3">
+      <details className="group mt-4 border-t border-white/[.07] pt-1">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-bold text-white/75 [&::-webkit-details-marker]:hidden">
           <span>Details & source</span>
-          <span className="text-base font-normal text-white/45" aria-hidden="true">＋</span>
+          <span className="size-4 text-white/40 transition-transform group-open:rotate-90"><ChevronIcon /></span>
         </summary>
         <div className="pb-1 pt-1">
           <p className={styles.eventDescription}>{event.description}</p>
-          <div className={styles.eventSourceRow}>
+          <div className={`${styles.eventSourceRow} !mt-4 !pt-3`}>
             <div>
               <span className={styles.verifiedDot} aria-hidden="true" />
               <span>Public source · {event.sourceName}</span>
             </div>
-            <a href={event.sourceUrl} target="_blank" rel="noreferrer">
-              Original source <span aria-hidden="true">↗</span>
+            <a className="!rounded-xl" href={event.sourceUrl} target="_blank" rel="noreferrer">
+              Open original <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
@@ -152,7 +180,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
         <Link className={styles.brand} href="/" aria-label="NOXA home">NOXA</Link>
         <button
           aria-label={`Change country. Current country: ${selectedName}`}
-          className={styles.countryChip}
+          className={`${styles.countryChip} !rounded-xl !bg-[#0d0e10]`}
           onClick={() => setGateOpen(true)}
           type="button"
         >
@@ -165,26 +193,32 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
       <main className={styles.main}>
         <section
           className={styles.hero}
-          style={{ minHeight: "clamp(280px, 36svh, 420px)" }}
+          style={{ minHeight: "clamp(230px, 29svh, 330px)" }}
         >
           <div className={styles.heroShade} />
           <div
-            className={styles.heroContent}
-            style={{ minHeight: "clamp(280px, 36svh, 420px)" }}
+            className={`${styles.heroContent} !px-5 !pb-7`}
+            style={{ minHeight: "clamp(230px, 29svh, 330px)" }}
           >
             <p className={styles.eyebrow}>LIVE NOXA RADAR</p>
-            <h1 className="!max-w-[12ch] !text-[clamp(40px,10vw,64px)]">Find your next meet.</h1>
-            <p>Car meets, Cars & Coffee, group drives, moto gatherings and motorsport — in one clear feed.</p>
+            <h1 className="!mt-3 !max-w-[12ch] !text-[clamp(36px,9vw,54px)]">Find your next meet.</h1>
+            <p className="!mt-3 !max-w-[31rem] !text-[14px]">Car meets, Cars & Coffee, group drives, moto gatherings and motorsport — in one clear feed.</p>
           </div>
         </section>
 
-        <section className={styles.feed} aria-labelledby="country-events-heading">
-          <div className={styles.feedHeading}>
+        <section className={`${styles.feed} !pt-5`} aria-labelledby="country-events-heading">
+          <div className={`${styles.feedHeading} !items-center`}>
             <div>
               <p className={styles.eyebrow}>UPCOMING IN</p>
-              <h2 id="country-events-heading">{selectedName}</h2>
+              <h2 id="country-events-heading" className="!text-[30px]">{selectedName}</h2>
             </div>
-            <button className={styles.inlineChange} onClick={() => setGateOpen(true)} type="button">Change</button>
+            <button
+              className={`${styles.inlineChange} !min-h-10 !rounded-xl !border !border-white/10 !bg-white/[.035] !px-3.5 !text-[12px]`}
+              onClick={() => setGateOpen(true)}
+              type="button"
+            >
+              Change
+            </button>
           </div>
 
           {selectedEvents.length > 0 ? (
@@ -193,7 +227,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                 <div className={filterStyles.filterChips}>
                   {([
                     ["all", "All"],
-                    ["meets", "Meets & drives"],
+                    ["meets", "Meets"],
                     ["moto", "Moto"],
                     ["motorsport", "Motorsport"],
                   ] as const).map(([value, label]) => (
@@ -220,21 +254,24 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                 ) : null}
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-y border-white/[.07] py-3">
-                <div className={styles.feedIntro + " !mt-0"}>
-                  <p>{visibleEvents.length} upcoming event{visibleEvents.length === 1 ? "" : "s"}</p>
-                  <span>Public sources · always confirm final details with the organizer.</span>
+              <div className="mt-3 flex items-center justify-between gap-3 border-b border-white/[.07] pb-3">
+                <div className="min-w-0">
+                  <p className="m-0 text-[14px] font-semibold text-white/85">
+                    {visibleEvents.length} upcoming event{visibleEvents.length === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-4 text-white/35">Public sources · confirm details before travelling.</p>
                 </div>
                 <Link
                   href="/radar/submit"
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[.035] px-4 text-[12px] font-bold text-white no-underline"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.035] px-3.5 text-[12px] font-bold text-white no-underline transition-colors active:bg-white/[.08]"
                 >
-                  Submit a meet <span className="ml-2 text-white/50" aria-hidden="true">＋</span>
+                  <span className="text-base leading-none text-[#e32c49]" aria-hidden="true">＋</span>
+                  Add event
                 </Link>
               </div>
 
               {visibleEvents.length > 0 ? (
-                <div className={styles.eventList}>
+                <div className={`${styles.eventList} !mt-4`}>
                   {visibleEvents.map((event) => <EventCard event={event} key={event.id} />)}
                 </div>
               ) : (
@@ -251,9 +288,10 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
               <p>New public meets and events will appear here when they are discovered.</p>
               <Link
                 href="/radar/submit"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[.04] px-5 text-[13px] font-bold text-white no-underline"
+                className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-4 text-[13px] font-bold text-white no-underline"
               >
-                Submit an event <span className="ml-2" aria-hidden="true">＋</span>
+                <span className="text-[#e32c49]" aria-hidden="true">＋</span>
+                Add event
               </Link>
             </div>
           )}
