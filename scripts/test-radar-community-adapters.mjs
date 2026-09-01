@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   collectCarsCoffeeGreece,
   collectElmotoEvents,
+  parseEnglishDateRange,
   parseGreekEventDate,
   parseHellenicUpcomingHtml,
 } from "../supabase/functions/radar-collector/communityAdapters.ts";
@@ -27,18 +28,31 @@ assert.equal(parseGreekEventDate("28 Μαΐου – 1 Ιουνίου 2026", now)
 const greekFuture = parseGreekEventDate("28 Μαΐου – 1 Ιουνίου 2027", now);
 assert.deepEqual(greekFuture, { startsAt: "2027-05-28T06:00:00.000Z", endsAt: "2027-06-01T20:00:00.000Z" });
 
-const carsNoUpcomingFetch = async () => new Response(`<html><h1>Live your passion everywhere</h1><h6>Past Events</h6></html>`, { status: 200 });
+const documentOrderRange = parseEnglishDateRange("OCTOBER 18, 2026 – OCTOBER 19, 2026", now);
+assert.deepEqual(documentOrderRange, { startsAt: "2026-10-18T06:00:00.000Z", endsAt: "2026-10-19T20:00:00.000Z" });
+
+let noUpcomingDiscoveryUrl = "";
+const carsNoUpcomingFetch = async (input) => {
+  noUpcomingDiscoveryUrl = String(input);
+  return new Response(`<html><h1>Find Events</h1><p>No upcoming events in Greece.</p></html>`, { status: 200 });
+};
 assert.deepEqual(await collectCarsCoffeeGreece(source("Cars & Coffee Greece", "https://cars.coffee/find-events"), carsNoUpcomingFetch, now), []);
+assert.match(noUpcomingDiscoveryUrl, /\/en\/find-events\?/);
+assert.match(noUpcomingDiscoveryUrl, /country=66/);
+assert.match(noUpcomingDiscoveryUrl, /when=Upcoming/);
 
 const carsFutureFetch = async (input) => {
   const url = String(input);
-  if (url.endsWith("/greece")) return new Response(`<a href="/en/find-events/cars-coffee-athens-2026">Athens</a>`, { status: 200 });
-  return new Response(`<h1>Cars & Coffee Greece | Athens</h1><table><tr><td>Date</td><td>OCTOBER 18, 2026</td></tr><tr><td>Where</td><td>Athens</td></tr><tr><td>Organized by</td><td>C&C Greece</td></tr></table>`, { status: 200 });
+  if (url.includes("/en/find-events?") && url.includes("country=66") && url.includes("when=Upcoming")) {
+    return new Response(`<a href="/en/find-events/cars-coffee-athens-2026">Athens</a>`, { status: 200 });
+  }
+  return new Response(`<footer>Historic launch APRIL 13, 2014</footer><h1>Cars & Coffee Greece | Athens</h1><table><tr><td>Date</td><td>OCTOBER 18, 2026</td></tr><tr><td>Where</td><td>Athens</td></tr><tr><td>Organized by</td><td>C&C Greece</td></tr></table>`, { status: 200 });
 };
 const carsFuture = await collectCarsCoffeeGreece(source("Cars & Coffee Greece", "https://cars.coffee/find-events"), carsFutureFetch, now);
 assert.equal(carsFuture.length, 1);
 assert.equal(carsFuture[0].event_type, "cars_and_coffee");
 assert.equal(carsFuture[0].starts_at, "2026-10-18T06:00:00.000Z");
+assert.equal(carsFuture[0].location_text, "Athens");
 
 const elmotoCurrentFetch = async (input) => {
   const url = String(input);
