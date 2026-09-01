@@ -61,7 +61,6 @@ function EventCard({ event }: { event: RadarEvent }) {
       </div>
 
       <h3>{event.title}</h3>
-      <p className={styles.eventDescription}>{event.description}</p>
 
       <dl className={styles.eventDetails}>
         <div>
@@ -74,15 +73,24 @@ function EventCard({ event }: { event: RadarEvent }) {
         </div>
       </dl>
 
-      <div className={styles.eventSourceRow}>
-        <div>
-          <span className={styles.verifiedDot} aria-hidden="true" />
-          <span>Public source · {event.sourceName}</span>
+      <details className="mt-5 border-t border-white/[.07] pt-3">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-bold text-white/75 [&::-webkit-details-marker]:hidden">
+          <span>Details & source</span>
+          <span className="text-base font-normal text-white/45" aria-hidden="true">＋</span>
+        </summary>
+        <div className="pb-1 pt-1">
+          <p className={styles.eventDescription}>{event.description}</p>
+          <div className={styles.eventSourceRow}>
+            <div>
+              <span className={styles.verifiedDot} aria-hidden="true" />
+              <span>Public source · {event.sourceName}</span>
+            </div>
+            <a href={event.sourceUrl} target="_blank" rel="noreferrer">
+              Original source <span aria-hidden="true">↗</span>
+            </a>
+          </div>
         </div>
-        <a href={event.sourceUrl} target="_blank" rel="noreferrer">
-          Original source <span aria-hidden="true">↗</span>
-        </a>
-      </div>
+      </details>
     </article>
   );
 }
@@ -95,7 +103,7 @@ type RadarCountryGateProps = {
 export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGateProps) {
   const detectedCode = normalizeCountryCode(detectedCountryCode);
   const [selectedCode, setSelectedCode] = useState(detectedCode);
-  const [gateOpen, setGateOpen] = useState(true);
+  const [gateOpen, setGateOpen] = useState(false);
   const [countriesOpen, setCountriesOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
@@ -155,12 +163,18 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
       </header>
 
       <main className={styles.main}>
-        <section className={styles.hero}>
+        <section
+          className={styles.hero}
+          style={{ minHeight: "clamp(280px, 36svh, 420px)" }}
+        >
           <div className={styles.heroShade} />
-          <div className={styles.heroContent}>
-            <p className={styles.eyebrow}>NOXA AUTOMOTIVE CULTURE</p>
-            <h1>Know what&apos;s happening around you.</h1>
-            <p>Car meets, moto gatherings and motorsport events in one place.</p>
+          <div
+            className={styles.heroContent}
+            style={{ minHeight: "clamp(280px, 36svh, 420px)" }}
+          >
+            <p className={styles.eyebrow}>LIVE NOXA RADAR</p>
+            <h1 className="!max-w-[12ch] !text-[clamp(40px,10vw,64px)]">Find your next meet.</h1>
+            <p>Car meets, Cars & Coffee, group drives, moto gatherings and motorsport — in one clear feed.</p>
           </div>
         </section>
 
@@ -179,9 +193,9 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                 <div className={filterStyles.filterChips}>
                   {([
                     ["all", "All"],
-                    ["meets", "Meets"],
-                    ["motorsport", "Motorsport"],
+                    ["meets", "Meets & drives"],
                     ["moto", "Moto"],
+                    ["motorsport", "Motorsport"],
                   ] as const).map(([value, label]) => (
                     <button
                       aria-pressed={eventFilter === value}
@@ -206,9 +220,17 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                 ) : null}
               </div>
 
-              <div className={styles.feedIntro}>
-                <p>{visibleEvents.length} event{visibleEvents.length === 1 ? "" : "s"}</p>
-                <span>Confirm final details with the original organizer before travelling.</span>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-y border-white/[.07] py-3">
+                <div className={styles.feedIntro + " !mt-0"}>
+                  <p>{visibleEvents.length} upcoming event{visibleEvents.length === 1 ? "" : "s"}</p>
+                  <span>Public sources · always confirm final details with the organizer.</span>
+                </div>
+                <Link
+                  href="/radar/submit"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[.035] px-4 text-[12px] font-bold text-white no-underline"
+                >
+                  Submit a meet <span className="ml-2 text-white/50" aria-hidden="true">＋</span>
+                </Link>
               </div>
 
               {visibleEvents.length > 0 ? (
@@ -227,6 +249,12 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
               <span className={styles.emptyFlag} aria-hidden="true">{countryFlag(selectedCode)}</span>
               <h3>No events found at the moment.</h3>
               <p>New public meets and events will appear here when they are discovered.</p>
+              <Link
+                href="/radar/submit"
+                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[.04] px-5 text-[13px] font-bold text-white no-underline"
+              >
+                Submit an event <span className="ml-2" aria-hidden="true">＋</span>
+              </Link>
             </div>
           )}
         </section>
