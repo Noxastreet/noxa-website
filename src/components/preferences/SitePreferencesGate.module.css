@@ -1,0 +1,313 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: max(20px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom));
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 2, 3, 0.7);
+  backdrop-filter: blur(18px) saturate(0.8);
+  -webkit-backdrop-filter: blur(18px) saturate(0.8);
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 430px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(18, 18, 20, 0.98), rgba(7, 7, 8, 0.99));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+  padding: 26px 22px 22px;
+  color: #f5f5f7;
+}
+
+.brand {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.42em;
+}
+
+.eyebrow {
+  margin: 24px 0 0;
+  color: #e32c49;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+}
+
+.modal h2 {
+  margin: 8px 0 0;
+  max-width: 12ch;
+  font-size: clamp(32px, 9vw, 44px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.intro {
+  margin: 16px 0 0;
+  max-width: 34rem;
+  color: rgba(245, 245, 247, 0.62);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.countryButton {
+  width: 100%;
+  min-height: 72px;
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px 14px;
+  color: inherit;
+  text-align: left;
+}
+
+.flag {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.countryCopy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.countryCopy small {
+  color: rgba(245, 245, 247, 0.38);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.countryCopy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+.change {
+  color: rgba(245, 245, 247, 0.7);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cookieNotice {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  align-items: start;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 16px;
+}
+
+.cookieDot {
+  width: 6px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #e32c49;
+  box-shadow: 0 0 14px rgba(227, 44, 73, 0.45);
+}
+
+.cookieNotice p,
+.legal {
+  margin: 0;
+  color: rgba(245, 245, 247, 0.5);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.cookieNotice a,
+.legal a {
+  color: rgba(245, 245, 247, 0.86);
+  text-decoration: none;
+}
+
+.continueButton {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-radius: 14px;
+  background: #c8102e;
+  padding: 0 18px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.continueButton:active {
+  transform: translateY(1px);
+}
+
+.legal {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.pickerLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.pickerBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.picker {
+  position: relative;
+  width: min(100%, 520px);
+  max-height: min(82svh, 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: #0a0a0b;
+  padding: 10px 16px max(16px, env(safe-area-inset-bottom));
+  box-shadow: 0 -24px 80px rgba(0, 0, 0, 0.48);
+}
+
+.handle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.pickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pickerHeader .eyebrow {
+  margin: 0;
+}
+
+.pickerHeader h3 {
+  margin: 5px 0 0;
+  font-size: 25px;
+  letter-spacing: -0.035em;
+}
+
+.close {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 25px;
+}
+
+.searchField {
+  margin-top: 16px;
+}
+
+.searchField input {
+  width: 100%;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0 14px;
+  color: #f5f5f7;
+  font: inherit;
+}
+
+.searchField input:focus-visible,
+.countryButton:focus-visible,
+.continueButton:focus-visible,
+.close:focus-visible,
+.countryRow:focus-visible {
+  outline: 2px solid #e32c49;
+  outline-offset: 2px;
+}
+
+.countryList {
+  min-height: 0;
+  margin-top: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.countryRow {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 30px 1fr 24px;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  background: transparent;
+  padding: 0 8px;
+  color: rgba(245, 245, 247, 0.74);
+  text-align: left;
+  font-size: 14px;
+}
+
+.countryRowSelected {
+  color: #fff;
+}
+
+.check {
+  color: #e32c49;
+  font-weight: 900;
+  text-align: right;
+}
+
+@media (min-width: 700px) {
+  .pickerLayer {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .picker {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .modal,
+  .picker {
+    animation: preferencesEnter 180ms ease-out both;
+  }
+
+  @keyframes preferencesEnter {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}

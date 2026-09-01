@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 import { RadarCountryGate } from "@/components/radar/RadarCountryGate";
 import type { RadarEvent } from "@/components/radar/radarEvents";
@@ -51,6 +51,11 @@ function fallbackCountryFromLanguage(value: string | null) {
   if (!value) return "GR";
   const match = value.match(/[-_]([A-Za-z]{2})(?:[,;]|$)/);
   return match?.[1]?.toUpperCase() ?? "GR";
+}
+
+function savedCountry(value: string | undefined) {
+  const code = value?.trim().toUpperCase();
+  return code && /^[A-Z]{2}$/.test(code) ? code : null;
 }
 
 function eventCategory(eventType: string) {
@@ -208,11 +213,13 @@ async function loadPublishedEvents(): Promise<RadarEvent[]> {
 }
 
 export default async function RadarPage() {
-  const [requestHeaders, events] = await Promise.all([
+  const [requestHeaders, cookieStore, events] = await Promise.all([
     headers(),
+    cookies(),
     loadPublishedEvents(),
   ]);
   const detectedCountryCode =
+    savedCountry(cookieStore.get("noxa_country")?.value) ??
     requestHeaders.get("x-vercel-ip-country") ??
     fallbackCountryFromLanguage(requestHeaders.get("accept-language"));
 
