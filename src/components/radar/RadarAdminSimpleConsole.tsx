@@ -79,6 +79,16 @@ type DashboardData = {
   sources: RadarSource[];
 };
 
+type ReviewGroup = {
+  key: string;
+  title: string;
+  countryCode: string;
+  eventType: string;
+  city: string | null;
+  location: string | null;
+  candidates: RadarCandidate[];
+};
+
 const emptyDashboard: DashboardData = { candidates: [], events: [], sources: [] };
 
 function apiHeaders(accessToken?: string) {
@@ -137,11 +147,22 @@ function formatDate(value: string | null) {
   }).format(date);
 }
 
-function confidenceLabel(value: number | string | null) {
-  if (value === null) return "AI —";
+function formatShortDate(value: string | null) {
+  if (!value) return "No date";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en", { day: "2-digit", month: "short" }).format(date);
+}
+
+function confidenceNumber(value: number | string | null) {
   const number = Number(value);
-  if (!Number.isFinite(number)) return "AI —";
-  return `AI ${Math.round(number <= 1 ? number * 100 : number)}%`;
+  if (!Number.isFinite(number)) return null;
+  return Math.round(number <= 1 ? number * 100 : number);
+}
+
+function confidenceLabel(value: number | string | null) {
+  const number = confidenceNumber(value);
+  return number === null ? "AI —" : `AI ${number}%`;
 }
 
 function matchesType(eventType: string, filter: EventFilter) {
@@ -149,6 +170,76 @@ function matchesType(eventType: string, filter: EventFilter) {
   if (filter === "meets") return MEET_TYPES.has(eventType);
   if (filter === "motorsport") return MOTORSPORT_TYPES.has(eventType);
   return eventType === "moto_meet";
+}
+
+function normalizedGroupPart(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function groupCandidates(candidates: RadarCandidate[]): ReviewGroup[] {
+  const map = new Map<string, ReviewGroup>();
+
+  for (const candidate of candidates) {
+    const place = candidate.city ?? candidate.location_text ?? candidate.country_code;
+    const key = [
+      normalizedGroupPart(candidate.title),
+      normalizedGroupPart(place),
+      candidate.event_type,
+      candidate.country_code,
+    ].join("|");
+
+    const existing = map.get(key);
+    if (existing) {
+      existing.candidates.push(candidate);
+      continue;
+    }
+
+    map.set(key, {
+      key,
+      title: candidate.title,
+      countryCode: candidate.country_code,
+      eventType: candidate.event_type,
+      city: candidate.city,
+      location: candidate.location_text,
+      candidates: [candidate],
+    });
+  }
+
+  return Array.from(map.values())
+    .map((group) => ({
+      ...group,
+      candidates: group.candidates.slice().sort((a, b) => {
+        const aTime = a.starts_at ? new Date(a.starts_at).getTime() : Number.MAX_SAFE_INTEGER;
+        const bTime = b.starts_at ? new Date(b.starts_at).getTime() : Number.MAX_SAFE_INTEGER;
+        return aTime - bTime;
+      }),
+    }))
+    .sort((a, b) => {
+      const aTime = a.candidates[0]?.starts_at ? new Date(a.candidates[0].starts_at!).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime = b.candidates[0]?.starts_at ? new Date(b.candidates[0].starts_at!).getTime() : Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
+    });
+}
+
+function groupConfidence(group: ReviewGroup) {
+  const values = group.candidates
+    .map((candidate) => confidenceNumber(candidate.ai_confidence))
+    .filter((value): value is number => value !== null);
+  if (!values.length) return "AI —";
+  return `AI ${Math.min(...values)}%`;
+}
+
+function groupDateSummary(group: ReviewGroup) {
+  if (group.candidates.length === 1) return formatDate(group.candidates[0].starts_at);
+  const dated = group.candidates.filter((candidate) => candidate.starts_at);
+  if (!dated.length) return `${group.candidates.length} dates`;
+  const first = formatShortDate(dated[0].starts_at);
+  const last = formatShortDate(dated[dated.length - 1].starts_at);
+  return `${group.candidates.length} dates · ${first}${first === last ? "" : `–${last}`}`;
 }
 
 async function getUser(accessToken: string): Promise<AuthUser | null> {
@@ -220,6 +311,8 @@ export function RadarAdminSimpleConsole() {
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -257,11 +350,18 @@ export function RadarAdminSimpleConsole() {
       .filter(Boolean),
   )).sort((a, b) => a.localeCompare(b)), [baseItems, countryFilter]);
 
-  const filteredReview = useMemo(() => reviewItems.filter((item) =>
-    matchesType(item.event_type, eventFilter) &&
-    (countryFilter === "all" || item.country_code === countryFilter) &&
-    (cityFilter === "all" || item.city === cityFilter)),
-  [reviewItems, eventFilter, countryFilter, cityFilter]);
+  const filteredReview = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return reviewItems.filter((item) => {
+      const searchable = `${item.title} ${item.city ?? ""} ${item.location_text ?? ""} ${item.organizer_name ?? ""}`.toLowerCase();
+      return matchesType(item.event_type, eventFilter) &&
+        (countryFilter === "all" || item.country_code === countryFilter) &&
+        (cityFilter === "all" || item.city === cityFilter) &&
+        (!query || searchable.includes(query));
+    });
+  }, [reviewItems, eventFilter, countryFilter, cityFilter, search]);
+
+  const reviewGroups = useMemo(() => groupCandidates(filteredReview), [filteredReview]);
 
   const filteredLive = useMemo(() => liveItems.filter((item) =>
     matchesType(item.event_type, eventFilter) &&
@@ -447,6 +547,7 @@ export function RadarAdminSimpleConsole() {
   function changeTab(tab: Tab) {
     setActiveTab(tab);
     setCityFilter("all");
+    setExpandedGroup(null);
   }
 
   if (phase === "checking") {
@@ -475,9 +576,7 @@ export function RadarAdminSimpleConsole() {
   const filterControls = activeTab === "sources" ? null : (
     <div className={styles.filters}>
       <div className={styles.chips}>
-        {([[
-          "all", "All",
-        ], ["meets", "Meets"], ["motorsport", "Motorsport"], ["moto", "Moto"]] as const).map(([value, label]) => (
+        {([["all", "All"], ["meets", "Meets"], ["motorsport", "Motorsport"], ["moto", "Moto"]] as const).map(([value, label]) => (
           <button
             aria-pressed={eventFilter === value}
             className={eventFilter === value ? styles.chipActive : styles.chip}
@@ -487,6 +586,12 @@ export function RadarAdminSimpleConsole() {
           >{label}</button>
         ))}
       </div>
+      {activeTab === "review" ? (
+        <label className={styles.searchField}>
+          <span>Search</span>
+          <input onChange={(event) => setSearch(event.target.value)} placeholder="Event, city, organizer" type="search" value={search} />
+        </label>
+      ) : null}
       <div className={styles.selects}>
         <label>Country
           <select onChange={(event) => { setCountryFilter(event.target.value); setCityFilter("all"); }} value={countryFilter}>
@@ -525,7 +630,7 @@ export function RadarAdminSimpleConsole() {
 
         <div className={styles.pageHeading}>
           <h1>{activeTab === "review" ? "Review" : activeTab === "live" ? "Live events" : "Sources"}</h1>
-          <span>{activeTab === "review" ? `${filteredReview.length} shown` : activeTab === "live" ? `${filteredLive.length} shown` : `${activeSources.length} active`}</span>
+          <span>{activeTab === "review" ? `${reviewGroups.length} groups` : activeTab === "live" ? `${filteredLive.length} shown` : `${activeSources.length} active`}</span>
         </div>
         <div className={styles.quickStats}>
           <span><strong>{reviewItems.length}</strong> review</span>
@@ -537,25 +642,60 @@ export function RadarAdminSimpleConsole() {
 
         {activeTab === "review" ? (
           <div className={styles.list}>
-            {filteredReview.length ? filteredReview.map((candidate) => (
-              <article className={styles.reviewCard} key={candidate.id}>
-                <div className={styles.reviewTop}>
-                  <span>{countryFlag(candidate.country_code)} {candidate.city ?? candidate.country_code} · {candidate.event_type.replaceAll("_", " ")}</span>
-                  <strong>{confidenceLabel(candidate.ai_confidence)}</strong>
-                </div>
-                <h2>{candidate.title}</h2>
-                <div className={styles.meta}>
-                  <span>{formatDate(candidate.starts_at)}</span>
-                  {candidate.location_text ? <span>{candidate.location_text}</span> : null}
-                  {candidate.organizer_name ? <span>{candidate.organizer_name}</span> : null}
-                </div>
-                <div className={styles.actions}>
-                  <a href={candidate.original_url} rel="noreferrer" target="_blank">Open source ↗</a>
-                  <button disabled={busy} onClick={() => void reviewCandidate(candidate, "rejected")} type="button">Reject</button>
-                  <button className={styles.approve} disabled={busy || !candidate.starts_at} onClick={() => void reviewCandidate(candidate, "approved")} type="button">{candidate.starts_at ? "Approve" : "Needs date"}</button>
-                </div>
-              </article>
-            )) : <div className={styles.empty}><strong>Nothing here.</strong><span>Try another filter or wait for the collector.</span></div>}
+            {reviewGroups.length ? reviewGroups.map((group) => {
+              const expanded = expandedGroup === group.key;
+              const first = group.candidates[0];
+              const single = group.candidates.length === 1;
+              return (
+                <article className={styles.groupCard} key={group.key}>
+                  <div className={styles.groupTop}>
+                    <span>{countryFlag(group.countryCode)} {group.city ?? group.countryCode} · {group.eventType.replaceAll("_", " ")}</span>
+                    <strong>{groupConfidence(group)}</strong>
+                  </div>
+                  <h2>{group.title}</h2>
+                  <div className={styles.groupSummary}>
+                    <span>{groupDateSummary(group)}</span>
+                    {group.location && group.location !== group.city ? <span>{group.location}</span> : null}
+                  </div>
+
+                  {single ? (
+                    <div className={styles.compactActions}>
+                      <a href={first.original_url} rel="noreferrer" target="_blank">Source ↗</a>
+                      <button disabled={busy} onClick={() => void reviewCandidate(first, "rejected")} type="button">Reject</button>
+                      <button className={styles.approve} disabled={busy || !first.starts_at} onClick={() => void reviewCandidate(first, "approved")} type="button">{first.starts_at ? "Approve" : "Needs date"}</button>
+                    </div>
+                  ) : (
+                    <button
+                      aria-expanded={expanded}
+                      className={styles.expandButton}
+                      onClick={() => setExpandedGroup(expanded ? null : group.key)}
+                      type="button"
+                    >
+                      {expanded ? "Hide dates" : `View ${group.candidates.length} dates`}
+                      <span aria-hidden="true">{expanded ? "↑" : "↓"}</span>
+                    </button>
+                  )}
+
+                  {!single && expanded ? (
+                    <div className={styles.dateList}>
+                      {group.candidates.map((candidate) => (
+                        <div className={styles.dateRow} key={candidate.id}>
+                          <div className={styles.dateInfo}>
+                            <strong>{formatDate(candidate.starts_at)}</strong>
+                            <span>{confidenceLabel(candidate.ai_confidence)}</span>
+                          </div>
+                          <div className={styles.dateActions}>
+                            <a href={candidate.original_url} rel="noreferrer" target="_blank" aria-label={`Open source for ${formatDate(candidate.starts_at)}`}>↗</a>
+                            <button disabled={busy} onClick={() => void reviewCandidate(candidate, "rejected")} type="button">Reject</button>
+                            <button className={styles.approve} disabled={busy || !candidate.starts_at} onClick={() => void reviewCandidate(candidate, "approved")} type="button">Approve</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              );
+            }) : <div className={styles.empty}><strong>Nothing here.</strong><span>Try another filter or wait for the collector.</span></div>}
           </div>
         ) : null}
 
