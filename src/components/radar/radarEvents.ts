@@ -1,6 +1,7 @@
 export type RadarEvent = {
   id: string;
   countryCode: string;
+  eventType: string;
   title: string;
   category: string;
   dateLabel: string;
