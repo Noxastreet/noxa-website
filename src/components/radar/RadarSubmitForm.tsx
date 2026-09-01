@@ -40,7 +40,7 @@ function countryName(code: string) {
 }
 
 export function RadarSubmitForm() {
-  const formStartedAt = useRef(Date.now());
+  const formStartedAt = useRef(0);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [message, setMessage] = useState("");
@@ -50,6 +50,10 @@ export function RadarSubmitForm() {
     () => COUNTRY_CODES.map((code) => ({ code, name: countryName(code) })).sort((a, b) => a.name.localeCompare(b.name)),
     [],
   );
+
+  function markFormStarted() {
+    if (formStartedAt.current === 0) formStartedAt.current = Date.now();
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,7 +113,7 @@ export function RadarSubmitForm() {
           <p>{message}</p>
           <div className={styles.successActions}>
             <Link className={styles.primaryLink} href="/radar">Back to Radar</Link>
-            <button onClick={() => { setDone(false); setMessage(""); formStartedAt.current = Date.now(); }} type="button">Submit another</button>
+            <button onClick={() => { setDone(false); setMessage(""); formStartedAt.current = 0; }} type="button">Submit another</button>
           </div>
         </section>
       </main>
@@ -130,7 +134,7 @@ export function RadarSubmitForm() {
           <p>Know about a public car meet, moto gathering or motorsport event? Send the source and details. Nothing is published until NOXA reviews it.</p>
         </section>
 
-        <form className={styles.form} onSubmit={submit}>
+        <form className={styles.form} onFocusCapture={markFormStarted} onSubmit={submit}>
           <div className={styles.notice}>
             <strong>Public events only.</strong>
             <span>Add the original organizer post, event page or public announcement so we can verify the details.</span>
