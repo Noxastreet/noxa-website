@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import type { RadarEvent } from "./radarEvents";
 import styles from "./RadarCountryGate.module.css";
+import filterStyles from "./RadarFilters.module.css";
 
 const COUNTRY_CODES = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
 
@@ -174,8 +175,8 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
 
           {selectedEvents.length > 0 ? (
             <>
-              <div className={styles.filters} aria-label="Event filters">
-                <div className={styles.filterChips}>
+              <div className={filterStyles.filters} aria-label="Event filters">
+                <div className={filterStyles.filterChips}>
                   {([
                     ["all", "All"],
                     ["meets", "Meets"],
@@ -184,7 +185,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                   ] as const).map(([value, label]) => (
                     <button
                       aria-pressed={eventFilter === value}
-                      className={eventFilter === value ? styles.filterChipActive : styles.filterChip}
+                      className={eventFilter === value ? filterStyles.filterChipActive : filterStyles.filterChip}
                       key={value}
                       onClick={() => setEventFilter(value)}
                       type="button"
@@ -195,7 +196,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                 </div>
 
                 {cities.length > 0 ? (
-                  <label className={styles.cityFilter}>
+                  <label className={filterStyles.cityFilter}>
                     <span>City</span>
                     <select onChange={(event) => setCityFilter(event.target.value)} value={cityFilter}>
                       <option value="all">All cities</option>
@@ -215,7 +216,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
                   {visibleEvents.map((event) => <EventCard event={event} key={event.id} />)}
                 </div>
               ) : (
-                <div className={styles.filteredEmpty}>
+                <div className={filterStyles.filteredEmpty}>
                   <strong>No events match these filters.</strong>
                   <button onClick={resetFilters} type="button">Show all events</button>
                 </div>
