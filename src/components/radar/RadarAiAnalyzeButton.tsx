@@ -75,6 +75,21 @@ function friendlyAnalyzeError(message: string | undefined, status: number) {
   return `AI check failed (${status}).`;
 }
 
+async function callCollector(slug: "radar-collector" | "radar-social-collector", accessToken: string) {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/${slug}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ mode: "manual" }),
+  });
+  const payload = await response.json().catch(() => ({})) as CollectorResponse;
+  if (!response.ok) throw new Error(payload.error ?? `Scan failed (${response.status}).`);
+  return payload;
+}
+
 export function RadarAiAnalyzeButton() {
   const visible = useSyncExternalStore(
     subscribeToSession,
@@ -101,26 +116,21 @@ export function RadarAiAnalyzeButton() {
 
     setBusyAction("collector");
     setIsError(false);
-    setMessage("Scanning sources…");
+    setMessage("Scanning websites…");
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/radar-collector`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mode: "manual" }),
-      });
-      const payload = await response.json().catch(() => ({})) as CollectorResponse;
-      if (!response.ok) throw new Error(payload.error ?? `Scan failed (${response.status}).`);
+      const website = await callCollector("radar-collector", accessToken);
+      setMessage("Checking public Instagram / Facebook sources…");
+      const social = await callCollector("radar-social-collector", accessToken);
 
-      const sources = payload.sourcesChecked ?? 0;
-      const created = payload.candidatesCreated ?? 0;
-      const duplicates = payload.duplicatesSkipped ?? 0;
-      setMessage(`${sources} sources checked · ${created} new · ${duplicates} already known. Refreshing…`);
-      window.setTimeout(() => window.location.reload(), 1100);
+      const sources = (website.sourcesChecked ?? 0) + (social.sourcesChecked ?? 0);
+      const created = (website.candidatesCreated ?? 0) + (social.candidatesCreated ?? 0);
+      const duplicates = (website.duplicatesSkipped ?? 0) + (social.duplicatesSkipped ?? 0);
+      const errors = (website.errorCount ?? 0) + (social.errorCount ?? 0);
+      const attention = errors ? ` · ${errors} source${errors === 1 ? "" : "s"} need attention` : "";
+      setIsError(errors > 0);
+      setMessage(`${sources} sources checked · ${created} new · ${duplicates} already known${attention}. Refreshing…`);
+      window.setTimeout(() => window.location.reload(), 1300);
     } catch (error) {
       setIsError(true);
       setMessage(error instanceof Error ? error.message : "Source scan failed.");
