@@ -7,6 +7,7 @@ import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
 import enhancements from "./CultureLandingEnhancements.module.css";
 import styles from "./CultureLanding.module.css";
+import { RadarHomeSpotlight } from "./RadarHomeSpotlight";
 
 type CultureLandingProps = {
   locale: Locale;
@@ -15,7 +16,7 @@ type CultureLandingProps = {
 const en = {
   nav: {
     community: "Community",
-    meets: "Meetups",
+    meets: "Car Meets",
     crews: "Crews",
     routes: "Routes",
     business: "Business",
@@ -25,8 +26,8 @@ const en = {
     eyebrow: "NOXA AUTOMOTIVE CULTURE",
     title: "The automotive community, in one place.",
     body: "From local meets to long drives, crews to culture. NOXA connects drivers, riders and the scenes that bring them together.",
-    primary: "Join Waitlist",
-    secondary: "Explore Community",
+    primary: "Find Car Meets",
+    secondary: "Join Waitlist",
   },
   signals: [
     ["CARS + MOTORCYCLES", "One culture"],
@@ -98,7 +99,7 @@ const en = {
 const el = {
   nav: {
     community: "Κοινότητα",
-    meets: "Συναντήσεις",
+    meets: "Car Meets",
     crews: "Ομάδες",
     routes: "Διαδρομές",
     business: "Επιχειρήσεις",
@@ -108,8 +109,8 @@ const el = {
     eyebrow: "NOXA AUTOMOTIVE CULTURE",
     title: "Η automotive κοινότητα, σε ένα μέρος.",
     body: "Από τοπικά meets μέχρι μεγάλες διαδρομές, crews και κουλτούρα. Το NOXA συνδέει οδηγούς, αναβάτες και τις κοινότητες που τους φέρνουν κοντά.",
-    primary: "Μπες στη λίστα",
-    secondary: "Δες την κοινότητα",
+    primary: "Βρες Car Meets",
+    secondary: "Μπες στη λίστα",
   },
   signals: [
     ["ΑΥΤΟΚΙΝΗΤΑ + ΜΟΤΟ", "Μία κουλτούρα"],
@@ -216,14 +217,14 @@ export function CultureLanding({ locale }: CultureLandingProps) {
   const navigationItems = locale === "el"
     ? ([
         [copy.nav.community, "#community"],
-        [copy.nav.meets, "/el/meets"],
+        [copy.nav.meets, "/radar"],
         [copy.nav.crews, "/el/crews"],
         [copy.nav.routes, "/el/routes"],
         [copy.nav.business, "#business"],
       ] as const)
     : ([
         [copy.nav.community, "#community"],
-        [copy.nav.meets, "/meets"],
+        [copy.nav.meets, "/radar"],
         [copy.nav.crews, "/crews"],
         [copy.nav.routes, "/routes"],
         [copy.nav.business, "#business"],
@@ -256,10 +257,10 @@ export function CultureLanding({ locale }: CultureLandingProps) {
               <h1>{copy.hero.title}</h1>
               <p className={styles.heroBody}>{copy.hero.body}</p>
               <div className={styles.heroActions}>
-                <a className={styles.primaryAction} href="#waitlist">
+                <Link className={styles.primaryAction} href="/radar">
                   {copy.hero.primary} <Arrow />
-                </a>
-                <a className={styles.textAction} href="#community">
+                </Link>
+                <a className={styles.textAction} href="#waitlist">
                   {copy.hero.secondary} <Arrow />
                 </a>
               </div>
@@ -275,6 +276,8 @@ export function CultureLanding({ locale }: CultureLandingProps) {
             </div>
           </div>
         </section>
+
+        <RadarHomeSpotlight locale={locale} />
 
         <section id="community" className={styles.cultureSection}>
           <div className={`${styles.shell} ${styles.splitGrid}`}>
@@ -392,7 +395,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
           </div>
           <div>
             <strong>{copy.footer.community}</strong>
-            <a href={locale === "el" ? "/el/meets" : "/meets"}>{copy.nav.meets}</a>
+            <Link href="/radar">{copy.nav.meets}</Link>
             <a href={locale === "el" ? "/el/crews" : "/crews"}>{copy.nav.crews}</a>
             <a href={locale === "el" ? "/el/routes" : "/routes"}>{copy.nav.routes}</a>
           </div>
