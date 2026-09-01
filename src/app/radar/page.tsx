@@ -133,7 +133,7 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
   const { dateLabel, dateDetail } = formatEventDate(row);
   const category = eventCategory(row.event_type);
   const location = row.location_text ?? row.city ?? row.region ?? row.country_code;
-  const city = row.city && row.city !== location ? row.city : "";
+  const city = row.city ?? "";
 
   return {
     id: row.id,
