@@ -5,8 +5,15 @@ export const dynamic = "force-dynamic";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
-const GEMINI_MODEL = process.env.RADAR_AI_MODEL ?? "gemini-2.5-flash-lite";
 const MAX_BATCH = 16;
+
+const GEMINI_MODELS = Array.from(new Set([
+  process.env.RADAR_AI_MODEL?.trim(),
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-flash-lite-latest",
+].filter((model): model is string => Boolean(model))));
 
 const EVENT_TYPES = [
   "car_meet",
@@ -49,6 +56,11 @@ type AnalysisResult = {
   summary: string | null;
   confidence: number;
   reason: string;
+};
+
+type GeminiAnalysis = {
+  results: AnalysisResult[];
+  model: string;
 };
 
 function supabaseHeaders(accessToken: string) {
@@ -185,12 +197,7 @@ function responseSchema() {
   };
 }
 
-async function analyzeWithGemini(candidates: Candidate[]) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("Gemini API is not configured. Add GEMINI_API_KEY to Vercel and redeploy.");
-  }
-
+function geminiRequestBody(candidates: Candidate[]) {
   const compactCandidates = candidates.map((candidate) => ({
     candidate_id: candidate.id,
     title: candidate.title,
@@ -219,78 +226,97 @@ async function analyzeWithGemini(candidates: Candidate[]) {
     "For summary, return an empty string when the supplied evidence is insufficient for a factual summary.",
   ].join(" ");
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
+  return JSON.stringify({
+    systemInstruction: {
+      parts: [{ text: systemInstruction }],
     },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemInstruction }],
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: JSON.stringify({ candidates: compactCandidates }) }],
       },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: JSON.stringify({ candidates: compactCandidates }) }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.1,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema(),
-      },
-    }),
-    cache: "no-store",
+    ],
+    generationConfig: {
+      temperature: 0.1,
+      responseMimeType: "application/json",
+      responseSchema: responseSchema(),
+    },
   });
-
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error("Gemini Free Tier rate limit reached. Try AI analyze again later.");
-    }
-    if (response.status === 401 || response.status === 403) {
-      throw new Error("Gemini API key is invalid or does not have access to the Gemini API.");
-    }
-    if (response.status === 404) {
-      throw new Error(`Gemini model ${GEMINI_MODEL} is not available for this API key.`);
-    }
-    throw new Error(`Gemini API request failed (${response.status}).`);
-  }
-
-  const payload = await response.json() as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{ text?: string }>;
-      };
-    }>;
-  };
-
-  const content = payload.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text ?? "")
-    .join("")
-    .trim();
-
-  if (!content) throw new Error("Gemini returned an empty analysis.");
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch {
-    throw new Error("Gemini returned invalid JSON.");
-  }
-
-  const rows = parsed && typeof parsed === "object" && Array.isArray((parsed as { results?: unknown[] }).results)
-    ? (parsed as { results: unknown[] }).results
-    : [];
-  const candidateIds = new Set(candidates.map((candidate) => candidate.id));
-
-  return rows
-    .map((row) => sanitizeResult(row, candidateIds))
-    .filter((row): row is AnalysisResult => row !== null);
 }
 
-async function updateCandidate(accessToken: string, result: AnalysisResult) {
+async function analyzeWithGemini(candidates: Candidate[]): Promise<GeminiAnalysis> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("Gemini API is not configured. Add GEMINI_API_KEY to Vercel and redeploy.");
+  }
+
+  const requestBody = geminiRequestBody(candidates);
+  const unavailableModels: string[] = [];
+
+  for (const model of GEMINI_MODELS) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: requestBody,
+      cache: "no-store",
+    });
+
+    if (response.status === 404) {
+      unavailableModels.push(model);
+      continue;
+    }
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error("Gemini Free Tier rate limit reached. Try AI analyze again later.");
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Gemini API key is invalid or does not have access to the Gemini API.");
+      }
+      throw new Error(`Gemini API request failed (${response.status}).`);
+    }
+
+    const payload = await response.json() as {
+      candidates?: Array<{
+        content?: {
+          parts?: Array<{ text?: string }>;
+        };
+      }>;
+    };
+
+    const content = payload.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text ?? "")
+      .join("")
+      .trim();
+
+    if (!content) throw new Error("Gemini returned an empty analysis.");
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      throw new Error("Gemini returned invalid JSON.");
+    }
+
+    const rows = parsed && typeof parsed === "object" && Array.isArray((parsed as { results?: unknown[] }).results)
+      ? (parsed as { results: unknown[] }).results
+      : [];
+    const candidateIds = new Set(candidates.map((candidate) => candidate.id));
+    const results = rows
+      .map((row) => sanitizeResult(row, candidateIds))
+      .filter((row): row is AnalysisResult => row !== null);
+
+    return { results, model };
+  }
+
+  throw new Error(`No compatible Gemini model is available for this API key (${unavailableModels.join(", ")}).`);
+}
+
+async function updateCandidate(accessToken: string, result: AnalysisResult, model: string) {
   const reason = result.is_event
     ? result.reason
     : `AI flagged this candidate as potentially not relevant. ${result.reason}`;
@@ -307,7 +333,7 @@ async function updateCandidate(accessToken: string, result: AnalysisResult) {
         ai_confidence: result.confidence,
         ai_reason: reason,
         ai_analyzed_at: new Date().toISOString(),
-        ai_model: GEMINI_MODEL,
+        ai_model: model,
         status: "new",
         updated_at: new Date().toISOString(),
       }),
@@ -330,21 +356,21 @@ export async function POST(request: NextRequest) {
   try {
     const candidates = await loadPendingCandidates(accessToken);
     if (candidates.length === 0) {
-      return NextResponse.json({ ok: true, analyzed: 0, pending: 0, model: GEMINI_MODEL });
+      return NextResponse.json({ ok: true, analyzed: 0, pending: 0, model: null });
     }
 
-    const results = await analyzeWithGemini(candidates);
-    if (results.length === 0) {
+    const analysis = await analyzeWithGemini(candidates);
+    if (analysis.results.length === 0) {
       throw new Error("Gemini analysis did not return any valid candidate results.");
     }
 
-    await Promise.all(results.map((result) => updateCandidate(accessToken, result)));
+    await Promise.all(analysis.results.map((result) => updateCandidate(accessToken, result, analysis.model)));
 
     return NextResponse.json({
       ok: true,
-      analyzed: results.length,
+      analyzed: analysis.results.length,
       requested: candidates.length,
-      model: GEMINI_MODEL,
+      model: analysis.model,
       provider: "google-gemini",
     });
   } catch (error) {
