@@ -132,6 +132,11 @@ export function SitePreferencesGate() {
     writeCookie(CONSENT_COOKIE, "essential-v1");
     window.localStorage.setItem(COUNTRY_STORAGE, selectedCode);
     window.dispatchEvent(new CustomEvent("noxa:country-change", { detail: selectedCode }));
+
+    if (pathname.startsWith("/radar")) {
+      window.location.reload();
+      return;
+    }
     setOpen(false);
   }
 
