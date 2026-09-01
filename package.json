@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:radar-adapters": "node --experimental-strip-types scripts/test-radar-community-adapters.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },
