@@ -99,23 +99,27 @@ export function SitePreferencesGate() {
   }, [countries, search]);
 
   useEffect(() => {
-    if (legalRoute) {
+    const frame = window.requestAnimationFrame(() => {
+      if (legalRoute) {
+        setReady(true);
+        setOpen(false);
+        return;
+      }
+
+      const consent = readCookie(CONSENT_COOKIE);
+      const storedCountry = readCookie(COUNTRY_COOKIE) ?? window.localStorage.getItem(COUNTRY_STORAGE);
+      if (storedCountry) setSelectedCode(normalizeCountryCode(decodeURIComponent(storedCountry)));
+
+      if (consent === "essential-v1" && storedCountry) {
+        setOpen(false);
+      } else {
+        setSelectedCode(storedCountry ? normalizeCountryCode(decodeURIComponent(storedCountry)) : detectSuggestedCountry());
+        setOpen(true);
+      }
       setReady(true);
-      setOpen(false);
-      return;
-    }
+    });
 
-    const consent = readCookie(CONSENT_COOKIE);
-    const storedCountry = readCookie(COUNTRY_COOKIE) ?? window.localStorage.getItem(COUNTRY_STORAGE);
-    if (storedCountry) setSelectedCode(normalizeCountryCode(decodeURIComponent(storedCountry)));
-
-    if (consent === "essential-v1" && storedCountry) {
-      setOpen(false);
-    } else {
-      setSelectedCode(storedCountry ? normalizeCountryCode(decodeURIComponent(storedCountry)) : detectSuggestedCountry());
-      setOpen(true);
-    }
-    setReady(true);
+    return () => window.cancelAnimationFrame(frame);
   }, [legalRoute]);
 
   useEffect(() => {
