@@ -1,7 +1,7 @@
 .filters {
   display: grid;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .filterChips {
@@ -18,21 +18,27 @@
 
 .filterChip,
 .filterChipActive {
-  min-height: 44px;
+  min-height: 42px;
   flex: 0 0 auto;
   border: 1px solid rgba(255,255,255,.1);
-  border-radius: 999px;
+  border-radius: 12px;
   background: #101113;
-  padding: 0 15px;
-  color: #91939a;
+  padding: 0 14px;
+  color: #8f9198;
   font: inherit;
   font-size: 13px;
   font-weight: 720;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 120ms ease;
+}
+
+.filterChip:active,
+.filterChipActive:active {
+  transform: scale(.98);
 }
 
 .filterChipActive {
-  border-color: rgba(227,44,73,.48);
-  background: rgba(200,16,46,.15);
+  border-color: rgba(227,44,73,.58);
+  background: #c8102e;
   color: #fff;
 }
 
@@ -51,12 +57,12 @@
 
 .cityFilter select {
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   border: 1px solid rgba(255,255,255,.1);
-  border-radius: 13px;
+  border-radius: 12px;
   outline: none;
   background: #101113;
-  padding: 0 14px;
+  padding: 0 13px;
   color: #f5f5f7;
   font: inherit;
   font-size: 14px;
@@ -72,19 +78,19 @@
 
 .filteredEmpty {
   display: grid;
-  min-height: 180px;
+  min-height: 160px;
   place-items: center;
-  gap: 14px;
-  margin-top: 22px;
+  gap: 12px;
+  margin-top: 16px;
   border: 1px solid rgba(255,255,255,.09);
-  border-radius: 20px;
+  border-radius: 18px;
   background: #0b0c0e;
-  padding: 28px;
+  padding: 24px;
   text-align: center;
 }
 
 .filteredEmpty strong {
-  font-size: 17px;
+  font-size: 16px;
 }
 
 .filteredEmpty button {
@@ -92,7 +98,7 @@
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 12px;
   background: #151619;
-  padding: 0 16px;
+  padding: 0 15px;
   color: #f5f5f7;
   font: inherit;
   font-size: 12px;
