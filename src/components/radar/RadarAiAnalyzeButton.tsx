@@ -63,19 +63,16 @@ function friendlyAnalyzeError(message: string | undefined, status: number) {
   const value = message ?? "";
 
   if (/not configured|GEMINI_API_KEY/i.test(value)) {
-    return "Gemini AI is not configured yet. Add the server-side Gemini API key, then redeploy.";
+    return "Gemini AI is not configured yet.";
   }
-
   if (/rate limit/i.test(value)) {
-    return "Gemini Free Tier limit reached. Try AI analyze again later.";
+    return "Free AI limit reached. Try again later.";
   }
-
   if (/invalid|does not have access/i.test(value)) {
-    return "Gemini API key is invalid or does not have access to Gemini.";
+    return "Gemini access is not available for this key.";
   }
-
   if (value && value.length <= 220) return value;
-  return `AI analysis failed (${status}).`;
+  return `AI check failed (${status}).`;
 }
 
 export function RadarAiAnalyzeButton() {
@@ -92,7 +89,7 @@ export function RadarAiAnalyzeButton() {
     const accessToken = readAccessToken();
     if (!accessToken) {
       setIsError(true);
-      setMessage("Admin session expired. Sign in again.");
+      setMessage("Session expired. Sign in again.");
       return null;
     }
     return accessToken;
@@ -104,7 +101,7 @@ export function RadarAiAnalyzeButton() {
 
     setBusyAction("collector");
     setIsError(false);
-    setMessage("Checking active Radar sources…");
+    setMessage("Scanning sources…");
 
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/radar-collector`, {
@@ -117,19 +114,16 @@ export function RadarAiAnalyzeButton() {
         body: JSON.stringify({ mode: "manual" }),
       });
       const payload = await response.json().catch(() => ({})) as CollectorResponse;
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? `Collector failed (${response.status}).`);
-      }
+      if (!response.ok) throw new Error(payload.error ?? `Scan failed (${response.status}).`);
 
       const sources = payload.sourcesChecked ?? 0;
       const created = payload.candidatesCreated ?? 0;
       const duplicates = payload.duplicatesSkipped ?? 0;
-      setMessage(`Checked ${sources} source${sources === 1 ? "" : "s"} · ${created} new · ${duplicates} duplicate${duplicates === 1 ? "" : "s"}. Refreshing…`);
+      setMessage(`${sources} sources checked · ${created} new · ${duplicates} already known. Refreshing…`);
       window.setTimeout(() => window.location.reload(), 1100);
     } catch (error) {
       setIsError(true);
-      setMessage(error instanceof Error ? error.message : "Collector failed.");
+      setMessage(error instanceof Error ? error.message : "Source scan failed.");
     } finally {
       setBusyAction(null);
     }
@@ -141,7 +135,7 @@ export function RadarAiAnalyzeButton() {
 
     setBusyAction("ai");
     setIsError(false);
-    setMessage("Analyzing the next batch with Gemini…");
+    setMessage("AI checking the next events…");
 
     try {
       const response = await fetch("/api/radar/analyze", {
@@ -152,21 +146,18 @@ export function RadarAiAnalyzeButton() {
         },
       });
       const payload = await response.json().catch(() => ({})) as AnalyzeResponse;
-
-      if (!response.ok) {
-        throw new Error(friendlyAnalyzeError(payload.error, response.status));
-      }
+      if (!response.ok) throw new Error(friendlyAnalyzeError(payload.error, response.status));
 
       if ((payload.analyzed ?? 0) === 0) {
-        setMessage("No unanalyzed candidates left.");
+        setMessage("Everything found so far has already been checked.");
         return;
       }
 
-      setMessage(`Gemini analyzed ${payload.analyzed} candidate${payload.analyzed === 1 ? "" : "s"}. Refreshing…`);
+      setMessage(`AI checked ${payload.analyzed} event${payload.analyzed === 1 ? "" : "s"}. Refreshing…`);
       window.setTimeout(() => window.location.reload(), 900);
     } catch (error) {
       setIsError(true);
-      setMessage(error instanceof Error ? error.message : "AI analysis failed.");
+      setMessage(error instanceof Error ? error.message : "AI check failed.");
     } finally {
       setBusyAction(null);
     }
@@ -176,19 +167,13 @@ export function RadarAiAnalyzeButton() {
 
   return (
     <div className={styles.wrap}>
-      {message ? (
-        <div className={`${styles.status} ${isError ? styles.error : ""}`} role="status">
-          {message}
-        </div>
-      ) : null}
+      {message ? <div className={`${styles.status} ${isError ? styles.error : ""}`} role="status">{message}</div> : null}
       <div className={styles.actions}>
         <button disabled={busyAction !== null} onClick={() => void runCollector()} type="button">
-          <span aria-hidden="true">↻</span>
-          {busyAction === "collector" ? "Scanning…" : "Run collector"}
+          <span aria-hidden="true">↻</span>{busyAction === "collector" ? "Scanning…" : "Scan sources"}
         </button>
         <button className={styles.aiButton} disabled={busyAction !== null} onClick={() => void analyze()} type="button">
-          <span aria-hidden="true">✦</span>
-          {busyAction === "ai" ? "AI analyzing…" : "AI analyze"}
+          <span aria-hidden="true">✦</span>{busyAction === "ai" ? "Checking…" : "AI check"}
         </button>
       </div>
     </div>
