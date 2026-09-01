@@ -50,6 +50,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Radar community adapter fixtures
+        run: npm run test:radar-adapters
+
       - name: Lint
         run: npm run lint
 
