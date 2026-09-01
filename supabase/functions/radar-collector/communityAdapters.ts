@@ -81,7 +81,7 @@ export function parseEnglishDateRange(text: string, now = new Date()): ParsedDat
     new RegExp(`(${months})\\s+(\\d{1,2}),?\\s+(20\\d{2})`, "gi"),
     new RegExp(`(\\d{1,2})\\s+(${months})\\s+(20\\d{2})`, "gi"),
   ];
-  const found: string[] = [];
+  const found: Array<{ index: number; iso: string }> = [];
   for (const pattern of patterns) {
     let match: RegExpExecArray | null;
     while ((match = pattern.exec(normalized)) !== null) {
@@ -90,12 +90,16 @@ export function parseEnglishDateRange(text: string, now = new Date()): ParsedDat
       const day = Number(monthFirst ? match[2] : match[1]);
       const year = Number(match[3]);
       const iso = datedIso(day, month, year, 6);
-      if (iso && !found.includes(iso)) found.push(iso);
+      if (iso) found.push({ index: match.index, iso });
     }
   }
-  found.sort();
-  if (!found.length) return null;
-  const dates = { startsAt: found[0], endsAt: found.length > 1 ? found[found.length - 1].replace("T06:00:00.000Z", "T20:00:00.000Z") : null };
+  found.sort((a, b) => a.index - b.index);
+  const ordered = found.filter((item, index) => found.findIndex((candidate) => candidate.iso === item.iso) === index);
+  if (!ordered.length) return null;
+  const dates = {
+    startsAt: ordered[0].iso,
+    endsAt: ordered.length > 1 ? ordered[ordered.length - 1].iso.replace("T06:00:00.000Z", "T20:00:00.000Z") : null,
+  };
   return isFutureRange(dates, now) ? dates : null;
 }
 
@@ -236,21 +240,32 @@ function carsCoffeeLocation(text: string) {
   return value && value.length <= 120 ? value : null;
 }
 
-export async function collectCarsCoffeeGreece(source: CommunitySource, fetchImpl: FetchLike = fetch, now = new Date()) {
-  const base = new URL(source.url);
-  const countryUrl = new URL("/greece", base.origin).toString();
-  const response = await fetchImpl(countryUrl, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error(`Cars & Coffee Greece page returned ${response.status}`);
-  const html = await response.text();
+function carsCoffeeDateText(text: string) {
+  const match = text.match(/\bDate\s+(.{3,180}?)(?=\s+(?:Where|Organized by|Add to favourites|Stats of the Event|Join the Event|Summary)\b)/i);
+  return match ? normalizeTitle(match[1]) : null;
+}
+
+function carsCoffeeEventLinks(html: string, origin: string) {
   const links: string[] = [];
   const pattern = /<a\b[^>]*href=["']([^"']*\/find-events\/[^"'?#]+)["'][^>]*>/gi;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(html)) !== null) {
     try {
-      const href = new URL(match[1], base.origin).toString();
-      if (new URL(href).origin === base.origin && !links.includes(href)) links.push(href);
+      const href = new URL(match[1], origin).toString();
+      if (new URL(href).origin === origin && !links.includes(href)) links.push(href);
     } catch { /* ignore malformed links */ }
   }
+  return links;
+}
+
+export async function collectCarsCoffeeGreece(source: CommunitySource, fetchImpl: FetchLike = fetch, now = new Date()) {
+  const base = new URL(source.url);
+  const upcomingUrl = new URL("/en/find-events", base.origin);
+  upcomingUrl.searchParams.set("country", "66");
+  upcomingUrl.searchParams.set("when", "Upcoming");
+  const response = await fetchImpl(upcomingUrl.toString(), { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error(`Cars & Coffee Greece upcoming feed returned ${response.status}`);
+  const links = carsCoffeeEventLinks(await response.text(), base.origin);
   if (!links.length) return [];
 
   const rows = await Promise.all(links.slice(0, 20).map(async (href): Promise<CommunityCandidateInput | null> => {
@@ -259,7 +274,9 @@ export async function collectCarsCoffeeGreece(source: CommunitySource, fetchImpl
       if (!detail.ok) return null;
       const detailHtml = await detail.text();
       const text = plainText(detailHtml);
-      const dates = parseEnglishDateRange(text, now);
+      const dateText = carsCoffeeDateText(text);
+      if (!dateText) return null;
+      const dates = parseEnglishDateRange(dateText, now);
       if (!dates) return null;
       const title = firstHeading(detailHtml) || "Cars & Coffee Greece";
       const location = carsCoffeeLocation(text);
@@ -280,8 +297,8 @@ export async function collectCarsCoffeeGreece(source: CommunitySource, fetchImpl
         organizer_url: source.url,
         summary: "Official Cars & Coffee event page for Greece. Only explicit public event facts are imported.",
         ai_confidence: confidence(source, 0.95, 0.84),
-        ai_reason: "Future event date was parsed from an official Cars & Coffee detail page linked from the Greece page.",
-        raw_payload: { provider: "cars_coffee_greece", source_name: source.name },
+        ai_reason: "Future event date was parsed from an official Cars & Coffee detail page linked from the Greece upcoming feed.",
+        raw_payload: { provider: "cars_coffee_greece", source_name: source.name, discovery: "country=66&when=Upcoming" },
         status: "new",
       };
     } catch { return null; }
