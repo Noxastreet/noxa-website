@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#050505",
     icons: [
       {
-        src: "/icon.svg",
+        src: "/noxa-favicon.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
