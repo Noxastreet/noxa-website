@@ -57,6 +57,20 @@ function eventCategory(eventType: string) {
   return CATEGORY_LABELS[eventType] ?? "EVENT";
 }
 
+function stableSourceUrl(sourceUrl: string) {
+  try {
+    const url = new URL(sourceUrl);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "serrescircuit.gr") {
+      url.pathname = url.pathname.replace(/^\/en(?=\/)/, "");
+      return url.toString();
+    }
+  } catch {
+    // Keep the stored source URL when it cannot be parsed.
+  }
+  return sourceUrl;
+}
+
 function dateParts(date: Date, timeZone: string) {
   const parts = new Intl.DateTimeFormat("en", {
     timeZone,
@@ -149,7 +163,7 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
       row.summary?.trim() ||
       `Public ${category.toLowerCase()} listed by ${row.source_name}.`,
     sourceName: row.source_name,
-    sourceUrl: row.source_url,
+    sourceUrl: stableSourceUrl(row.source_url),
   };
 }
 
