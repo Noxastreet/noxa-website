@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { headers } from "next/headers";
 
 import { RadarCountryGate } from "@/components/radar/RadarCountryGate";
@@ -203,15 +202,5 @@ export default async function RadarPage() {
     requestHeaders.get("x-vercel-ip-country") ??
     fallbackCountryFromLanguage(requestHeaders.get("accept-language"));
 
-  return (
-    <>
-      <RadarCountryGate detectedCountryCode={detectedCountryCode} events={events} />
-      <Link
-        href="/radar/submit"
-        className="fixed bottom-[max(18px,env(safe-area-inset-bottom))] right-4 z-20 inline-flex min-h-12 items-center justify-center rounded-full border border-[#e32c49]/55 bg-[#c8102e] px-5 text-sm font-bold text-white shadow-[0_12px_38px_rgba(0,0,0,.42)] transition-transform active:scale-[.98]"
-      >
-        Submit event <span className="ml-2" aria-hidden="true">＋</span>
-      </Link>
-    </>
-  );
+  return <RadarCountryGate detectedCountryCode={detectedCountryCode} events={events} />;
 }
