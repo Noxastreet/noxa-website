@@ -37,6 +37,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.noxastreetapp.com",
+          },
+        ],
+        destination: "https://noxastreetapp.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
