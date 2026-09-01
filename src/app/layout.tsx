@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
 
 import "./globals.css";
 
@@ -61,6 +62,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <MotionProvider>{children}</MotionProvider>
+        <SitePreferencesGate />
       </body>
     </html>
   );
