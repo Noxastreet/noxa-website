@@ -1,0 +1,4 @@
+Contact: mailto:noxastreetapp@gmail.com
+Preferred-Languages: en, el
+Canonical: https://noxastreetapp.com/.well-known/security.txt
+Expires: 2027-09-02T00:00:00Z
