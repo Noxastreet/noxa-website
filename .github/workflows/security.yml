@@ -36,7 +36,7 @@ jobs:
           chmod +x gitleaks
 
       - name: Scan repository history
-        run: ./gitleaks git --redact --verbose .
+        run: ./gitleaks git --config .gitleaks.toml --redact --verbose .
 
   dependencies:
     name: Production dependency audit
