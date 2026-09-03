@@ -8,9 +8,9 @@ const RADAR_SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const RADAR_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 
 export const metadata: Metadata = {
-  title: "NOXA — Automotive events by country",
+  title: "NOXA Meets — Automotive events by country",
   description:
-    "Discover public automotive and motorcycle gatherings by country with NOXA.",
+    "Discover public automotive and motorcycle gatherings by country with NOXA Meets.",
   alternates: {
     canonical: "https://noxastreetapp.com/radar",
   },
@@ -193,7 +193,7 @@ async function loadPublishedEvents(): Promise<RadarEvent[]> {
     );
 
     if (!response.ok) {
-      console.error("NOXA Radar events request failed", response.status);
+      console.error("NOXA Meets events request failed", response.status);
       return [];
     }
 
@@ -207,7 +207,7 @@ async function loadPublishedEvents(): Promise<RadarEvent[]> {
       })
       .map(toRadarEvent);
   } catch (error) {
-    console.error("NOXA Radar events request failed", error);
+    console.error("NOXA Meets events request failed", error);
     return [];
   }
 }
