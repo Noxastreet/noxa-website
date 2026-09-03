@@ -6,6 +6,7 @@ import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
 import videoStyles from "./CultureHeroVideo.module.css";
+import { HeroVideo } from "./HeroVideo";
 import { RadarHomeSpotlight } from "./RadarHomeSpotlight";
 import styles from "./CultureLandingV2.module.css";
 import refine from "./CultureLandingV2Refine.module.css";
@@ -13,6 +14,8 @@ import refine from "./CultureLandingV2Refine.module.css";
 type Props = { locale: Locale };
 
 const HERO_VIDEO_URL = "https://videos.pexels.com/video-files/35716927/15137301_2160_3840_29fps.mp4";
+const HERO_POSTER_URL =
+  "https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=1200";
 
 const copy = {
   en: {
@@ -153,17 +156,11 @@ export function CultureLandingV2({ locale }: Props) {
       <main id="main-content">
         <section className={`${styles.hero} ${refine.heroRefined}`} id="top">
           <div className={`${styles.heroMedia} ${videoStyles.media}`} aria-hidden="true">
-            <video
-              autoPlay
+            <HeroVideo
               className={videoStyles.video}
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              tabIndex={-1}
-            >
-              <source src={HERO_VIDEO_URL} type="video/mp4" />
-            </video>
+              poster={HERO_POSTER_URL}
+              src={HERO_VIDEO_URL}
+            />
           </div>
           <div className={styles.heroShade} aria-hidden="true" />
           <div className={styles.heroNoise} aria-hidden="true" />
