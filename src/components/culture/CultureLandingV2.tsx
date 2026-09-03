@@ -8,6 +8,7 @@ import { landingCopy, type Locale } from "@/i18n/landing-copy";
 import videoStyles from "./CultureHeroVideo.module.css";
 import { RadarHomeSpotlight } from "./RadarHomeSpotlight";
 import styles from "./CultureLandingV2.module.css";
+import refine from "./CultureLandingV2Refine.module.css";
 
 type Props = { locale: Locale };
 
@@ -31,7 +32,6 @@ const copy = {
       app: "NOXA App · Coming soon",
     },
     paths: {
-      title: "Choose your way in.",
       communities: {
         eyebrow: "COMMUNITIES",
         title: "Find your community.",
@@ -81,7 +81,6 @@ const copy = {
       app: "NOXA App · Σύντομα",
     },
     paths: {
-      title: "Διάλεξε τι θέλεις να κάνεις.",
       communities: {
         eyebrow: "ΚΟΙΝΟΤΗΤΕΣ",
         title: "Βρες την κοινότητά σου.",
@@ -140,17 +139,19 @@ export function CultureLandingV2({ locale }: Props) {
     <div className={styles.site}>
       <DocumentLanguage locale={locale} />
       <a className="skip-link" href="#main-content">{base.skipToContent}</a>
-      <SiteHeader
-        homeHref={home}
-        joinHref="#app"
-        languageCopy={base.language}
-        languagePaths={{ en: "/", el: "/el" }}
-        locale={locale}
-        navigationCopy={navigationCopy}
-      />
+      <div className={refine.headerCompact}>
+        <SiteHeader
+          homeHref={home}
+          joinHref="#app"
+          languageCopy={base.language}
+          languagePaths={{ en: "/", el: "/el" }}
+          locale={locale}
+          navigationCopy={navigationCopy}
+        />
+      </div>
 
       <main id="main-content">
-        <section className={styles.hero} id="top">
+        <section className={`${styles.hero} ${refine.heroRefined}`} id="top">
           <div className={`${styles.heroMedia} ${videoStyles.media}`} aria-hidden="true">
             <video
               autoPlay
@@ -185,13 +186,12 @@ export function CultureLandingV2({ locale }: Props) {
           <RadarHomeSpotlight locale={locale} />
         </div>
 
-        <section className={`${styles.pathsSection} ${styles.revealSection}`}>
+        <section className={`${styles.pathsSection} ${styles.revealSection} ${refine.pathsRefined}`}>
           <div className={styles.shell}>
-            <h2>{t.paths.title}</h2>
-            <div className={styles.pathsGrid}>
-              <Link className={`${styles.pathCard} ${styles.communityCard}`} href={communities}>
-                <div className={styles.pathShade} />
-                <div className={styles.pathCopy}>
+            <div className={`${styles.pathsGrid} ${refine.pathsGridRefined}`}>
+              <Link className={`${styles.pathCard} ${styles.communityCard} ${refine.pathCardRefined}`} href={communities}>
+                <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
+                <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
                   <p className={styles.eyebrow}>{t.paths.communities.eyebrow}</p>
                   <h3>{t.paths.communities.title}</h3>
                   <p>{t.paths.communities.body}</p>
@@ -199,9 +199,9 @@ export function CultureLandingV2({ locale }: Props) {
                 </div>
               </Link>
 
-              <Link className={`${styles.pathCard} ${styles.organizerCard}`} href={organizer}>
-                <div className={styles.pathShade} />
-                <div className={styles.pathCopy}>
+              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={organizer}>
+                <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
+                <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
                   <p className={styles.eyebrow}>{t.paths.organizer.eyebrow}</p>
                   <h3>{t.paths.organizer.title}</h3>
                   <p>{t.paths.organizer.body}</p>
@@ -213,8 +213,8 @@ export function CultureLandingV2({ locale }: Props) {
         </section>
 
         <section className={styles.cultureSection} aria-label="NOXA automotive culture">
-          <div className={styles.cultureMedia} aria-hidden="true" />
-          <div className={styles.cultureShade} aria-hidden="true" />
+          <div className={`${styles.cultureMedia} ${refine.cultureMediaRefined}`} aria-hidden="true" />
+          <div className={`${styles.cultureShade} ${refine.cultureShadeRefined}`} aria-hidden="true" />
           <div className={styles.cultureNoise} aria-hidden="true" />
           <div className={styles.shell}>
             <p>{t.culture.line1}</p>
@@ -223,7 +223,7 @@ export function CultureLandingV2({ locale }: Props) {
           </div>
         </section>
 
-        <section className={`${styles.appSection} ${styles.revealSection}`} id="app">
+        <section className={`${styles.appSection} ${styles.revealSection} ${refine.appRefined}`} id="app">
           <div className={styles.shell}>
             <div className={styles.appGrid}>
               <div>
@@ -231,7 +231,7 @@ export function CultureLandingV2({ locale }: Props) {
                 <h2>{t.app.title}</h2>
                 <p className={styles.appBody}>{t.app.body}</p>
               </div>
-              <div className={styles.waitlistWrap}>
+              <div className={`${styles.waitlistWrap} ${refine.waitlistCompact}`}>
                 <p className={styles.waitlistTitle}>{t.app.cta}</p>
                 <WaitlistForm copy={base.waitlist} locale={locale} />
               </div>
