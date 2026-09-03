@@ -151,6 +151,7 @@ export function CultureLandingV2({ locale }: Props) {
           <div className={styles.heroMedia} aria-hidden="true" />
           <div className={styles.heroShade} aria-hidden="true" />
           <div className={styles.heroNoise} aria-hidden="true" />
+          <div className={styles.heroAccent} aria-hidden="true" />
           <div className={styles.shell}>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>{t.hero.eyebrow}</p>
@@ -165,9 +166,11 @@ export function CultureLandingV2({ locale }: Props) {
           </div>
         </section>
 
-        <RadarHomeSpotlight locale={locale} />
+        <div className={styles.cinematicBand}>
+          <RadarHomeSpotlight locale={locale} />
+        </div>
 
-        <section className={styles.pathsSection}>
+        <section className={`${styles.pathsSection} ${styles.revealSection}`}>
           <div className={styles.shell}>
             <h2>{t.paths.title}</h2>
             <div className={styles.pathsGrid}>
@@ -197,6 +200,7 @@ export function CultureLandingV2({ locale }: Props) {
         <section className={styles.cultureSection} aria-label="NOXA automotive culture">
           <div className={styles.cultureMedia} aria-hidden="true" />
           <div className={styles.cultureShade} aria-hidden="true" />
+          <div className={styles.cultureNoise} aria-hidden="true" />
           <div className={styles.shell}>
             <p>{t.culture.line1}</p>
             <strong>{t.culture.line2}</strong>
@@ -204,7 +208,7 @@ export function CultureLandingV2({ locale }: Props) {
           </div>
         </section>
 
-        <section className={styles.appSection} id="app">
+        <section className={`${styles.appSection} ${styles.revealSection}`} id="app">
           <div className={styles.shell}>
             <div className={styles.appGrid}>
               <div>
