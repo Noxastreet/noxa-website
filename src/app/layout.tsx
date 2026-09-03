@@ -60,6 +60,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://videos.pexels.com" />
+        <link rel="preconnect" href="https://images.pexels.com" />
+        <link rel="dns-prefetch" href="https://videos.pexels.com" />
+      </head>
       <body>
         <MotionProvider>{children}</MotionProvider>
         <SitePreferencesGate />

@@ -1,0 +1,26 @@
+.media.media {
+  background-image: url("https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260");
+  background-position: 50% 50%;
+  background-size: cover;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 50%;
+  background: transparent;
+}
+
+@media (min-width: 1100px) {
+  .video {
+    object-position: 50% 46%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video {
+    display: none;
+  }
+}
