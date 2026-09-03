@@ -33,8 +33,8 @@ const copy = {
       },
     ],
     promiseEyebrow: "FOR COMMUNITIES",
-    promiseTitle: "Your community stays yours.",
-    promiseBody: "NOXA should not replace clubs, organisers or local scenes. It should make them easier to discover and give them better tools to reach the people who care.",
+    promiseTitle: "Built for established communities.",
+    promiseBody: "NOXA gives clubs, organisers and local scenes a structured way to publish events, improve discovery and build a visible presence without changing how they operate.",
     benefits: [
       ["Identity", "Your name, visual identity and voice stay yours."],
       ["Events", "Publish meets and make them discoverable beyond social posts."],
@@ -71,8 +71,8 @@ const copy = {
       },
     ],
     promiseEyebrow: "ΓΙΑ ΚΟΙΝΟΤΗΤΕΣ",
-    promiseTitle: "Η κοινότητά σου παραμένει δική σου.",
-    promiseBody: "Το NOXA δεν πρέπει να αντικαθιστά clubs, organisers ή τοπικές σκηνές. Πρέπει να τα κάνει πιο εύκολα να ανακαλυφθούν και να τους δίνει καλύτερα εργαλεία για να φτάνουν στους σωστούς ανθρώπους.",
+    promiseTitle: "Σχεδιασμένο για οργανωμένες κοινότητες.",
+    promiseBody: "Το NOXA δίνει σε clubs, organisers και τοπικές σκηνές έναν δομημένο τρόπο να δημοσιεύουν events, να αυξάνουν την προβολή τους και να χτίζουν σταθερή παρουσία χωρίς να αλλάζουν τον τρόπο που λειτουργούν.",
     benefits: [
       ["Identity", "Το όνομα, το visual identity και η φωνή σας παραμένουν δικά σας."],
       ["Events", "Δημοσίευσε meets που παραμένουν ορατά πέρα από ένα social post."],
