@@ -9,7 +9,7 @@ const contentSecurityPolicyReportOnly = [
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://images.pexels.com https://api.mapbox.com https://*.tiles.mapbox.com",
-  "media-src 'self' https://videos.pexels.com",
+  "media-src 'self'",
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com",
   "worker-src 'self' blob:",
