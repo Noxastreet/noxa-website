@@ -41,6 +41,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.86,
     },
+    {
+      url: "https://noxastreetapp.com/communities/apply",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
+    {
+      url: "https://noxastreetapp.com/el/communities/apply",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     ...featurePages.flatMap((feature) => [
       {
         url: `https://noxastreetapp.com/${feature}`,
