@@ -112,7 +112,7 @@ export function RadarSubmitForm() {
           <h1>Thanks for the tip.</h1>
           <p>{message}</p>
           <div className={styles.successActions}>
-            <Link className={styles.primaryLink} href="/radar">Back to Radar</Link>
+            <Link className={styles.primaryLink} href="/radar">Back to NOXA Meets</Link>
             <button onClick={() => { setDone(false); setMessage(""); formStartedAt.current = 0; }} type="button">Submit another</button>
           </div>
         </section>
@@ -124,7 +124,7 @@ export function RadarSubmitForm() {
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href="/">NOXA</Link>
-        <Link className={styles.backLink} href="/radar">← Radar</Link>
+        <Link className={styles.backLink} href="/radar">← NOXA Meets</Link>
       </header>
 
       <main className={styles.main}>
