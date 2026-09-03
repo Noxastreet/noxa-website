@@ -9,15 +9,13 @@ const RADAR_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_
 
 export const metadata: Metadata = {
   title: "NOXA Meets — Automotive events by country",
-  description:
-    "Discover public automotive and motorcycle gatherings by country with NOXA Meets.",
-  alternates: {
-    canonical: "https://noxastreetapp.com/radar",
-  },
+  description: "Discover public automotive and motorcycle gatherings by country with NOXA Meets.",
+  alternates: { canonical: "https://noxastreetapp.com/radar" },
 };
 
 type RadarEventRow = {
   id: string;
+  public_slug: string;
   country_code: string;
   title: string;
   event_type: string;
@@ -86,14 +84,9 @@ function dateParts(date: Date, timeZone: string) {
     minute: "2-digit",
     hourCycle: "h23",
   }).formatToParts(date);
-  const value = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "";
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
   return {
-    day: value("day"),
-    month: value("month"),
-    year: value("year"),
-    hour: value("hour"),
-    minute: value("minute"),
+    day: value("day"), month: value("month"), year: value("year"), hour: value("hour"), minute: value("minute"),
   };
 }
 
@@ -132,17 +125,11 @@ function formatEventDate(row: RadarEventRow) {
   }
 
   const durationMs = end ? end.getTime() - start.getTime() : 0;
-  const hasUsefulTime =
-    !(startParts.hour === "00" && startParts.minute === "00") &&
-    (!end || durationMs < 20 * 60 * 60 * 1000);
+  const hasUsefulTime = !(startParts.hour === "00" && startParts.minute === "00") && (!end || durationMs < 20 * 60 * 60 * 1000);
 
   if (hasUsefulTime) {
     const startTime = `${startParts.hour}:${startParts.minute}`;
-    if (endParts) {
-      dateDetail += ` · ${startTime}–${endParts.hour}:${endParts.minute}`;
-    } else {
-      dateDetail += ` · ${startTime}`;
-    }
+    dateDetail += endParts ? ` · ${startTime}–${endParts.hour}:${endParts.minute}` : ` · ${startTime}`;
   }
 
   return { dateLabel, dateDetail };
@@ -156,6 +143,7 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
 
   return {
     id: row.id,
+    slug: row.public_slug,
     countryCode: row.country_code,
     eventType: row.event_type,
     title: row.title,
@@ -164,9 +152,7 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
     dateDetail,
     location,
     city,
-    description:
-      row.summary?.trim() ||
-      `Public ${category.toLowerCase()} listed by ${row.source_name}.`,
+    description: row.summary?.trim() || `Public ${category.toLowerCase()} listed by ${row.source_name}.`,
     sourceName: row.source_name,
     sourceUrl: stableSourceUrl(row.source_url),
   };
@@ -174,23 +160,17 @@ function toRadarEvent(row: RadarEventRow): RadarEvent {
 
 async function loadPublishedEvents(): Promise<RadarEvent[]> {
   const query = new URLSearchParams({
-    select:
-      "id,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_name,source_url,summary,status",
+    select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_name,source_url,summary,status",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "500",
   });
 
   try {
-    const response = await fetch(
-      `${RADAR_SUPABASE_URL}/rest/v1/radar_events?${query.toString()}`,
-      {
-        headers: {
-          apikey: RADAR_SUPABASE_PUBLISHABLE_KEY,
-        },
-        next: { revalidate: 60 },
-      },
-    );
+    const response = await fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_events?${query.toString()}`, {
+      headers: { apikey: RADAR_SUPABASE_PUBLISHABLE_KEY },
+      next: { revalidate: 60 },
+    });
 
     if (!response.ok) {
       console.error("NOXA Meets events request failed", response.status);
@@ -199,7 +179,6 @@ async function loadPublishedEvents(): Promise<RadarEvent[]> {
 
     const rows = (await response.json()) as RadarEventRow[];
     const now = Date.now() - 15 * 60 * 1000;
-
     return rows
       .filter((row) => {
         const lastRelevantMoment = new Date(row.ends_at ?? row.starts_at).getTime();
@@ -213,11 +192,7 @@ async function loadPublishedEvents(): Promise<RadarEvent[]> {
 }
 
 export default async function RadarPage() {
-  const [requestHeaders, cookieStore, events] = await Promise.all([
-    headers(),
-    cookies(),
-    loadPublishedEvents(),
-  ]);
+  const [requestHeaders, cookieStore, events] = await Promise.all([headers(), cookies(), loadPublishedEvents()]);
   const detectedCountryCode =
     savedCountry(cookieStore.get("noxa_country")?.value) ??
     requestHeaders.get("x-vercel-ip-country") ??

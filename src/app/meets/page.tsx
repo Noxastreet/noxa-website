@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export { default } from "../radar/page";
+import { MeetsDirectoryPage } from "@/components/meets/MeetsDirectoryPage";
 
 export const metadata: Metadata = {
   title: "NOXA Meets — Car & moto events across Greece",
@@ -13,3 +13,7 @@ export const metadata: Metadata = {
     },
   },
 };
+
+export default function MeetsPage() {
+  return <MeetsDirectoryPage locale="en" />;
+}
