@@ -41,8 +41,8 @@ const copy = {
       ["Reach", "Be found by drivers and riders outside your existing audience."],
       ["Reputation", "Build a visible record of organised activity over time."],
     ],
-    promiseCta: "Explore NOXA Communities",
-    promiseHref: "/communities",
+    promiseCta: "List your community",
+    promiseHref: "/communities/apply",
   },
   el: {
     eyebrow: "ΓΙΑ ΟΛΗ ΤΗ ΣΚΗΝΗ",
@@ -80,8 +80,8 @@ const copy = {
       ["Reach", "Βρες νέους οδηγούς και αναβάτες έξω από το υπάρχον κοινό σου."],
       ["Reputation", "Χτίσε ορατό ιστορικό οργανωμένης δραστηριότητας με τον χρόνο."],
     ],
-    promiseCta: "Δες το NOXA Communities",
-    promiseHref: "/el/communities",
+    promiseCta: "Καταχώρισε την κοινότητά σου",
+    promiseHref: "/el/communities/apply",
   },
 } as const;
 
