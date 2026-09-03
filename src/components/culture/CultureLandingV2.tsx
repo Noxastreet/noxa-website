@@ -13,7 +13,7 @@ import refine from "./CultureLandingV2Refine.module.css";
 
 type Props = { locale: Locale };
 
-const HERO_VIDEO_URL = "https://videos.pexels.com/video-files/35716927/15137301_2160_3840_29fps.mp4";
+const HERO_VIDEO_URL = "/api/media/hero-video";
 const HERO_POSTER_URL =
   "https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=1200";
 
