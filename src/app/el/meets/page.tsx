@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export { default } from "../../meets/page";
+import { MeetsDirectoryPage } from "@/components/meets/MeetsDirectoryPage";
 
 export const metadata: Metadata = {
   title: "NOXA Meets — Car & moto events στην Ελλάδα",
@@ -13,3 +13,7 @@ export const metadata: Metadata = {
     },
   },
 };
+
+export default function GreekMeetsPage() {
+  return <MeetsDirectoryPage locale="el" />;
+}
