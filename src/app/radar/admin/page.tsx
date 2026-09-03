@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { RadarAdminSimpleConsole } from "@/components/radar/RadarAdminSimpleConsole";
 
 export const metadata: Metadata = {
-  title: "NOXA Radar Admin",
-  description: "Private NOXA Radar administration console.",
+  title: "NOXA Meets Admin",
+  description: "Private NOXA Meets administration console.",
   robots: {
     index: false,
     follow: false,
