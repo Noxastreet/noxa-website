@@ -179,7 +179,7 @@ export async function CommunityDirectory({ locale, query = "", focus = "" }: Com
             <section className={styles.empty}>
               <h2>{t.emptyTitle}</h2>
               <p>{t.emptyBody}</p>
-              <Link className={styles.primaryLink} href={locale === "el" ? "/el#waitlist" : "/#waitlist"}>
+              <Link className={styles.primaryLink} href={locale === "el" ? "/el/communities/apply" : "/communities/apply"}>
                 {t.emptyCta} →
               </Link>
             </section>
