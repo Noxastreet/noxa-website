@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { OrganizerDashboardFlow } from "@/components/organizers/OrganizerDashboardFlow";
+import { OrganizerInsightsShortcut } from "@/components/organizers/OrganizerInsightsShortcut";
 
 export const metadata: Metadata = {
   title: "Organizer Dashboard — NOXA",
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function OrganizerPageEl() {
-  return <OrganizerDashboardFlow locale="el" />;
+  return (
+    <>
+      <OrganizerDashboardFlow locale="el" />
+      <OrganizerInsightsShortcut locale="el" />
+    </>
+  );
 }
