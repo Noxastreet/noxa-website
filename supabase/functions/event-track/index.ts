@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
     const fingerprint = await sha256(`${clientAddress(req)}|${req.headers.get("user-agent") ?? "unknown"}`);
     const limiter = await rest("event_metric_rate_limits", {
       method: "POST",
-      headers: { Prefer: "return=minimal,resolution=ignore-duplicates" },
+      headers: { Prefer: "return=representation,resolution=ignore-duplicates" },
       body: JSON.stringify({
         event_id: eventId,
         fingerprint_hash: fingerprint,
@@ -128,8 +128,8 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false }, 500, origin);
     }
 
-    const duplicate = limiter.status === 200;
-    if (duplicate) return json({ ok: true, counted: false }, 200, origin);
+    const inserted = await limiter.json() as Array<{ event_id: string }>;
+    if (!inserted.length) return json({ ok: true, counted: false }, 200, origin);
 
     const recorded = await rpc("record_event_metric", {
       p_event_id: eventId,
