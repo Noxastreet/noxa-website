@@ -57,18 +57,36 @@ alter table public.communities enable row level security;
 grant select on table public.communities to anon, authenticated;
 grant insert, update, delete on table public.communities to authenticated;
 
-create policy "public reads published communities"
+create policy "anonymous reads published communities"
   on public.communities
   for select
-  to anon, authenticated
+  to anon
   using (status = 'published');
 
-create policy "admins manage communities"
+create policy "authenticated reads published or managed communities"
   on public.communities
-  for all
+  for select
+  to authenticated
+  using (status = 'published' or private.is_radar_admin());
+
+create policy "admins insert communities"
+  on public.communities
+  for insert
+  to authenticated
+  with check (private.is_radar_admin());
+
+create policy "admins update communities"
+  on public.communities
+  for update
   to authenticated
   using (private.is_radar_admin())
   with check (private.is_radar_admin());
+
+create policy "admins delete communities"
+  on public.communities
+  for delete
+  to authenticated
+  using (private.is_radar_admin());
 
 comment on table public.communities is
   'Website-only public automotive and motorcycle communities. Separate from mobile-app Crews until future synchronization.';
