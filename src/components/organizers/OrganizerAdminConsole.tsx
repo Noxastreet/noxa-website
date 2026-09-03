@@ -231,9 +231,21 @@ export function OrganizerAdminConsole() {
         const payload = await response.json().catch(() => ({})) as { message?: string };
         throw new Error(payload.message ?? "Could not create invitation.");
       }
+
+      const redirectTo = `${window.location.origin}/organizer`;
+      const mailResponse = await fetch(`${SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(redirectTo)}`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ email, create_user: true }),
+      });
+
       event.currentTarget.reset();
       await load(session.accessToken);
-      setMessage(`Access prepared for ${email}. They can sign in at /organizer with that email.`);
+      if (mailResponse.ok) {
+        setMessage(`Invitation sent to ${email}. The sign-in link opens the NOXA Organizer Dashboard.`);
+      } else {
+        setMessage(`Access is prepared for ${email}, but the sign-in email could not be sent. They can open /organizer and request a link with the same email.`);
+      }
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : "Could not create invitation.");
     } finally {
@@ -320,7 +332,7 @@ export function OrganizerAdminConsole() {
                 <form className={styles.inviteForm} onSubmit={(event) => void invite(event, organizer)}>
                   <label><span>Admin email</span><input name="email" placeholder="owner@example.com" required type="email" /></label>
                   <label><span>Role</span><select defaultValue="owner" name="role"><option value="owner">Owner</option><option value="admin">Admin</option><option value="editor">Editor</option></select></label>
-                  <button disabled={busy} type="submit">Prepare access</button>
+                  <button disabled={busy} type="submit">Send invite</button>
                 </form>
                 {(pendingByOrganizer.get(organizer.id) ?? []).length ? (
                   <div className={styles.invites}>
