@@ -20,9 +20,9 @@ const copy = {
       {
         number: "02",
         title: "COMMUNITIES",
-        body: "Keep your own name and identity. Publish events, grow your reach and build a visible history around your community.",
-        cta: "For communities",
-        href: "#community",
+        body: "Build a public presence, publish events, grow your reach and make your community easier to discover.",
+        cta: "Explore communities",
+        href: "/communities",
       },
       {
         number: "03",
@@ -34,14 +34,15 @@ const copy = {
     ],
     promiseEyebrow: "FOR COMMUNITIES",
     promiseTitle: "Built for established communities.",
-    promiseBody: "NOXA gives clubs, organisers and local scenes a structured way to publish events, improve discovery and build a visible presence without changing how they operate.",
+    promiseBody: "NOXA gives clubs, organisers and local scenes a structured way to publish events, improve discovery and build a visible presence around real activity.",
     benefits: [
-      ["Identity", "Your name, visual identity and voice stay yours."],
+      ["Identity", "Build a clear public profile for your community."],
       ["Events", "Publish meets and make them discoverable beyond social posts."],
       ["Reach", "Be found by drivers and riders outside your existing audience."],
       ["Reputation", "Build a visible record of organised activity over time."],
     ],
-    promiseCta: "Bring your community to NOXA",
+    promiseCta: "Explore NOXA Communities",
+    promiseHref: "/communities",
   },
   el: {
     eyebrow: "ΓΙΑ ΟΛΗ ΤΗ ΣΚΗΝΗ",
@@ -58,9 +59,9 @@ const copy = {
       {
         number: "02",
         title: "COMMUNITIES",
-        body: "Κράτα το όνομα και την ταυτότητά σου. Δημοσίευσε events, μεγάλωσε το reach σου και χτίσε ορατή παρουσία για την κοινότητά σου.",
-        cta: "Για κοινότητες",
-        href: "#community",
+        body: "Χτίσε δημόσια παρουσία, δημοσίευσε events, μεγάλωσε το reach σου και κάνε την κοινότητά σου πιο εύκολο να ανακαλυφθεί.",
+        cta: "Δες τις κοινότητες",
+        href: "/el/communities",
       },
       {
         number: "03",
@@ -72,14 +73,15 @@ const copy = {
     ],
     promiseEyebrow: "ΓΙΑ ΚΟΙΝΟΤΗΤΕΣ",
     promiseTitle: "Σχεδιασμένο για οργανωμένες κοινότητες.",
-    promiseBody: "Το NOXA δίνει σε clubs, organisers και τοπικές σκηνές έναν δομημένο τρόπο να δημοσιεύουν events, να αυξάνουν την προβολή τους και να χτίζουν σταθερή παρουσία χωρίς να αλλάζουν τον τρόπο που λειτουργούν.",
+    promiseBody: "Το NOXA δίνει σε clubs, organisers και τοπικές σκηνές έναν δομημένο τρόπο να δημοσιεύουν events, να αυξάνουν την προβολή τους και να χτίζουν σταθερή παρουσία γύρω από πραγματική δραστηριότητα.",
     benefits: [
-      ["Identity", "Το όνομα, το visual identity και η φωνή σας παραμένουν δικά σας."],
+      ["Identity", "Χτίσε ένα καθαρό δημόσιο profile για την κοινότητά σου."],
       ["Events", "Δημοσίευσε meets που παραμένουν ορατά πέρα από ένα social post."],
       ["Reach", "Βρες νέους οδηγούς και αναβάτες έξω από το υπάρχον κοινό σου."],
       ["Reputation", "Χτίσε ορατό ιστορικό οργανωμένης δραστηριότητας με τον χρόνο."],
     ],
-    promiseCta: "Φέρε την κοινότητά σου στο NOXA",
+    promiseCta: "Δες το NOXA Communities",
+    promiseHref: "/el/communities",
   },
 } as const;
 
@@ -120,9 +122,9 @@ export function EcosystemAudience({ locale }: { locale: Locale }) {
             <p className={styles.eyebrow}>{text.promiseEyebrow}</p>
             <h2>{text.promiseTitle}</h2>
             <p>{text.promiseBody}</p>
-            <a className={styles.promiseCta} href="#waitlist">
+            <Link className={styles.promiseCta} href={text.promiseHref}>
               {text.promiseCta} <Arrow />
-            </a>
+            </Link>
           </div>
 
           <div className={styles.benefitGrid}>
