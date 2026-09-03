@@ -22,6 +22,7 @@ type Submission = {
   about?: unknown;
   contactName?: unknown;
   contactEmail?: unknown;
+  consent?: unknown;
   website?: unknown;
   formStartedAt?: unknown;
 };
@@ -206,6 +207,7 @@ Deno.serve(async (req: Request) => {
   const about = longText(body.about, 2000);
   const contactName = text(body.contactName, 120);
   const contactEmail = text(body.contactEmail, 254).toLowerCase();
+  const consent = body.consent === true;
 
   if (communityName.length < 2) return json({ error: "Community name is required." }, 400, origin);
   if (city.length < 2) return json({ error: "City is required." }, 400, origin);
@@ -215,6 +217,7 @@ Deno.serve(async (req: Request) => {
   if (about.length < 20) return json({ error: "Tell us a little more about the community." }, 400, origin);
   if (contactName.length < 2) return json({ error: "Contact name is required." }, 400, origin);
   if (!validEmail(contactEmail)) return json({ error: "Add a valid contact email." }, 400, origin);
+  if (!consent) return json({ error: "Confirm that you are authorized to submit this community." }, 400, origin);
 
   try {
     if (await rateLimited(req)) {
@@ -245,6 +248,8 @@ Deno.serve(async (req: Request) => {
         about,
         contact_name: contactName,
         contact_email: contactEmail,
+        consent_at: new Date().toISOString(),
+        consent_version: "community-listing-v1",
         status: "pending",
       }),
     });
