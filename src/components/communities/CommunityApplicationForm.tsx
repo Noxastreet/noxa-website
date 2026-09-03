@@ -261,7 +261,10 @@ export function CommunityApplicationForm({ locale }: { locale: Locale }) {
               <input inputMode="url" maxLength={700} name="websiteUrl" placeholder="https://..." type="url" />
             </label>
           </div>
-          <p className={styles.reviewNote}><span aria-hidden="true">●</span><span>{t.publicLinkHelp}</span></p>
+          <div className={styles.reviewNote}>
+            <span aria-hidden="true">●</span>
+            <p>{t.publicLinkHelp}</p>
+          </div>
 
           <label className={styles.field}>
             <span>{t.about}</span>
