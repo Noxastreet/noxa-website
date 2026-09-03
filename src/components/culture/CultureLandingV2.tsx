@@ -15,7 +15,7 @@ type Props = { locale: Locale };
 
 const HERO_VIDEO_URL = "/api/media/hero-video";
 const HERO_POSTER_URL =
-  "https://images.pexels.com/photos/17716197/pexels-photo-17716197.jpeg?auto=compress&cs=tinysrgb&w=1200";
+  "https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260";
 
 const copy = {
   en: {
