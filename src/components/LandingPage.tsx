@@ -1,6 +1,6 @@
-import { CultureLanding } from "@/components/culture/CultureLanding";
+import { CultureLandingV2 } from "@/components/culture/CultureLandingV2";
 import type { Locale } from "@/i18n/landing-copy";
 
 export function LandingPage({ locale }: { locale: Locale }) {
-  return <CultureLanding locale={locale} />;
+  return <CultureLandingV2 locale={locale} />;
 }
