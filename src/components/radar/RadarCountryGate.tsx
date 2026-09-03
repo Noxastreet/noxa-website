@@ -200,7 +200,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
             className={`${styles.heroContent} !px-5 !pb-7`}
             style={{ minHeight: "clamp(230px, 29svh, 330px)" }}
           >
-            <p className={styles.eyebrow}>LIVE NOXA RADAR</p>
+            <p className={styles.eyebrow}>LIVE NOXA MEETS</p>
             <h1 className="!mt-3 !max-w-[12ch] !text-[clamp(36px,9vw,54px)]">Find your next meet.</h1>
             <p className="!mt-3 !max-w-[31rem] !text-[14px]">Car meets, Cars & Coffee, group drives, moto gatherings and motorsport — in one clear feed.</p>
           </div>
