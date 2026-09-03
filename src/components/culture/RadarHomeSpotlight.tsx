@@ -23,6 +23,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 type RadarRow = {
   id: string;
+  public_slug: string;
   title: string;
   event_type: string;
   starts_at: string;
@@ -66,7 +67,7 @@ function categoryLabel(type: string) {
 
 async function loadUpcoming(): Promise<RadarRow[]> {
   const query = new URLSearchParams({
-    select: "id,title,event_type,starts_at,ends_at,timezone,city,location_text,country_code",
+    select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,city,location_text,country_code",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "16",
@@ -96,6 +97,7 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
   const events = await loadUpcoming();
   const text = copy[locale];
   const meetsHref = locale === "el" ? "/el/meets" : "/meets";
+  const eventPrefix = locale === "el" ? "/el/meets" : "/meets";
 
   return (
     <section className={styles.section} aria-labelledby="live-radar-heading">
@@ -114,7 +116,7 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
         {events.length ? (
           <div className={styles.grid}>
             {events.map((event) => (
-              <Link className={styles.card} href={meetsHref} key={event.id}>
+              <Link className={styles.card} href={`${eventPrefix}/${event.public_slug}`} key={event.id}>
                 <div className={styles.cardTop}>
                   <span>{formatDate(event.starts_at, event.timezone, locale)}</span>
                   <span>{categoryLabel(event.event_type)}</span>
