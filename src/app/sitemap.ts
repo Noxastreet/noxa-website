@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  const featurePages = ["meets", "crews", "routes"];
+  const futureAppPages = ["crews", "routes"];
 
   return [
     {
@@ -18,16 +18,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: "https://noxastreetapp.com/radar",
+      url: "https://noxastreetapp.com/meets",
       lastModified,
       changeFrequency: "daily",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
-      url: "https://noxastreetapp.com/radar/submit",
+      url: "https://noxastreetapp.com/el/meets",
+      lastModified,
+      changeFrequency: "daily",
+      priority: 0.92,
+    },
+    {
+      url: "https://noxastreetapp.com/meets/submit",
       lastModified,
       changeFrequency: "monthly",
-      priority: 0.68,
+      priority: 0.72,
+    },
+    {
+      url: "https://noxastreetapp.com/el/meets/submit",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: "https://noxastreetapp.com/communities",
@@ -53,18 +65,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.7,
     },
-    ...featurePages.flatMap((feature) => [
+    ...futureAppPages.flatMap((feature) => [
       {
         url: `https://noxastreetapp.com/${feature}`,
         lastModified,
-        changeFrequency: "weekly" as const,
-        priority: 0.82,
+        changeFrequency: "monthly" as const,
+        priority: 0.45,
       },
       {
         url: `https://noxastreetapp.com/el/${feature}`,
         lastModified,
-        changeFrequency: "weekly" as const,
-        priority: 0.78,
+        changeFrequency: "monthly" as const,
+        priority: 0.42,
       },
     ]),
     {
