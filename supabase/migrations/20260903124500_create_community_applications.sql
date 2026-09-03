@@ -25,6 +25,9 @@ create table if not exists public.community_applications (
     check (char_length(btrim(contact_name)) between 2 and 120),
   contact_email text not null
     check (char_length(contact_email) between 5 and 254),
+  consent_at timestamptz not null default now(),
+  consent_version text not null default 'community-listing-v1'
+    check (consent_version = 'community-listing-v1'),
   status text not null default 'pending'
     check (status in ('pending', 'approved', 'rejected')),
   review_notes text
@@ -33,7 +36,10 @@ create table if not exists public.community_applications (
   reviewed_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  check ((status = 'pending' and reviewed_at is null) or status <> 'pending')
+  check (
+    (status = 'pending' and reviewed_at is null)
+    or (status <> 'pending' and reviewed_at is not null)
+  )
 );
 
 create index if not exists community_applications_status_created_idx
