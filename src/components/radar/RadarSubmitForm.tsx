@@ -90,14 +90,14 @@ export function RadarSubmitForm() {
       });
 
       const payload = await response.json().catch(() => ({})) as SubmitResponse;
-      if (!response.ok) throw new Error(payload.error ?? "Could not submit this event.");
+      if (!response.ok) throw new Error(payload.error ?? "Could not submit this event for review.");
 
       setDone(true);
       setMessage(payload.duplicate
         ? "This event is already in the NOXA review queue."
         : "Submitted. NOXA will review the details before anything appears publicly.");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Could not submit this event.");
+      setError(submitError instanceof Error ? submitError.message : "Could not submit this event for review.");
     } finally {
       setBusy(false);
     }
@@ -109,7 +109,7 @@ export function RadarSubmitForm() {
         <section className={styles.successCard}>
           <span className={styles.successMark} aria-hidden="true">✓</span>
           <p className={styles.eyebrow}>SUBMITTED FOR REVIEW</p>
-          <h1>Thanks for the tip.</h1>
+          <h1>Event sent for review.</h1>
           <p>{message}</p>
           <div className={styles.successActions}>
             <Link className={styles.primaryLink} href="/radar">Back to NOXA Meets</Link>
@@ -129,15 +129,15 @@ export function RadarSubmitForm() {
 
       <main className={styles.main}>
         <section className={styles.intro}>
-          <p className={styles.eyebrow}>COMMUNITY SUBMISSION</p>
-          <h1>Submit an event.</h1>
-          <p>Know about a public car meet, moto gathering or motorsport event? Send the source and details. Nothing is published until NOXA reviews it.</p>
+          <p className={styles.eyebrow}>EVENT REVIEW SUBMISSION</p>
+          <h1>Submit an event for review.</h1>
+          <p>Know about a public car meet, moto gathering or motorsport event? Send the source and details. This form never creates or publishes an event directly.</p>
         </section>
 
         <form className={styles.form} onFocusCapture={markFormStarted} onSubmit={submit}>
           <div className={styles.notice}>
-            <strong>Public events only.</strong>
-            <span>Add the original organizer post, event page or public announcement so we can verify the details.</span>
+            <strong>Public suggestions only.</strong>
+            <span>Direct publishing is reserved for verified admins of approved communities, teams, companies, pages and groups. Everyone else submits to NOXA for review.</span>
           </div>
 
           <label className={styles.field}>
@@ -198,7 +198,7 @@ export function RadarSubmitForm() {
 
           <div className={styles.reviewNote}>
             <span aria-hidden="true">●</span>
-            <p>Submitting does not mean NOXA organizes or endorses the event. Final details remain the organizer&apos;s responsibility.</p>
+            <p>NOXA reviews the source before publication. Submitting does not mean NOXA organizes or endorses the event; final details remain the organizer&apos;s responsibility.</p>
           </div>
 
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
