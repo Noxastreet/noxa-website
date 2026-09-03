@@ -52,6 +52,10 @@ create index if not exists community_applications_instagram_idx
   on public.community_applications (lower(instagram_url))
   where instagram_url is not null;
 
+create index if not exists community_applications_reviewed_by_idx
+  on public.community_applications (reviewed_by)
+  where reviewed_by is not null;
+
 create table if not exists public.community_application_rate_limits (
   fingerprint text primary key,
   window_started_at timestamptz not null,
