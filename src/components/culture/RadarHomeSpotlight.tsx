@@ -38,14 +38,14 @@ const copy = {
     eyebrow: "LIVE ON NOXA",
     title: "Car meets & events. One tap away.",
     body: "Real public gatherings collected from trusted sources and reviewed before they appear on NOXA.",
-    cta: "Open live Radar",
+    cta: "Open NOXA Meets",
     empty: "No public events are listed right now.",
   },
   el: {
     eyebrow: "LIVE ΣΤΟ NOXA",
     title: "Car meets & events. Ένα tap μακριά.",
     body: "Πραγματικές δημόσιες συναντήσεις από αξιόπιστες πηγές, ελεγμένες πριν εμφανιστούν στο NOXA.",
-    cta: "Άνοιξε το live Radar",
+    cta: "Άνοιξε το NOXA Meets",
     empty: "Δεν υπάρχουν δημόσια events αυτή τη στιγμή.",
   },
 } as const;
