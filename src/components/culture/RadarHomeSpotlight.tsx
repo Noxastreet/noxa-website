@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { Locale } from "@/i18n/landing-copy";
 
+import { EcosystemAudience } from "./EcosystemAudience";
 import styles from "./RadarHomeSpotlight.module.css";
 
 const RADAR_SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -97,37 +98,41 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
   const text = copy[locale];
 
   return (
-    <section className={styles.section} aria-labelledby="live-radar-heading">
-      <div className={styles.shell}>
-        <div className={styles.heading}>
-          <div>
-            <p className={styles.eyebrow}><span aria-hidden="true" />{text.eyebrow}</p>
-            <h2 id="live-radar-heading">{text.title}</h2>
-            <p className={styles.body}>{text.body}</p>
+    <>
+      <section className={styles.section} aria-labelledby="live-radar-heading">
+        <div className={styles.shell}>
+          <div className={styles.heading}>
+            <div>
+              <p className={styles.eyebrow}><span aria-hidden="true" />{text.eyebrow}</p>
+              <h2 id="live-radar-heading">{text.title}</h2>
+              <p className={styles.body}>{text.body}</p>
+            </div>
+            <Link className={styles.cta} href="/radar">
+              {text.cta} <span aria-hidden="true">→</span>
+            </Link>
           </div>
-          <Link className={styles.cta} href="/radar">
-            {text.cta} <span aria-hidden="true">→</span>
-          </Link>
-        </div>
 
-        {events.length ? (
-          <div className={styles.grid}>
-            {events.map((event) => (
-              <Link className={styles.card} href="/radar" key={event.id}>
-                <div className={styles.cardTop}>
-                  <span>{formatDate(event.starts_at, event.timezone, locale)}</span>
-                  <span>{categoryLabel(event.event_type)}</span>
-                </div>
-                <h3>{event.title}</h3>
-                <p>{event.city ?? event.location_text ?? event.country_code}</p>
-                <span className={styles.cardLink}>{locale === "el" ? "Δες το event" : "View event"} →</span>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.empty}>{text.empty}</div>
-        )}
-      </div>
-    </section>
+          {events.length ? (
+            <div className={styles.grid}>
+              {events.map((event) => (
+                <Link className={styles.card} href="/radar" key={event.id}>
+                  <div className={styles.cardTop}>
+                    <span>{formatDate(event.starts_at, event.timezone, locale)}</span>
+                    <span>{categoryLabel(event.event_type)}</span>
+                  </div>
+                  <h3>{event.title}</h3>
+                  <p>{event.city ?? event.location_text ?? event.country_code}</p>
+                  <span className={styles.cardLink}>{locale === "el" ? "Δες το event" : "View event"} →</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.empty}>{text.empty}</div>
+          )}
+        </div>
+      </section>
+
+      <EcosystemAudience locale={locale} />
+    </>
   );
 }
