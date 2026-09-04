@@ -1,19 +1,22 @@
-.site-header-row > a:first-child {
+.site-header-brand {
   width: 112px;
   padding-right: 0;
   overflow: visible;
-  color: transparent;
-  font-size: 0;
-  letter-spacing: 0;
-  background-image: url("/brand/noxa-header-sticker.svg");
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-size: 108px auto;
+}
+
+.site-header-brand-logo {
+  display: block;
+  width: 108px;
+  height: auto;
+  flex: 0 0 auto;
 }
 
 @media (min-width: 640px) {
-  .site-header-row > a:first-child {
+  .site-header-brand {
     width: 122px;
-    background-size: 118px auto;
+  }
+
+  .site-header-brand-logo {
+    width: 118px;
   }
 }
