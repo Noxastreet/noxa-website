@@ -1,5 +1,7 @@
 import { cookies, headers } from "next/headers";
 
+import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
+
 import { MeetsDirectory, type MeetsDirectoryEvent } from "./MeetsDirectory";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -46,11 +48,7 @@ async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
     });
     if (!response.ok) return [];
     const rows = await response.json() as Row[];
-    const now = Date.now() - 15 * 60 * 1000;
-    return rows.filter((row) => {
-      const last = new Date(row.ends_at ?? row.starts_at).getTime();
-      return Number.isFinite(last) && last >= now;
-    }).map((row) => ({
+    return rows.filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at)).map((row) => ({
       id: row.id,
       slug: row.public_slug,
       countryCode: row.country_code,
