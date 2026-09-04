@@ -4,6 +4,7 @@ import { MotionProvider } from "@/components/motion/MotionProvider";
 import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
 
 import "./globals.css";
+import "./header-logo.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),
