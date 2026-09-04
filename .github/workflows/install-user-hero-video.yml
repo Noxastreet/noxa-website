@@ -1,0 +1,36 @@
+name: Install User Hero Video
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-user-hero-video.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download approved hero video
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output public/media/noxa-hero-720p.mp4 'https://at.adobe.com/ccYompHs8uUOLa1w'
+          test -s public/media/noxa-hero-720p.mp4
+          bytes=$(wc -c < public/media/noxa-hero-720p.mp4)
+          test "$bytes" -gt 1000000
+          echo "Downloaded $bytes bytes"
+
+      - name: Commit hero and remove installer
+        run: |
+          set -euo pipefail
+          rm .github/workflows/install-user-hero-video.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/media/noxa-hero-720p.mp4 .github/workflows/install-user-hero-video.yml
+          git commit -m 'Replace hero video with user-provided clip'
+          git push
