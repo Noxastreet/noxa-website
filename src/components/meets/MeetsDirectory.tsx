@@ -51,15 +51,23 @@ function countryFlag(code: string) {
   return String.fromCodePoint(...code.split("").map((char) => 127397 + char.charCodeAt(0)));
 }
 
-function formatDate(event: MeetsDirectoryEvent, locale: "en" | "el") {
+function formatEventDate(event: MeetsDirectoryEvent, locale: "en" | "el") {
   const start = new Date(event.startsAt);
-  return new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: event.timezone || "Europe/Athens",
-  }).format(start);
+  const formatterLocale = locale === "el" ? "el-GR" : "en-GB";
+  const timeZone = event.timezone || "Europe/Athens";
+  const clean = (value: string) => value.replace(/\.$/, "").toLocaleUpperCase(formatterLocale);
+
+  return {
+    weekday: clean(new Intl.DateTimeFormat(formatterLocale, { weekday: "short", timeZone }).format(start)),
+    day: new Intl.DateTimeFormat(formatterLocale, { day: "2-digit", timeZone }).format(start),
+    month: clean(new Intl.DateTimeFormat(formatterLocale, { month: "short", timeZone }).format(start)),
+    time: new Intl.DateTimeFormat(formatterLocale, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone,
+    }).format(start),
+  };
 }
 
 function matches(event: MeetsDirectoryEvent, filter: Filter) {
@@ -77,7 +85,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
   const [city, setCity] = useState("all");
 
   const countryEvents = useMemo(() => events.filter((event) => event.countryCode === country), [events, country]);
-  const cities = useMemo(() => Array.from(new Set(countryEvents.map((event) => event.city).filter(Boolean))).sort(), [countryEvents]);
+  const cities = useMemo(() => Array.from(new Set(countryEvents.map((event) => event.city).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [countryEvents]);
   const visible = useMemo(() => countryEvents.filter((event) => matches(event, filter) && (city === "all" || event.city === city)), [countryEvents, filter, city]);
 
   const t = locale === "el" ? {
@@ -86,34 +94,48 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     body: "Car meets, moto events και motorsport σε ένα μέρος.",
     upcoming: "Επόμενα",
     add: "Πρόσθεσε Event",
+    country: "Χώρα",
+    city: "Πόλη",
+    type: "Τύπος",
     all: "Όλα",
     car: "Cars",
     moto: "Moto",
     motorsport: "Motorsport",
-    city: "Πόλη",
-    allCities: "Όλες",
+    allCities: "Όλες οι πόλεις",
+    noCities: "Δεν υπάρχουν πόλεις",
     noEvents: "Δεν υπάρχουν events με αυτά τα φίλτρα.",
     view: "Δες Event",
+    reset: "Καθαρισμός",
+    found: "events",
   } : {
     eyebrow: "NOXA MEETS",
     title: "Find your next meet.",
     body: "Car meets, moto events and motorsport in one place.",
     upcoming: "Upcoming",
     add: "Add Event",
+    country: "Country",
+    city: "City",
+    type: "Type",
     all: "All",
     car: "Cars",
     moto: "Moto",
     motorsport: "Motorsport",
-    city: "City",
     allCities: "All cities",
+    noCities: "No cities yet",
     noEvents: "No events match these filters.",
     view: "View Event",
+    reset: "Reset",
+    found: "events",
   };
+
+  const hasActiveFilters = city !== "all" || filter !== "all";
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
+        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
+          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+        </Link>
         <Link className={styles.addHeader} href={locale === "el" ? "/el/meets/submit" : "/meets/submit"}>＋ {t.add}</Link>
       </header>
 
@@ -131,42 +153,104 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
         <section className={styles.feed}>
           <div className={styles.shell}>
             <div className={styles.feedTop}>
-              <div>
-                <span>{t.upcoming}</span>
-                <h2>{countryFlag(country)} {countryName(country, locale)}</h2>
-              </div>
-              <label className={styles.countrySelect}>
-                <span className="sr-only">Country</span>
-                <select value={country} onChange={(event) => { setCountry(event.target.value); setCity("all"); }}>
-                  {(countries.length ? countries : [country]).map((code) => <option key={code} value={code}>{countryName(code, locale)}</option>)}
-                </select>
-              </label>
+              <span>{t.upcoming}</span>
+              <strong>{visible.length} {t.found}</strong>
             </div>
 
-            <div className={styles.filters}>
-              <div className={styles.chips}>
-                {([[
-                  "all", t.all,
-                ], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
-                  <button className={filter === value ? styles.chipActive : styles.chip} key={value} onClick={() => setFilter(value)} type="button">{label}</button>
-                ))}
+            <div className={styles.discoveryPanel} aria-label="Meet filters">
+              <div className={styles.locationGrid}>
+                <label className={styles.locationControl}>
+                  <span className={styles.controlLabel}>{t.country}</span>
+                  <span className={styles.selectShell}>
+                    <span className={styles.flag} aria-hidden="true">{countryFlag(country)}</span>
+                    <select
+                      aria-label={t.country}
+                      value={country}
+                      onChange={(event) => {
+                        setCountry(event.target.value);
+                        setCity("all");
+                      }}
+                    >
+                      {(countries.length ? countries : [country]).map((code) => (
+                        <option key={code} value={code}>{countryName(code, locale)}</option>
+                      ))}
+                    </select>
+                    <span className={styles.chevron} aria-hidden="true">⌄</span>
+                  </span>
+                </label>
+
+                <label className={styles.locationControl}>
+                  <span className={styles.controlLabel}>{t.city}</span>
+                  <span className={styles.selectShell}>
+                    <span className={styles.pin} aria-hidden="true">●</span>
+                    <select
+                      aria-label={t.city}
+                      value={city}
+                      disabled={!cities.length}
+                      onChange={(event) => setCity(event.target.value)}
+                    >
+                      <option value="all">{cities.length ? t.allCities : t.noCities}</option>
+                      {cities.map((name) => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                    <span className={styles.chevron} aria-hidden="true">⌄</span>
+                  </span>
+                </label>
               </div>
-              {cities.length ? (
-                <label className={styles.citySelect}><span>{t.city}</span><select value={city} onChange={(event) => setCity(event.target.value)}><option value="all">{t.allCities}</option>{cities.map((name) => <option key={name} value={name}>{name}</option>)}</select></label>
+
+              <div className={styles.typeRow}>
+                <span className={styles.controlLabel}>{t.type}</span>
+                <div className={styles.chips}>
+                  {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
+                    <button
+                      className={filter === value ? styles.chipActive : styles.chip}
+                      key={value}
+                      onClick={() => setFilter(value)}
+                      type="button"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {hasActiveFilters ? (
+                <button
+                  className={styles.resetButton}
+                  type="button"
+                  onClick={() => {
+                    setFilter("all");
+                    setCity("all");
+                  }}
+                >
+                  {t.reset}
+                </button>
               ) : null}
             </div>
 
             {visible.length ? (
               <div className={styles.grid}>
-                {visible.map((event) => (
-                  <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`} key={event.id}>
-                    <div className={styles.cardTop}><span>{formatDate(event, locale)}</span><span>{CATEGORY[event.eventType] ?? "EVENT"}</span></div>
-                    <h3>{event.title}</h3>
-                    <p>{[event.location, event.city].filter(Boolean).join(" · ")}</p>
-                    <small>{event.organizer}</small>
-                    <strong>{t.view} →</strong>
-                  </Link>
-                ))}
+                {visible.map((event) => {
+                  const date = formatEventDate(event, locale);
+                  return (
+                    <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`} key={event.id}>
+                      <div className={styles.cardTop}>
+                        <div className={styles.dateBadge} aria-label={`${date.weekday} ${date.day} ${date.month}`}>
+                          <span>{date.weekday}</span>
+                          <strong>{date.day}</strong>
+                          <small>{date.month}</small>
+                        </div>
+                        <div className={styles.cardMeta}>
+                          <span className={styles.time}>{date.time}</span>
+                          <span className={styles.category}>{CATEGORY[event.eventType] ?? "EVENT"}</span>
+                        </div>
+                      </div>
+                      <h3>{event.title}</h3>
+                      <p>{[event.location, event.city].filter(Boolean).join(" · ")}</p>
+                      <small className={styles.organizer}>{event.organizer}</small>
+                      <strong className={styles.cardLink}>{t.view} →</strong>
+                    </Link>
+                  );
+                })}
               </div>
             ) : <div className={styles.empty}>{t.noEvents}</div>}
           </div>
