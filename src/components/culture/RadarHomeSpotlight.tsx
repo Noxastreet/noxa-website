@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { Locale } from "@/i18n/landing-copy";
+import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
 
 import styles from "./RadarHomeSpotlight.module.css";
 
@@ -81,12 +82,8 @@ async function loadUpcoming(): Promise<RadarRow[]> {
 
     if (!response.ok) return [];
     const rows = await response.json() as RadarRow[];
-    const now = Date.now() - 15 * 60 * 1000;
     return rows
-      .filter((row) => {
-        const relevant = new Date(row.ends_at ?? row.starts_at).getTime();
-        return Number.isFinite(relevant) && relevant >= now;
-      })
+      .filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at))
       .slice(0, 3);
   } catch {
     return [];
