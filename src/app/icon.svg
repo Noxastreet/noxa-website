@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="NOXA">
-  <rect width="1024" height="1024" fill="#C8102E"/>
-  <path fill="#FFFFFF" d="M408 265H485L615 577L694 395H796L667 758H564L434 472L355 654H265L408 265Z"/>
-  <path fill="#FFFFFF" d="M226 655H264L226 756V655Z"/>
+  <rect width="1024" height="1024" rx="224" fill="#050505"/>
+  <g transform="translate(116 92) scale(7.9)">
+    <path fill="#F5F5F7" d="M7 91 31 14 51 36 84 7 96 3 68 88 49 66 35 89 20 70 12 96Z"/>
+    <path fill="#050505" d="M29 66 39 35 51 49 61 38 66 53 50 69 40 57 35 72Z"/>
+  </g>
+  <rect x="750" y="724" width="74" height="74" rx="10" fill="#E30613"/>
 </svg>
