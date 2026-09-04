@@ -132,11 +132,16 @@ export function SiteHeader({
       <header className="site-header fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[#050505]/88 backdrop-blur-[12px] adaptive-backdrop">
         <div className="page-shell site-header-row flex items-center gap-2">
           <a
-            className="inline-flex min-h-12 shrink-0 items-center rounded-md pr-2 text-sm font-bold tracking-[0.24em]"
+            className="site-header-brand inline-flex min-h-12 shrink-0 items-center rounded-md"
             href={homeHref}
             aria-label={navigationCopy.homeLabel}
           >
-            NOXA
+            <img
+              className="site-header-brand-logo"
+              src="/brand/noxa-header-sticker.svg"
+              alt=""
+              aria-hidden="true"
+            />
           </a>
 
           <nav
