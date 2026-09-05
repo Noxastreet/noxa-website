@@ -15,6 +15,14 @@
   margin-top: 0;
 }
 
+.pathsGridRefined > :first-child {
+  background-image: url("/api/media/culture-image?asset=community") !important;
+}
+
+.pathsGridRefined > :last-child {
+  background-image: url("/api/media/culture-image?asset=organizer") !important;
+}
+
 .pathCardRefined {
   min-height: 400px;
 }
@@ -33,7 +41,7 @@
 }
 
 .cultureMediaRefined {
-  background-image: url("https://images.pexels.com/photos/16896020/pexels-photo-16896020/free-photo-of-cars-and-people-at-the-parking-lot-during-a-car-meet.jpeg?auto=compress&dpr=1&h=1080&w=1920") !important;
+  background-image: url("/api/media/culture-image?asset=culture") !important;
   background-position: center 50% !important;
   filter: saturate(.78) contrast(1.08) brightness(.8) !important;
 }

@@ -8,12 +8,11 @@ const userAgent = "NOXA-production-smoke/1.0";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
-  ["meetups", "/meets", "text/html"],
-  ["crews", "/crews", "text/html"],
-  ["routes", "/routes", "text/html"],
-  ["greek-meetups", "/el/meets", "text/html"],
-  ["greek-crews", "/el/crews", "text/html"],
-  ["greek-routes", "/el/routes", "text/html"],
+  ["meets", "/meets", "text/html"],
+  ["greek-meets", "/el/meets", "text/html"],
+  ["communities", "/communities", "text/html"],
+  ["greek-communities", "/el/communities", "text/html"],
+  ["organizer", "/organizer", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
@@ -64,22 +63,27 @@ for (const expectedContent of [
   "aria-label=\"English\"",
   "aria-label=\"Greek\"",
   "href=\"/meets\"",
-  "href=\"/crews\"",
-  "href=\"/routes\"",
+  "href=\"/communities\"",
+  "href=\"/organizer\"",
+  "/brand/noxa-header-sticker.svg",
 ]) {
   if (!homeHtml.includes(expectedContent)) {
     throw new Error(`Home page is missing expected content: ${expectedContent}`);
   }
 }
 
-const featureContentChecks = [
-  ["meetups", "/meets", "What Meetups mean inside NOXA"],
-  ["crews", "/crews", "What Crews mean inside NOXA"],
-  ["routes", "/routes", "What Routes &amp; Drives mean inside NOXA"],
-  ["greek-meetups", "/el/meets", "Τι σημαίνουν τα Meetups μέσα στο NOXA"],
+if (homeHtml.includes("href=\"/meets/submit\"")) {
+  throw new Error("Home page must not expose Add Event; it belongs on the Meets directory only.");
+}
+
+const pageContentChecks = [
+  ["meets", "/meets", "Find your next meet."],
+  ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
+  ["communities", "/communities", "Find your scene."],
+  ["greek-communities", "/el/communities", "Βρες τη σκηνή σου."],
 ];
 
-for (const [name, pathname, expectedContent] of featureContentChecks) {
+for (const [name, pathname, expectedContent] of pageContentChecks) {
   const response = await fetch(new URL(pathname, baseUrl), {
     headers: { "User-Agent": userAgent },
   });
@@ -89,9 +93,17 @@ for (const [name, pathname, expectedContent] of featureContentChecks) {
     throw new Error(`${name} page is missing expected content: ${expectedContent}`);
   }
 
-  if (!html.includes("S. KARAKETIDIS") || !html.includes("instagram.com/noxa_app")) {
-    throw new Error(`${name} page is missing founder or Instagram footer content.`);
+  if (!html.includes("/brand/noxa-header-sticker.svg")) {
+    throw new Error(`${name} page is missing the current NOXA logo asset.`);
   }
+}
+
+const meetsHtml = await (await fetch(new URL("/meets", baseUrl), {
+  headers: { "User-Agent": userAgent },
+})).text();
+
+if (!meetsHtml.includes("href=\"/meets/submit\"")) {
+  throw new Error("Meets page is missing its top-level Add Event action.");
 }
 
 const expectedHeaders = {
