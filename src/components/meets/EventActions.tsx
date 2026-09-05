@@ -57,6 +57,15 @@ function track(eventId: string, kind: MetricKind, source = "direct") {
   }).catch(() => undefined);
 }
 
+function readSaved(eventId: string) {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? "[]");
+    return Array.isArray(parsed) && parsed.includes(eventId);
+  } catch {
+    return false;
+  }
+}
+
 function icsDate(value: string) {
   return new Date(value).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
@@ -92,13 +101,13 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
 
   useEffect(() => {
     void track(eventId, "view", trafficSource());
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      setSaved(Array.isArray(parsed) && parsed.includes(eventId));
-    } catch {
-      setSaved(false);
-    }
+    const syncSaved = () => setSaved(readSaved(eventId));
+    const timer = window.setTimeout(syncSaved, 0);
+    window.addEventListener("storage", syncSaved);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("storage", syncSaved);
+    };
   }, [eventId]);
 
   async function share() {
@@ -118,8 +127,7 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
 
   function toggleSave() {
     try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
+      const parsed = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? "[]");
       const next = new Set<string>(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []);
       if (next.has(eventId)) next.delete(eventId); else next.add(eventId);
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(Array.from(next)));
@@ -138,21 +146,10 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
     const start = new Date(startsAt);
     const end = endsAt ? new Date(endsAt) : new Date(start.getTime() + 3 * 60 * 60 * 1000);
     const body = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//NOXA//Meets//EN",
-      "CALSCALE:GREGORIAN",
-      "BEGIN:VEVENT",
-      `UID:${eventId}@noxastreetapp.com`,
-      `DTSTAMP:${icsDate(new Date().toISOString())}`,
-      `DTSTART:${icsDate(start.toISOString())}`,
-      `DTEND:${icsDate(end.toISOString())}`,
-      `SUMMARY:${icsEscape(eventTitle)}`,
-      `LOCATION:${icsEscape(locationLabel)}`,
-      `DESCRIPTION:${icsEscape(`NOXA Meets · ${organizerName}\n${window.location.href}`)}`,
-      `URL:${window.location.href}`,
-      "END:VEVENT",
-      "END:VCALENDAR",
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NOXA//Meets//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+      `UID:${eventId}@noxastreetapp.com`, `DTSTAMP:${icsDate(new Date().toISOString())}`, `DTSTART:${icsDate(start.toISOString())}`, `DTEND:${icsDate(end.toISOString())}`,
+      `SUMMARY:${icsEscape(eventTitle)}`, `LOCATION:${icsEscape(locationLabel)}`, `DESCRIPTION:${icsEscape(`NOXA Meets · ${organizerName}\n${window.location.href}`)}`, `URL:${window.location.href}`,
+      "END:VEVENT", "END:VCALENDAR",
     ].join("\r\n");
     const blob = new Blob([body], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -192,8 +189,7 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
       ctx.fillText(`NOXA MEETS · ${eventType.replaceAll("_", " ").toUpperCase()}`, 72, 420);
       ctx.fillStyle = "#ffffff";
       ctx.font = "800 78px -apple-system, BlinkMacSystemFont, sans-serif";
-      const lines = wrapCanvasText(ctx, eventTitle, 910, 5);
-      lines.forEach((line, index) => ctx.fillText(line, 72, 530 + index * 92));
+      wrapCanvasText(ctx, eventTitle, 910, 5).forEach((line, index) => ctx.fillText(line, 72, 530 + index * 92));
 
       const date = new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", { weekday: "short", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt));
       ctx.fillStyle = "#ffffff";
@@ -212,9 +208,8 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", .95));
       if (!blob) return;
       const file = new File([blob], "noxa-meet-story.png", { type: "image/png" });
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: eventTitle });
-      } else {
+      if (navigator.share && navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: eventTitle });
+      else {
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = url;
@@ -238,12 +233,7 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
       const response = await fetch("/api/meets/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId,
-          reason: form.get("reason"),
-          details: form.get("details"),
-          email: form.get("email"),
-        }),
+        body: JSON.stringify({ eventId, reason: form.get("reason"), details: form.get("details"), email: form.get("email") }),
       });
       if (!response.ok) throw new Error("report failed");
       setReportState("sent");
@@ -266,7 +256,6 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
       {!isPast ? <button className={styles.secondaryAction} onClick={addCalendar} type="button">＋ {labels.calendar}</button> : null}
       <button className={styles.secondaryAction} disabled={storyBusy} onClick={() => void shareStory()} type="button">{storyBusy ? labels.storyBusy : labels.story}</button>
     </div>
-
     <div className={styles.reportWrap}>
       <button className={styles.reportToggle} type="button" onClick={() => setReportOpen((value) => !value)}>{labels.report} →</button>
       {reportOpen ? <form className={styles.reportForm} onSubmit={(event) => void submitReport(event)}>
