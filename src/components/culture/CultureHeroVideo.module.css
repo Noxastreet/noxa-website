@@ -21,6 +21,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .video {
-    display: none;
+    display: block;
   }
 }
