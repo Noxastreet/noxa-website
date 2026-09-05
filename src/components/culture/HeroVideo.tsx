@@ -8,11 +8,13 @@ type Props = {
   src: string;
 };
 
+const LEGACY_PEXELS_POSTER =
+  "https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260";
+const SAME_ORIGIN_HERO_POSTER = "/api/media/culture-image?asset=hero";
+
 export function HeroVideo({ className, poster, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const effectivePoster = poster.includes("images.pexels.com")
-    ? "/api/media/culture-image?asset=hero"
-    : poster;
+  const effectivePoster = poster === LEGACY_PEXELS_POSTER ? SAME_ORIGIN_HERO_POSTER : poster;
 
   useEffect(() => {
     const video = videoRef.current;
