@@ -1,3 +1,5 @@
+import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
+
 const WEBSITE_DATA_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const WEBSITE_DATA_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 
@@ -22,6 +24,7 @@ export type PublicCommunity = {
 
 export type CommunityEvent = {
   id: string;
+  public_slug: string;
   title: string;
   event_type: string;
   starts_at: string;
@@ -31,6 +34,14 @@ export type CommunityEvent = {
   city: string | null;
   region: string | null;
   source_url: string;
+};
+
+export type CommunityOrganizer = {
+  slug: string;
+  name: string;
+  verified: boolean;
+  partner: boolean;
+  partner_label: string | null;
 };
 
 async function publicDataFetch(path: string) {
@@ -47,7 +58,6 @@ export async function loadPublishedCommunities(): Promise<PublicCommunity[]> {
     order: "verified.desc,name.asc",
     limit: "200",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/communities?${params.toString()}`);
     if (!response.ok) return [];
@@ -64,7 +74,6 @@ export async function loadCommunityBySlug(slug: string): Promise<PublicCommunity
     status: "eq.published",
     limit: "1",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/communities?${params.toString()}`);
     if (!response.ok) return null;
@@ -77,23 +86,36 @@ export async function loadCommunityBySlug(slug: string): Promise<PublicCommunity
 
 export async function loadCommunityEvents(communityId: string): Promise<CommunityEvent[]> {
   const params = new URLSearchParams({
-    select: "id,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_url",
+    select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_url",
     community_id: `eq.${communityId}`,
     status: "eq.published",
     order: "starts_at.asc",
-    limit: "20",
+    limit: "30",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/radar_events?${params.toString()}`);
     if (!response.ok) return [];
     const rows = await response.json() as CommunityEvent[];
-    const cutoff = Date.now() - 15 * 60 * 1000;
-    return rows.filter((event) => {
-      const end = new Date(event.ends_at ?? event.starts_at).getTime();
-      return Number.isFinite(end) && end >= cutoff;
-    });
+    return rows.filter((event) => isEventCurrentlyVisible(event.starts_at, event.ends_at));
   } catch {
     return [];
+  }
+}
+
+export async function loadCommunityOrganizer(communityId: string): Promise<CommunityOrganizer | null> {
+  const params = new URLSearchParams({
+    select: "slug,name,verified,partner,partner_label",
+    community_id: `eq.${communityId}`,
+    status: "eq.active",
+    limit: "1",
+  });
+  try {
+    const response = await publicDataFetch(`/rest/v1/organizer_profiles?${params.toString()}`);
+    if (!response.ok) return null;
+    const rows = await response.json() as Array<{ slug: string; name: string; verified: boolean; partner: boolean | null; partner_label: string | null }>;
+    const row = rows[0];
+    return row ? { ...row, partner: Boolean(row.partner) } : null;
+  } catch {
+    return null;
   }
 }

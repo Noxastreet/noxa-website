@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
+import { FollowPrompt } from "./FollowPrompt";
 
+import growth from "./MeetsDirectoryGrowth.module.css";
 import styles from "./MeetsDirectory.module.css";
 
 export type MeetsDirectoryEvent = {
@@ -20,10 +22,15 @@ export type MeetsDirectoryEvent = {
   city: string;
   region: string;
   organizer: string;
+  organizerSlug?: string | null;
+  featured?: boolean;
+  partnerBadge?: string | null;
 };
 
 type Filter = "all" | "car" | "moto" | "motorsport";
+type DateFilter = "all" | "now" | "today" | "tomorrow" | "weekend" | "month" | "saved";
 
+const SAVED_KEY = "noxa.savedEvents.v1";
 const MOTORSPORT = new Set(["track_day", "drag", "drift", "rally"]);
 const MOTO = new Set(["moto_meet"]);
 const CATEGORY: Record<string, string> = {
@@ -53,6 +60,65 @@ function countryFlag(code: string) {
   return String.fromCodePoint(...code.split("").map((char) => 127397 + char.charCodeAt(0)));
 }
 
+function normalize(value: string) {
+  return value.trim().toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function readSavedIds() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? "[]");
+    return new Set<string>(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function endMs(event: MeetsDirectoryEvent) {
+  const explicitEnd = event.endsAt ? new Date(event.endsAt).getTime() : Number.NaN;
+  return Number.isFinite(explicitEnd) ? explicitEnd : new Date(event.startsAt).getTime() + 3 * 60 * 60 * 1000;
+}
+
+function isHappeningNow(event: MeetsDirectoryEvent, now = Date.now()) {
+  const start = new Date(event.startsAt).getTime();
+  return Number.isFinite(start) && start <= now && endMs(event) >= now;
+}
+
+function startOfDay(value: Date) {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function matchesType(event: MeetsDirectoryEvent, filter: Filter) {
+  if (filter === "all") return true;
+  if (filter === "moto") return MOTO.has(event.eventType);
+  if (filter === "motorsport") return MOTORSPORT.has(event.eventType);
+  return !MOTO.has(event.eventType) && !MOTORSPORT.has(event.eventType);
+}
+
+function matchesDate(event: MeetsDirectoryEvent, filter: DateFilter, savedIds: Set<string>) {
+  if (filter === "all") return true;
+  if (filter === "saved") return savedIds.has(event.id);
+  if (filter === "now") return isHappeningNow(event);
+
+  const now = new Date();
+  const eventDate = new Date(event.startsAt);
+  const today = startOfDay(now);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const afterTomorrow = new Date(tomorrow);
+  afterTomorrow.setDate(afterTomorrow.getDate() + 1);
+
+  if (filter === "today") return eventDate >= today && eventDate < tomorrow;
+  if (filter === "tomorrow") return eventDate >= tomorrow && eventDate < afterTomorrow;
+  if (filter === "month") return eventDate.getFullYear() === now.getFullYear() && eventDate.getMonth() === now.getMonth();
+
+  const daysUntilSaturday = now.getDay() === 6 ? 0 : (6 - now.getDay() + 7) % 7;
+  const weekendStart = new Date(today);
+  weekendStart.setDate(weekendStart.getDate() + daysUntilSaturday);
+  const weekendEnd = new Date(weekendStart);
+  weekendEnd.setDate(weekendEnd.getDate() + 2);
+  return eventDate >= weekendStart && eventDate < weekendEnd;
+}
+
 function formatEventDate(event: MeetsDirectoryEvent, locale: "en" | "el") {
   const start = new Date(event.startsAt);
   const formatterLocale = locale === "el" ? "el-GR" : "en-GB";
@@ -72,13 +138,6 @@ function formatEventDate(event: MeetsDirectoryEvent, locale: "en" | "el") {
   };
 }
 
-function matches(event: MeetsDirectoryEvent, filter: Filter) {
-  if (filter === "all") return true;
-  if (filter === "moto") return MOTO.has(event.eventType);
-  if (filter === "motorsport") return MOTORSPORT.has(event.eventType);
-  return !MOTO.has(event.eventType) && !MOTORSPORT.has(event.eventType);
-}
-
 function eventLocation(event: MeetsDirectoryEvent) {
   if (!event.city || event.location.toLocaleLowerCase().includes(event.city.toLocaleLowerCase())) {
     return event.location;
@@ -91,11 +150,34 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
   const initialCountry = countries.includes(detectedCountryCode) ? detectedCountryCode : (countries.includes("GR") ? "GR" : countries[0] ?? detectedCountryCode);
   const [country, setCountry] = useState(initialCountry);
   const [filter, setFilter] = useState<Filter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [city, setCity] = useState("all");
+  const [query, setQuery] = useState("");
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [locationState, setLocationState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [locationMessage, setLocationMessage] = useState("");
+
+  useEffect(() => {
+    const syncSaved = () => setSavedIds(readSavedIds());
+    const timer = window.setTimeout(syncSaved, 0);
+    window.addEventListener("storage", syncSaved);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("storage", syncSaved);
+    };
+  }, []);
 
   const countryEvents = useMemo(() => events.filter((event) => event.countryCode === country), [events, country]);
   const cities = useMemo(() => Array.from(new Set(countryEvents.map((event) => event.city).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [countryEvents]);
-  const visible = useMemo(() => countryEvents.filter((event) => matches(event, filter) && (city === "all" || event.city === city)), [countryEvents, filter, city]);
+  const search = normalize(query);
+  const visible = useMemo(() => countryEvents
+    .filter((event) => matchesType(event, filter))
+    .filter((event) => city === "all" || event.city === city)
+    .filter((event) => matchesDate(event, dateFilter, savedIds))
+    .filter((event) => !search || normalize([event.title, event.organizer, event.city, event.region, event.location, CATEGORY[event.eventType] ?? ""].join(" ")).includes(search))
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()),
+  [countryEvents, filter, city, dateFilter, savedIds, search]);
+  const happeningCount = useMemo(() => countryEvents.filter((event) => isHappeningNow(event)).length, [countryEvents]);
   const featured = visible[0] ?? null;
   const remaining = featured ? visible.slice(1) : visible;
 
@@ -112,6 +194,11 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     country: "Χώρα",
     city: "Πόλη",
     type: "Τύπος",
+    date: "Πότε",
+    search: "Αναζήτηση",
+    searchPlaceholder: "Event, organizer ή πόλη",
+    near: "Κοντά μου",
+    locating: "Εντοπισμός…",
     all: "Όλα",
     car: "Cars",
     moto: "Moto",
@@ -119,13 +206,24 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     allCities: "Όλες οι πόλεις",
     noCities: "Δεν υπάρχουν πόλεις",
     noEvents: "Δεν υπάρχουν events με αυτά τα φίλτρα.",
-    noEventsBody: "Δοκίμασε άλλη πόλη ή κατηγορία για να δεις περισσότερα.",
+    noEventsBody: "Δοκίμασε άλλη πόλη, ημερομηνία ή κατηγορία για να δεις περισσότερα.",
     view: "Δες Event",
     reset: "Καθαρισμός φίλτρων",
     found: "events",
-    featured: "NEXT UP",
+    nextUp: "NEXT UP",
+    featuredLabel: "FEATURED",
     hostedBy: "Διοργάνωση",
     discoverIn: "Discover in",
+    now: "Τώρα",
+    today: "Σήμερα",
+    tomorrow: "Αύριο",
+    weekend: "Σαββατοκύριακο",
+    month: "Αυτόν τον μήνα",
+    saved: "Αποθηκευμένα",
+    archive: "Προηγούμενα events",
+    live: "LIVE",
+    locationNoCity: "Βρήκαμε τη χώρα σου, αλλά δεν υπάρχει ακόμη event στην πόλη σου.",
+    locationError: "Δεν μπορέσαμε να βρούμε την τοποθεσία σου.",
   } : {
     eyebrow: "NOXA MEETS",
     heroKicker: "AUTOMOTIVE CULTURE · GREECE",
@@ -139,6 +237,11 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     country: "Country",
     city: "City",
     type: "Type",
+    date: "When",
+    search: "Search",
+    searchPlaceholder: "Event, organizer or city",
+    near: "Near me",
+    locating: "Locating…",
     all: "All",
     car: "Cars",
     moto: "Moto",
@@ -146,27 +249,85 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     allCities: "All cities",
     noCities: "No cities yet",
     noEvents: "No events match these filters.",
-    noEventsBody: "Try another city or category to discover more events.",
+    noEventsBody: "Try another city, date or category to discover more events.",
     view: "View Event",
     reset: "Reset filters",
     found: "events",
-    featured: "NEXT UP",
+    nextUp: "NEXT UP",
+    featuredLabel: "FEATURED",
     hostedBy: "Hosted by",
     discoverIn: "Discover in",
+    now: "Happening now",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    weekend: "This weekend",
+    month: "This month",
+    saved: "Saved",
+    archive: "Past events",
+    live: "LIVE",
+    locationNoCity: "We found your country, but there are no events in your city yet.",
+    locationError: "We could not detect your location.",
   };
 
-  const hasActiveFilters = city !== "all" || filter !== "all";
+  async function detectMyLocation() {
+    if (!navigator.geolocation) {
+      setLocationState("error");
+      setLocationMessage(t.locationError);
+      return;
+    }
+
+    setLocationState("loading");
+    setLocationMessage("");
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const params = new URLSearchParams({ lat: String(position.coords.latitude), lon: String(position.coords.longitude) });
+        const response = await fetch(`/api/meets/reverse-geocode?${params.toString()}`);
+        if (!response.ok) throw new Error("lookup failed");
+        const data = await response.json() as { countryCode?: string; city?: string };
+        const nextCountry = (data.countryCode ?? "").toUpperCase();
+
+        if (nextCountry && countries.includes(nextCountry)) setCountry(nextCountry);
+
+        const candidates = events
+          .filter((event) => !nextCountry || event.countryCode === nextCountry)
+          .map((event) => event.city)
+          .filter(Boolean);
+        const found = data.city ? candidates.find((name) => normalize(name) === normalize(data.city ?? "")) : undefined;
+
+        setCity(found ?? "all");
+        setLocationState("done");
+        setLocationMessage(found ? data.city ?? "" : t.locationNoCity);
+      } catch {
+        setLocationState("error");
+        setLocationMessage(t.locationError);
+      }
+    }, () => {
+      setLocationState("error");
+      setLocationMessage(t.locationError);
+    }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+  }
+
+  const hasActiveFilters = city !== "all" || filter !== "all" || dateFilter !== "all" || Boolean(query.trim());
   const countryLabel = countryName(country, locale);
+  const base = locale === "el" ? "/el" : "";
+
+  const resetFilters = () => {
+    setFilter("all");
+    setDateFilter("all");
+    setCity("all");
+    setQuery("");
+  };
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
+        <Link className={styles.brand} href={base || "/"} aria-label="NOXA home">
           <NoxaLogo />
         </Link>
         <div className={styles.headerActions}>
           <a className={styles.headerExplore} href="#events">{t.explore}</a>
-          <Link className={styles.addHeader} href={locale === "el" ? "/el/meets/submit" : "/meets/submit"}>＋ {t.add}</Link>
+          <Link className={styles.addHeader} href={`${base}/meets/submit`}>＋ {t.add}</Link>
         </div>
       </header>
 
@@ -195,7 +356,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
               <p className={styles.heroBody}>{t.body}</p>
               <div className={styles.heroActions}>
                 <a className={styles.primaryAction} href="#events">{t.explore}<span aria-hidden="true">↘</span></a>
-                <Link className={styles.secondaryAction} href={locale === "el" ? "/el/meets/submit" : "/meets/submit"}>{t.add}<span aria-hidden="true">＋</span></Link>
+                <Link className={styles.secondaryAction} href={`${base}/meets/submit`}>{t.add}<span aria-hidden="true">＋</span></Link>
               </div>
             </div>
             <div className={styles.heroStat} aria-label={`${countryEvents.length} ${t.found} ${countryLabel}`}>
@@ -216,7 +377,45 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
               <p>{t.sectionBody}</p>
             </div>
 
+            <div className={growth.discoveryMeta}>
+              <strong>{visible.length} {t.found}</strong>
+              <Link href={`${base}/meets/archive`}>{t.archive} →</Link>
+            </div>
+
+            <div className={growth.quickRow} aria-label={t.date}>
+              {([
+                ["now", `${t.now}${happeningCount ? ` · ${happeningCount}` : ""}`],
+                ["today", t.today],
+                ["weekend", t.weekend],
+                ["saved", `${t.saved}${savedIds.size ? ` · ${savedIds.size}` : ""}`],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={dateFilter === value ? growth.quickActive : growth.quickButton}
+                  onClick={() => setDateFilter(dateFilter === value ? "all" : value)}
+                  aria-pressed={dateFilter === value}
+                >
+                  {value === "now" && happeningCount ? <span className={growth.liveDot} aria-hidden="true" /> : null}
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div className={styles.discoveryPanel} aria-label="Meet filters">
+              <label className={growth.searchControl}>
+                <span className={styles.controlLabel}>{t.search}</span>
+                <span className={growth.searchShell}>
+                  <span aria-hidden="true">⌕</span>
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder={t.searchPlaceholder}
+                  />
+                </span>
+              </label>
+
               <div className={styles.locationGrid}>
                 <label className={styles.locationControl}>
                   <span className={styles.controlLabel}>{t.country}</span>
@@ -256,34 +455,75 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
                 </label>
               </div>
 
-              <div className={styles.typeRow}>
-                <span className={styles.controlLabel}>{t.type}</span>
-                <div className={styles.chips}>
-                  {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
-                    <button
-                      className={filter === value ? styles.chipActive : styles.chip}
-                      key={value}
-                      onClick={() => setFilter(value)}
-                      type="button"
-                      aria-pressed={filter === value}
-                    >
-                      {label}
-                    </button>
-                  ))}
+              <div className={growth.nearRow}>
+                <button
+                  className={growth.nearButton}
+                  type="button"
+                  disabled={locationState === "loading"}
+                  onClick={() => void detectMyLocation()}
+                >
+                  <span aria-hidden="true">◎</span>
+                  {locationState === "loading" ? t.locating : t.near}
+                </button>
+                {locationMessage ? (
+                  <span className={locationState === "error" ? growth.locationError : growth.locationMessage}>
+                    {locationMessage}
+                  </span>
+                ) : null}
+              </div>
+
+              {city !== "all" ? (
+                <div className={growth.followWrap}>
+                  <FollowPrompt
+                    targetType="city"
+                    targetKey={`${country}:${normalize(city)}`}
+                    targetLabel={`${city}, ${countryName(country, locale)}`}
+                    locale={locale}
+                    compact
+                  />
+                </div>
+              ) : null}
+
+              <div className={growth.filterGrid}>
+                <div className={styles.typeRow}>
+                  <span className={styles.controlLabel}>{t.type}</span>
+                  <div className={styles.chips}>
+                    {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
+                      <button
+                        className={filter === value ? styles.chipActive : styles.chip}
+                        key={value}
+                        onClick={() => setFilter(value)}
+                        type="button"
+                        aria-pressed={filter === value}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.typeRow}>
+                  <span className={styles.controlLabel}>{t.date}</span>
+                  <div className={styles.chips}>
+                    {([["all", t.all], ["today", t.today], ["tomorrow", t.tomorrow], ["weekend", t.weekend], ["month", t.month]] as const).map(([value, label]) => (
+                      <button
+                        className={dateFilter === value ? styles.chipActive : styles.chip}
+                        key={value}
+                        onClick={() => setDateFilter(value)}
+                        type="button"
+                        aria-pressed={dateFilter === value}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <div className={styles.filterFooter}>
                 <span>{visible.length} {t.found}</span>
                 {hasActiveFilters ? (
-                  <button
-                    className={styles.resetButton}
-                    type="button"
-                    onClick={() => {
-                      setFilter("all");
-                      setCity("all");
-                    }}
-                  >
+                  <button className={styles.resetButton} type="button" onClick={resetFilters}>
                     {t.reset}
                   </button>
                 ) : null}
@@ -292,16 +532,21 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
 
             {featured ? (() => {
               const date = formatEventDate(featured, locale);
+              const live = isHappeningNow(featured);
               return (
-                <Link className={styles.featuredCard} href={`${locale === "el" ? "/el" : ""}/meets/${featured.slug}`}>
+                <Link className={styles.featuredCard} href={`${base}/meets/${featured.slug}`}>
                   <div className={styles.featuredMedia} aria-hidden="true">
                     <span className={styles.featuredCategory}>{CATEGORY[featured.eventType] ?? "EVENT"}</span>
                     <span className={styles.featuredIndex}>01</span>
                   </div>
                   <div className={styles.featuredContent}>
                     <div className={styles.featuredTopline}>
-                      <span>{t.featured}</span>
-                      <span>{date.weekday} · {date.day} {date.month} · {date.time}</span>
+                      <span>{featured.featured ? t.featuredLabel : t.nextUp}</span>
+                      <span>{live ? t.live : `${date.weekday} · ${date.day} ${date.month} · ${date.time}`}</span>
+                    </div>
+                    <div className={growth.badges}>
+                      {featured.partnerBadge ? <span>{featured.partnerBadge}</span> : null}
+                      {savedIds.has(featured.id) ? <span>★ {t.saved}</span> : null}
                     </div>
                     <h3>{featured.title}</h3>
                     <p className={styles.featuredLocation}>{eventLocation(featured)}</p>
@@ -318,8 +563,9 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
               <div className={styles.grid}>
                 {remaining.map((event, index) => {
                   const date = formatEventDate(event, locale);
+                  const live = isHappeningNow(event);
                   return (
-                    <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`} key={event.id}>
+                    <Link className={styles.card} href={`${base}/meets/${event.slug}`} key={event.id}>
                       <div className={styles.cardNumber} aria-hidden="true">{String(index + 2).padStart(2, "0")}</div>
                       <div className={styles.cardTop}>
                         <div className={styles.dateBadge} aria-label={`${date.weekday} ${date.day} ${date.month}`}>
@@ -329,8 +575,15 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
                         </div>
                         <div className={styles.cardMeta}>
                           <span className={styles.category}>{CATEGORY[event.eventType] ?? "EVENT"}</span>
-                          <span className={styles.time}>{date.time}</span>
+                          <span className={styles.time}>
+                            {live ? <><span className={growth.liveDot} aria-hidden="true" />{t.live}</> : date.time}
+                          </span>
                         </div>
+                      </div>
+                      <div className={growth.badges}>
+                        {event.featured ? <span>{t.featuredLabel}</span> : null}
+                        {event.partnerBadge ? <span>{event.partnerBadge}</span> : null}
+                        {savedIds.has(event.id) ? <span>★ {t.saved}</span> : null}
                       </div>
                       <h3>{event.title}</h3>
                       <p>{eventLocation(event)}</p>
@@ -346,7 +599,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
               <div className={styles.empty}>
                 <strong>{t.noEvents}</strong>
                 <p>{t.noEventsBody}</p>
-                {hasActiveFilters ? <button type="button" onClick={() => { setFilter("all"); setCity("all"); }}>{t.reset}</button> : null}
+                {hasActiveFilters ? <button type="button" onClick={resetFilters}>{t.reset}</button> : null}
               </div>
             )}
           </div>
