@@ -38,12 +38,22 @@ export const metadata: Metadata = {
     title: "NOXA — The road becomes social",
     description:
       "Discover drivers, car meets, crews, routes and automotive events around you with NOXA.",
+    images: [
+      {
+        url: "/brand/noxa-og-preview.jpg",
+        width: 1200,
+        height: 630,
+        alt: "NOXA — The road becomes social",
+        type: "image/jpeg",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "NOXA — The road becomes social",
     description:
       "Discover drivers, car meets, crews, routes and automotive events around you with NOXA.",
+    images: ["/brand/noxa-og-preview.jpg"],
   },
 };
 
