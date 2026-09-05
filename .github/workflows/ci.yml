@@ -48,6 +48,8 @@ jobs:
         run: npm run test:radar-adapters
       - name: Meets growth fixtures
         run: npm run test:meets-growth
+      - name: Platform flow consistency
+        run: npm run test:platform-flows
       - name: Lint
         run: npm run lint
       - name: Production build
