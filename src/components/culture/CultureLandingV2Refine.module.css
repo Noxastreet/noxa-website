@@ -7,6 +7,8 @@
 }
 
 .pathsRefined {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 760px;
   padding-top: 56px;
   padding-bottom: 72px;
 }
@@ -54,6 +56,8 @@
 }
 
 .appRefined {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 620px;
   padding-top: 80px;
   padding-bottom: 80px;
 }
