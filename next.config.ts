@@ -14,7 +14,6 @@ const contentSecurityPolicyReportOnly = [
   "connect-src 'self' https://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  "upgrade-insecure-requests",
 ].join("; ");
 
 const securityHeaders = [
