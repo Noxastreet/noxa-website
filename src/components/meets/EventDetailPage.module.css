@@ -9,12 +9,12 @@
   inset: 0 0 auto;
   z-index: 30;
   display: flex;
-  min-height: 64px;
+  min-height: 72px;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid rgba(255,255,255,.08);
-  background: rgba(5,5,5,.74);
+  background: rgba(5,5,5,.84);
   padding: 0 20px;
   backdrop-filter: blur(16px);
 }
@@ -26,9 +26,16 @@
 }
 
 .brand {
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: .24em;
+  display: inline-flex;
+  width: 122px;
+  min-height: 48px;
+  align-items: center;
+}
+
+.brand img {
+  display: block;
+  width: 122px;
+  height: auto;
 }
 
 .back {
@@ -207,6 +214,16 @@
 }
 
 @media (max-width: 760px) {
+  .header {
+    min-height: 70px;
+    padding: 0 16px;
+  }
+
+  .brand,
+  .brand img {
+    width: 112px;
+  }
+
   .hero {
     min-height: 62svh;
   }
