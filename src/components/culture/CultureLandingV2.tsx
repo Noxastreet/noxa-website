@@ -133,6 +133,7 @@ export function CultureLandingV2({ locale }: Props) {
 
   return (
     <div className={styles.site}>
+      <link rel="preload" href={HERO_POSTER_URL} as="image" fetchPriority="high" />
       <DocumentLanguage locale={locale} />
       <a className="skip-link" href="#main-content">{base.skipToContent}</a>
       <div className={refine.headerCompact}>
