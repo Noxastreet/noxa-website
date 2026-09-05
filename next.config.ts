@@ -71,6 +71,14 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
+      {
+        source: "/el",
+        headers: [{ key: "Content-Language", value: "el" }],
+      },
+      {
+        source: "/el/:path*",
+        headers: [{ key: "Content-Language", value: "el" }],
+      },
     ];
   },
 };
