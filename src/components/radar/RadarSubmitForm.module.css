@@ -31,10 +31,12 @@
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  color: #f5f5f7;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.28em;
+}
+
+.brand img {
+  display: block;
+  width: 108px;
+  height: auto;
 }
 
 .backLink {
