@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:radar-adapters": "node --experimental-strip-types scripts/test-radar-community-adapters.mjs",
+    "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },

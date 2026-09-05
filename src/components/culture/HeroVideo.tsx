@@ -4,27 +4,27 @@ import { useEffect, useRef } from "react";
 
 type Props = {
   className?: string;
-  poster: string;
   src: string;
 };
 
-const LEGACY_PEXELS_POSTER =
-  "https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260";
-const SAME_ORIGIN_HERO_POSTER = "/api/media/culture-image?asset=hero";
-
-export function HeroVideo({ className, poster, src }: Props) {
+export function HeroVideo({ className, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const effectivePoster = poster === LEGACY_PEXELS_POSTER ? SAME_ORIGIN_HERO_POSTER : poster;
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    const desktopMedia = window.matchMedia("(min-width: 821px)");
+    if (!desktopMedia.matches) {
+      video.pause();
+      return;
+    }
+
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let needsGesture = reducedMotion;
 
     const tryPlay = async (allowReducedMotion = false) => {
-      if (document.visibilityState !== "visible") return;
+      if (!desktopMedia.matches || document.visibilityState !== "visible") return;
       if (reducedMotion && !allowReducedMotion) return;
 
       video.muted = true;
@@ -48,6 +48,10 @@ export function HeroVideo({ className, poster, src }: Props) {
     const retryAfterGesture = () => {
       if (needsGesture) void tryPlay(true);
     };
+    const handleViewportChange = () => {
+      if (desktopMedia.matches) void tryPlay();
+      else video.pause();
+    };
 
     if (!reducedMotion) void tryPlay();
 
@@ -58,6 +62,7 @@ export function HeroVideo({ className, poster, src }: Props) {
     document.addEventListener("visibilitychange", retryVisible);
     document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
     document.addEventListener("touchstart", retryAfterGesture, { passive: true });
+    desktopMedia.addEventListener("change", handleViewportChange);
 
     return () => {
       video.removeEventListener("loadeddata", retryReady);
@@ -67,6 +72,7 @@ export function HeroVideo({ className, poster, src }: Props) {
       document.removeEventListener("visibilitychange", retryVisible);
       document.removeEventListener("pointerdown", retryAfterGesture);
       document.removeEventListener("touchstart", retryAfterGesture);
+      desktopMedia.removeEventListener("change", handleViewportChange);
     };
   }, [src]);
 
@@ -79,10 +85,10 @@ export function HeroVideo({ className, poster, src }: Props) {
       loop
       muted
       playsInline
-      poster={effectivePoster}
-      preload="auto"
-      src={src}
+      preload="metadata"
       tabIndex={-1}
-    />
+    >
+      <source media="(min-width: 821px)" src={src} type="video/mp4" />
+    </video>
   );
 }
