@@ -17,87 +17,39 @@ export type PublicOrganizer = {
 };
 
 export type OrganizerEvent = {
-  id: string;
-  slug: string;
-  title: string;
-  eventType: string;
-  startsAt: string;
-  endsAt: string | null;
-  timezone: string | null;
-  location: string;
-  city: string;
+  id: string; slug: string; title: string; eventType: string; startsAt: string; endsAt: string | null; timezone: string | null; location: string; city: string;
 };
 
 type ProfileRow = {
-  id: string;
-  slug: string;
-  name: string;
-  organizer_type: string;
-  community_id: string | null;
-  city: string | null;
-  country_code: string | null;
-  instagram_url: string | null;
-  website_url: string | null;
-  verified: boolean;
-  partner: boolean | null;
-  partner_label: string | null;
+  id: string; slug: string; name: string; organizer_type: string; community_id: string | null; city: string | null; country_code: string | null; instagram_url: string | null; website_url: string | null; verified: boolean; partner: boolean | null; partner_label: string | null;
 };
-
 type EventRow = {
-  id: string;
-  public_slug: string;
-  title: string;
-  event_type: string;
-  starts_at: string;
-  ends_at: string | null;
-  timezone: string | null;
-  location_text: string | null;
-  city: string | null;
-  country_code: string;
-  organizer_name: string | null;
-  source_name: string;
-  organizer_profile_id: string | null;
+  id: string; public_slug: string; title: string; event_type: string; starts_at: string; ends_at: string | null; timezone: string | null; location_text: string | null; city: string | null; country_code: string; organizer_name: string | null; source_name: string; organizer_profile_id: string | null;
 };
 
 export function organizerSlug(value: string) {
   return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
+    .normalize("NFKC")
+    .toLocaleLowerCase("el-GR")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "organizer";
 }
 
 async function getJson<T>(path: string): Promise<T | null> {
   try {
-    const response = await fetch(`${SUPABASE_URL}${path}`, {
-      headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
-      next: { revalidate: 120 },
-    });
+    const response = await fetch(`${SUPABASE_URL}${path}`, { headers: { apikey: SUPABASE_PUBLISHABLE_KEY }, next: { revalidate: 120 } });
     if (!response.ok) return null;
     return await response.json() as T;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 export async function loadPublicOrganizer(slug: string): Promise<{ organizer: PublicOrganizer; events: OrganizerEvent[] } | null> {
-  const profileParams = new URLSearchParams({
-    select: "id,slug,name,organizer_type,community_id,city,country_code,instagram_url,website_url,verified,partner,partner_label",
-    slug: `eq.${slug}`,
-    status: "eq.active",
-    limit: "1",
-  });
+  const profileParams = new URLSearchParams({ select: "id,slug,name,organizer_type,community_id,city,country_code,instagram_url,website_url,verified,partner,partner_label", slug: `eq.${slug}`, status: "eq.active", limit: "1" });
   const profiles = await getJson<ProfileRow[]>(`/rest/v1/organizer_profiles?${profileParams.toString()}`) ?? [];
   const profile = profiles[0] ?? null;
 
-  const eventParams = new URLSearchParams({
-    select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,location_text,city,country_code,organizer_name,source_name,organizer_profile_id",
-    status: "eq.published",
-    order: "starts_at.asc",
-    limit: "500",
-  });
+  const eventParams = new URLSearchParams({ select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,location_text,city,country_code,organizer_name,source_name,organizer_profile_id", status: "eq.published", order: "starts_at.asc", limit: "500" });
   const allEvents = await getJson<EventRow[]>(`/rest/v1/radar_events?${eventParams.toString()}`) ?? [];
   const matching = allEvents.filter((event) => {
     if (profile && event.organizer_profile_id === profile.id) return true;
@@ -128,16 +80,6 @@ export async function loadPublicOrganizer(slug: string): Promise<{ organizer: Pu
       partnerLabel: profile?.partner_label ?? null,
       community,
     },
-    events: matching.map((event) => ({
-      id: event.id,
-      slug: event.public_slug,
-      title: event.title,
-      eventType: event.event_type,
-      startsAt: event.starts_at,
-      endsAt: event.ends_at,
-      timezone: event.timezone,
-      location: event.location_text ?? event.city ?? event.country_code,
-      city: event.city ?? "",
-    })),
+    events: matching.map((event) => ({ id: event.id, slug: event.public_slug, title: event.title, eventType: event.event_type, startsAt: event.starts_at, endsAt: event.ends_at, timezone: event.timezone, location: event.location_text ?? event.city ?? event.country_code, city: event.city ?? "" })),
   };
 }

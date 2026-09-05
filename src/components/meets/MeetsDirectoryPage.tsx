@@ -8,21 +8,7 @@ const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 
 type Row = {
-  id: string;
-  public_slug: string;
-  country_code: string;
-  title: string;
-  event_type: string;
-  starts_at: string;
-  ends_at: string | null;
-  timezone: string | null;
-  location_text: string | null;
-  city: string | null;
-  region: string | null;
-  organizer_name: string | null;
-  source_name: string;
-  featured: boolean | null;
-  partner_badge: string | null;
+  id: string; public_slug: string; country_code: string; title: string; event_type: string; starts_at: string; ends_at: string | null; timezone: string | null; location_text: string | null; city: string | null; region: string | null; organizer_name: string | null; source_name: string; featured: boolean | null; partner_badge: string | null;
 };
 
 function fallbackCountry(value: string | null) {
@@ -38,26 +24,17 @@ function savedCountry(value: string | undefined) {
 
 function slugify(value: string) {
   return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
+    .normalize("NFKC")
+    .toLocaleLowerCase("el-GR")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80) || "organizer";
 }
 
 async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
-  const query = new URLSearchParams({
-    select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,organizer_name,source_name,featured,partner_badge",
-    status: "eq.published",
-    order: "starts_at.asc",
-    limit: "500",
-  });
+  const query = new URLSearchParams({ select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,organizer_name,source_name,featured,partner_badge", status: "eq.published", order: "starts_at.asc", limit: "500" });
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_events?${query.toString()}`, {
-      headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
-      next: { revalidate: 60 },
-    });
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_events?${query.toString()}`, { headers: { apikey: SUPABASE_PUBLISHABLE_KEY }, next: { revalidate: 60 } });
     if (!response.ok) return [];
     const rows = await response.json() as Row[];
     return rows.filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at)).map((row) => {
@@ -80,17 +57,11 @@ async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
         partnerBadge: row.partner_badge,
       };
     });
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 export async function MeetsDirectoryPage({ locale }: { locale: "en" | "el" }) {
   const [requestHeaders, cookieStore, events] = await Promise.all([headers(), cookies(), loadEvents()]);
-  const detectedCountryCode =
-    savedCountry(cookieStore.get("noxa_country")?.value) ??
-    requestHeaders.get("x-vercel-ip-country") ??
-    fallbackCountry(requestHeaders.get("accept-language"));
-
+  const detectedCountryCode = savedCountry(cookieStore.get("noxa_country")?.value) ?? requestHeaders.get("x-vercel-ip-country") ?? fallbackCountry(requestHeaders.get("accept-language"));
   return <MeetsDirectory detectedCountryCode={detectedCountryCode} events={events} locale={locale} />;
 }
