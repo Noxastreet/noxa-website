@@ -15,16 +15,16 @@
   margin-top: 0;
 }
 
-.pathCardRefined {
-  min-height: 400px;
-}
-
-.communityMediaRefined {
+.pathsGridRefined > :first-child {
   background-image: url("/api/media/culture-image?asset=community") !important;
 }
 
-.organizerMediaRefined {
+.pathsGridRefined > :last-child {
   background-image: url("/api/media/culture-image?asset=organizer") !important;
+}
+
+.pathCardRefined {
+  min-height: 400px;
 }
 
 .pathCardRefined::before {
