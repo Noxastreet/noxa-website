@@ -9,11 +9,21 @@ export function OrganizerInsightsShortcut({ locale }: { locale: "en" | "el" }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      setVisible(Boolean(window.localStorage.getItem(SESSION_KEY)));
-    } catch {
-      setVisible(false);
-    }
+    const updateVisibility = () => {
+      try {
+        setVisible(Boolean(window.localStorage.getItem(SESSION_KEY)));
+      } catch {
+        setVisible(false);
+      }
+    };
+
+    const frame = window.requestAnimationFrame(updateVisibility);
+    window.addEventListener("storage", updateVisibility);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("storage", updateVisibility);
+    };
   }, []);
 
   if (!visible) return null;
@@ -41,7 +51,7 @@ export function OrganizerInsightsShortcut({ locale }: { locale: "en" | "el" }) {
         backdropFilter: "blur(14px)",
       }}
     >
-      {locale === "el" ? "Event Insights" : "Event Insights"} ↗
+      Event Insights ↗
     </Link>
   );
 }
