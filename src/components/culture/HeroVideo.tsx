@@ -14,17 +14,17 @@ export function HeroVideo({ className, src }: Props) {
     const video = videoRef.current;
     if (!video) return;
 
-    const desktopMedia = window.matchMedia("(min-width: 821px)");
-    if (!desktopMedia.matches) {
-      video.pause();
-      return;
-    }
-
+    const mobileMedia = window.matchMedia("(max-width: 820px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let needsGesture = reducedMotion;
+    let mobileLoadTimer: number | undefined;
+
+    const markReady = () => {
+      video.dataset.ready = "true";
+    };
 
     const tryPlay = async (allowReducedMotion = false) => {
-      if (!desktopMedia.matches || document.visibilityState !== "visible") return;
+      if (document.visibilityState !== "visible") return;
       if (reducedMotion && !allowReducedMotion) return;
 
       video.muted = true;
@@ -41,19 +41,46 @@ export function HeroVideo({ className, src }: Props) {
       }
     };
 
+    const loadMobileVideo = () => {
+      if (!mobileMedia.matches || reducedMotion) return;
+
+      if (video.getAttribute("src") !== src) {
+        video.src = src;
+        video.load();
+      }
+
+      void tryPlay();
+    };
+
+    const scheduleMobileLoad = () => {
+      if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
+      mobileLoadTimer = window.setTimeout(loadMobileVideo, 700);
+    };
+
     const retryVisible = () => {
       if (document.visibilityState === "visible") void tryPlay();
     };
-    const retryReady = () => void tryPlay();
+    const retryReady = () => {
+      markReady();
+      void tryPlay();
+    };
     const retryAfterGesture = () => {
       if (needsGesture) void tryPlay(true);
     };
     const handleViewportChange = () => {
-      if (desktopMedia.matches) void tryPlay();
-      else video.pause();
+      if (mobileMedia.matches) {
+        scheduleMobileLoad();
+      } else {
+        if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
+        void tryPlay();
+      }
     };
 
-    if (!reducedMotion) void tryPlay();
+    if (mobileMedia.matches) {
+      scheduleMobileLoad();
+    } else if (!reducedMotion) {
+      void tryPlay();
+    }
 
     video.addEventListener("loadeddata", retryReady);
     video.addEventListener("canplay", retryReady);
@@ -62,9 +89,10 @@ export function HeroVideo({ className, src }: Props) {
     document.addEventListener("visibilitychange", retryVisible);
     document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
     document.addEventListener("touchstart", retryAfterGesture, { passive: true });
-    desktopMedia.addEventListener("change", handleViewportChange);
+    mobileMedia.addEventListener("change", handleViewportChange);
 
     return () => {
+      if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
       video.removeEventListener("loadeddata", retryReady);
       video.removeEventListener("canplay", retryReady);
       window.removeEventListener("pageshow", retryVisible);
@@ -72,7 +100,7 @@ export function HeroVideo({ className, src }: Props) {
       document.removeEventListener("visibilitychange", retryVisible);
       document.removeEventListener("pointerdown", retryAfterGesture);
       document.removeEventListener("touchstart", retryAfterGesture);
-      desktopMedia.removeEventListener("change", handleViewportChange);
+      mobileMedia.removeEventListener("change", handleViewportChange);
     };
   }, [src]);
 
