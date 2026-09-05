@@ -15,7 +15,7 @@
   background: transparent;
 }
 
-.mobileCanvas {
+.media > canvas {
   display: none;
 }
 
@@ -37,7 +37,7 @@
     pointer-events: none;
   }
 
-  .mobileCanvas {
+  .media > canvas {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -48,7 +48,7 @@
     transition: opacity 420ms ease;
   }
 
-  .mobileCanvas[data-ready="true"] {
+  .media > canvas[data-ready="true"] {
     opacity: 1;
   }
 }
@@ -61,7 +61,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .video,
-  .mobileCanvas {
+  .media > canvas {
     display: none;
   }
 }
