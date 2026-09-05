@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./RadarSubmitForm.module.css";
 
 const SUBMIT_ENDPOINT = "https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/radar-submit-event";
@@ -124,7 +126,7 @@ export function RadarSubmitForm() {
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href="/" aria-label="NOXA home">
-          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+          <NoxaLogo />
         </Link>
         <Link className={styles.backLink} href="/meets">← NOXA Meets</Link>
       </header>

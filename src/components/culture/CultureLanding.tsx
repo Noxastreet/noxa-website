@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
@@ -381,7 +382,7 @@ export function CultureLanding({ locale }: CultureLandingProps) {
       <footer className={styles.footer}>
         <div className={`${styles.shell} ${styles.footerGrid}`}>
           <div className={styles.footerBrand}>
-            <a href="#top" aria-label="NOXA home">NOXA</a>
+            <a href="#top" aria-label="NOXA home"><NoxaLogo /></a>
             <p>{copy.footer.tagline}</p>
             <a
               className={enhancements.instagramLink}

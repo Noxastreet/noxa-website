@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./CommunityAdminReview.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -282,7 +284,7 @@ export function CommunityAdminReview() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href="/">NOXA</Link>
+        <Link aria-label="NOXA home" className={styles.brand} href="/"><NoxaLogo /></Link>
         <nav>
           <Link href="/radar/admin">Meets Admin</Link>
           <Link aria-current="page" href="/radar/admin/communities">Communities</Link>

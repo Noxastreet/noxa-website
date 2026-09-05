@@ -20,7 +20,8 @@
 }
 
 .brandBlock { display: grid; gap: 2px; }
-.brand { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: .24em; text-decoration: none; }
+.brand { display: inline-flex; width: 116px; min-height: 38px; align-items: center; text-decoration: none; }
+.brand img,.authLogo { display: block; width: 116px; height: auto; }
 .brandBlock span { color: #6f7177; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
 .headerActions { display: flex; gap: 7px; }
 .headerActions button {

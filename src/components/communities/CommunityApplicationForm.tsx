@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import type { Locale } from "@/i18n/landing-copy";
 
 import styles from "./CommunityApplicationForm.module.css";
@@ -196,7 +197,7 @@ export function CommunityApplicationForm({ locale }: { locale: Locale }) {
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
-          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+          <NoxaLogo />
         </Link>
         <Link className={styles.backLink} href={directoryHref}>{t.back}</Link>
       </header>

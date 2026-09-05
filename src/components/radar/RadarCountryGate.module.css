@@ -21,13 +21,16 @@
 
 .brand {
   display: inline-flex;
+  width: 116px;
   min-height: 44px;
   align-items: center;
-  color: #f5f5f7;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.28em;
   text-decoration: none;
+}
+
+.brand img {
+  display: block;
+  width: 116px;
+  height: auto;
 }
 
 .countryChip,
@@ -367,9 +370,9 @@
 .logoMark {
   display: block;
   width: 72px;
-  height: 62px;
+  height: 72px;
   margin: 0 auto;
-  color: #f5f5f7;
+  border-radius: 16px;
 }
 
 .modalCopy {

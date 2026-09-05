@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./OrganizerDashboard.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -466,7 +468,7 @@ export function OrganizerDashboard({ locale }: { locale: Locale }) {
   if (phase === "signed_out") {
     return (
       <main className={styles.signInPage}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
+        <Link aria-label="NOXA home" className={styles.brand} href={locale === "el" ? "/el" : "/"}><NoxaLogo className="block h-auto w-[116px]" /></Link>
         <section className={styles.signInCard}>
           <p className={styles.eyebrow}>NOXA ORGANIZER</p>
           <h1>{t.signInTitle}</h1>
@@ -503,7 +505,7 @@ export function OrganizerDashboard({ locale }: { locale: Locale }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
+        <Link aria-label="NOXA home" className={styles.brand} href={locale === "el" ? "/el" : "/"}><NoxaLogo className="block h-auto w-[116px]" /></Link>
         <div className={styles.headerRight}>
           <span>{session?.email}</span>
           <button onClick={signOut} type="button">{t.signOut}</button>

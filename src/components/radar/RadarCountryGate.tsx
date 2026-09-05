@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
+
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 
 import type { RadarEvent } from "./radarEvents";
 import styles from "./RadarCountryGate.module.css";
@@ -66,12 +69,7 @@ function ChevronIcon() {
 }
 
 function NoxaMark() {
-  return (
-    <svg aria-label="NOXA" className={styles.logoMark} role="img" viewBox="180 220 650 590">
-      <path d="M408 265 265 654h90l79-182 130 286h103l129-363H694l-79 182-130-312Z" fill="currentColor" />
-      <path d="M263 655h-37v100Z" fill="currentColor" />
-    </svg>
-  );
+  return <Image alt="NOXA" className={styles.logoMark} height={1024} src="/icon.svg" width={1024} />;
 }
 
 function EventCard({ event }: { event: RadarEvent }) {
@@ -177,7 +175,7 @@ export function RadarCountryGate({ detectedCountryCode, events }: RadarCountryGa
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href="/" aria-label="NOXA home">NOXA</Link>
+        <Link className={styles.brand} href="/" aria-label="NOXA home"><NoxaLogo /></Link>
         <button
           aria-label={`Change country. Current country: ${selectedName}`}
           className={`${styles.countryChip} !rounded-xl !bg-[#0d0e10]`}

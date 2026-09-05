@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./OrganizerInsights.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -197,7 +199,7 @@ export function OrganizerInsights({ locale }: { locale: "en" | "el" }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
+        <Link aria-label="NOXA home" className={styles.brand} href={locale === "el" ? "/el" : "/"}><NoxaLogo className="block h-auto w-[116px]" /></Link>
         <Link href={locale === "el" ? "/el/organizer" : "/organizer"}>← {t.back}</Link>
       </header>
       <main className={styles.main}>

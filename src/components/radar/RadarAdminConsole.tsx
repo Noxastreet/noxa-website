@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./RadarAdminConsole.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -486,7 +488,7 @@ export function RadarAdminConsole() {
     return (
       <main className={styles.authPage}>
         <section className={styles.authCard} aria-labelledby="radar-admin-login-title">
-          <Link className={styles.authBrand} href="/radar">NOXA</Link>
+          <Link aria-label="NOXA Meets home" className={styles.authBrand} href="/radar"><NoxaLogo className="block h-auto w-[116px]" /></Link>
           <span className={styles.kicker}>RADAR ADMIN</span>
           <h1 id="radar-admin-login-title">Private console.</h1>
           <p>
@@ -534,7 +536,7 @@ export function RadarAdminConsole() {
     <div className={styles.consolePage}>
       <header className={styles.consoleHeader}>
         <div>
-          <Link className={styles.consoleBrand} href="/radar">NOXA</Link>
+          <Link aria-label="NOXA Meets home" className={styles.consoleBrand} href="/radar"><NoxaLogo className="block h-auto w-[116px]" /></Link>
           <span>RADAR ADMIN</span>
         </div>
         <div className={styles.headerActions}>

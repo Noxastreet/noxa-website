@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./MeetsDirectory.module.css";
 
 export type MeetsDirectoryEvent = {
@@ -134,7 +136,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
-          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+          <NoxaLogo />
         </Link>
         <Link className={styles.addHeader} href={locale === "el" ? "/el/meets/submit" : "/meets/submit"}>＋ {t.add}</Link>
       </header>

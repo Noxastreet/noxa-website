@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
 
 import { EventActions } from "./EventActions";
@@ -93,7 +94,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
-          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+          <NoxaLogo />
         </Link>
         <Link className={styles.back} href={backHref}>← Meets</Link>
       </header>

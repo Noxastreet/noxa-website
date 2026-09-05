@@ -1,3 +1,4 @@
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import type { LandingCopy, Locale } from "@/i18n/landing-copy";
 
@@ -138,7 +139,7 @@ export function AfterStory({
       <footer className="site-footer below-fold-section border-t border-[var(--color-border-subtle)] py-8 lg:py-10">
         <div className="page-shell flex flex-col gap-6 text-sm leading-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-bold tracking-[0.22em] text-white">NOXA</p>
+            <NoxaLogo className="h-auto w-[120px]" />
             <p className="mt-4">{footerCopy.tagline}</p>
             <p className="mt-1">S. KARAKETIDIS</p>
           </div>

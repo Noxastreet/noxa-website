@@ -27,9 +27,9 @@
 }
 
 .brand {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.42em;
+  display: block;
+  width: 122px;
+  height: auto;
 }
 
 .eyebrow {

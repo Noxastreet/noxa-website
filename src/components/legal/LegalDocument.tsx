@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 type LegalSection = {
   id: string;
   title: string;
@@ -31,7 +33,7 @@ export function LegalDocument({
             aria-label="NOXA home"
             className="inline-flex min-h-12 items-center transition-opacity hover:opacity-70"
           >
-            <img className="block h-auto w-[108px]" src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+            <NoxaLogo className="block h-auto w-[108px]" />
           </Link>
           <Link
             href="/"

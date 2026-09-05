@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { InstagramIcon } from "@/components/social/InstagramIcon";
 import type { LandingCopy, Locale } from "@/i18n/landing-copy";
@@ -136,12 +137,7 @@ export function SiteHeader({
             href={homeHref}
             aria-label={navigationCopy.homeLabel}
           >
-            <img
-              className="site-header-brand-logo"
-              src="/brand/noxa-header-sticker.svg"
-              alt=""
-              aria-hidden="true"
-            />
+            <NoxaLogo className="site-header-brand-logo" />
           </a>
 
           <nav

@@ -444,10 +444,16 @@
 }
 
 .footerBrand > a {
-  display: inline-block;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
+  display: inline-flex;
+  width: 132px;
+  min-height: 40px;
+  align-items: center;
+}
+
+.footerBrand > a img {
+  display: block;
+  width: 132px;
+  height: auto;
 }
 
 .footerBrand p {

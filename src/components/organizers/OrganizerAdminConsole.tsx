@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./OrganizerAdminConsole.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
@@ -279,7 +281,7 @@ export function OrganizerAdminConsole() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href="/">NOXA</Link>
+        <Link aria-label="NOXA home" className={styles.brand} href="/"><NoxaLogo className="block h-auto w-[116px]" /></Link>
         <nav>
           <Link href="/radar/admin">Meets</Link>
           <Link href="/radar/admin/communities">Communities</Link>

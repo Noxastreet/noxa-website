@@ -335,10 +335,16 @@
 }
 
 .wordmark {
-  display: inline-block;
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
+  display: inline-flex;
+  width: 132px;
+  min-height: 40px;
+  align-items: center;
+}
+
+.wordmark img {
+  display: block;
+  width: 132px;
+  height: auto;
 }
 
 .footerRow p {

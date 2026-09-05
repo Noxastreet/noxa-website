@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import styles from "./SitePreferencesGate.module.css";
 
 const CONSENT_COOKIE = "noxa_cookie_consent";
@@ -152,7 +154,7 @@ export function SitePreferencesGate() {
     <div className={styles.layer}>
       <div className={styles.backdrop} aria-hidden="true" />
       <section aria-labelledby="site-preferences-title" aria-modal="true" className={styles.modal} role="dialog">
-        <div className={styles.brand}>NOXA</div>
+        <NoxaLogo className={styles.brand} />
         <p className={styles.eyebrow}>WELCOME</p>
         <h2 id="site-preferences-title">Choose your country</h2>
         <p className={styles.intro}>NOXA uses your country to show relevant meets, events and local content across the site.</p>

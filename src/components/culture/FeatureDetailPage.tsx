@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
@@ -488,7 +489,7 @@ export function FeatureDetailPage({ locale, feature }: FeatureDetailPageProps) {
       <footer className={styles.footer}>
         <div className={`${styles.shell} ${styles.footerRow}`}>
           <div>
-            <a className={styles.wordmark} href={home}>NOXA</a>
+            <a aria-label="NOXA home" className={styles.wordmark} href={home}><NoxaLogo /></a>
             <p>{locale === "el" ? "Η automotive κοινότητα, σε ένα μέρος." : "The automotive community, in one place."}</p>
           </div>
           <div className={styles.footerLinks}>

@@ -26,10 +26,16 @@
 }
 
 .brand {
-  color: #fff;
-  font-size: 16px;
-  font-weight: 850;
-  letter-spacing: 0.24em;
+  display: inline-flex;
+  width: 122px;
+  min-height: 48px;
+  align-items: center;
+}
+
+.brand img {
+  display: block;
+  width: 122px;
+  height: auto;
 }
 
 .header nav {

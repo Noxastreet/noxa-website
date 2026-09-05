@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+
 import { RadarAiAnalyzeButton } from "./RadarAiAnalyzeButton";
 import styles from "./RadarAdminSimple.module.css";
 
@@ -551,14 +553,14 @@ export function RadarAdminSimpleConsole() {
   }
 
   if (phase === "checking") {
-    return <main className={styles.authPage}><div className={styles.authCard}><strong>NOXA</strong><h1>Opening Admin…</h1></div></main>;
+    return <main className={styles.authPage}><div className={styles.authCard}><NoxaLogo className={styles.authLogo} /><h1>Opening Admin…</h1></div></main>;
   }
 
   if (phase === "signed_out" || phase === "unauthorized") {
     return (
       <main className={styles.authPage}>
         <section className={styles.authCard}>
-          <Link className={styles.brand} href="/radar">NOXA</Link>
+          <Link aria-label="NOXA Meets home" className={styles.brand} href="/radar"><NoxaLogo /></Link>
           <h1>Radar Admin</h1>
           <p>{phase === "unauthorized" ? "This account is not authorized." : "Sign in with the owner email."}</p>
           <form className={styles.authForm} onSubmit={requestMagicLink}>
@@ -612,7 +614,7 @@ export function RadarAdminSimpleConsole() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.brandBlock}><Link className={styles.brand} href="/radar">NOXA</Link><span>ADMIN</span></div>
+        <div className={styles.brandBlock}><Link aria-label="NOXA Meets home" className={styles.brand} href="/radar"><NoxaLogo /></Link><span>ADMIN</span></div>
         <div className={styles.headerActions}>
           <button disabled={busy} onClick={() => void refreshDashboard()} type="button">Refresh</button>
           <button onClick={signOut} type="button">Exit</button>

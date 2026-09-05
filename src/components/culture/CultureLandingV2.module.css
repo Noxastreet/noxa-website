@@ -411,11 +411,17 @@
 }
 
 .footerBrand {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: .22em;
+  display: inline-flex;
+  width: 132px;
+  min-height: 40px;
+  align-items: center;
   text-decoration: none;
+}
+
+.footerBrand img {
+  display: block;
+  width: 132px;
+  height: auto;
 }
 
 .footerTop nav {
