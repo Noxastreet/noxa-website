@@ -78,7 +78,7 @@ export function HeroVideo({ className, poster, src }: Props) {
       <img
         alt=""
         className="noxa-hero-mobile-poster"
-        decoding="async"
+        decoding="sync"
         fetchPriority="high"
         loading="eager"
         src={effectivePoster}
