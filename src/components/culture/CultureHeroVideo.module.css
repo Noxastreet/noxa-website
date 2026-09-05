@@ -1,7 +1,5 @@
 .media.media {
-  background-image: url("/api/media/culture-image?asset=hero");
-  background-position: 50% 50%;
-  background-size: cover;
+  background: #080808;
 }
 
 .video {
@@ -13,11 +11,29 @@
   background: transparent;
 }
 
+.media.media :global(.noxa-hero-mobile-poster) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
 @media (max-width: 767px) {
   .media.media {
     animation: none;
     filter: none;
     transform: none;
+  }
+
+  .media.media :global(.noxa-hero-mobile-poster) {
+    display: block;
+  }
+
+  .video {
+    display: none;
   }
 }
 
