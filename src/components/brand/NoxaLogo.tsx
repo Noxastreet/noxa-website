@@ -11,9 +11,10 @@ export function NoxaLogo({ className }: NoxaLogoProps) {
       aria-hidden="true"
       className={className}
       draggable={false}
-      height={72}
-      src="/brand/noxa-header-sticker.svg"
-      width={360}
+      height={300}
+      src="/brand/noxa-maps-logo.png"
+      unoptimized
+      width={1170}
     />
   );
 }

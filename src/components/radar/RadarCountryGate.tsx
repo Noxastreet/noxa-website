@@ -69,7 +69,7 @@ function ChevronIcon() {
 }
 
 function NoxaMark() {
-  return <Image alt="NOXA" className={styles.logoMark} height={1024} src="/icon.svg" width={1024} />;
+  return <Image alt="NOXA" className={styles.logoMark} height={300} src="/icon.png" width={300} />;
 }
 
 function EventCard({ event }: { event: RadarEvent }) {
