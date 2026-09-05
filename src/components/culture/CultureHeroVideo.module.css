@@ -25,12 +25,25 @@
   }
 
   .video {
-    display: none;
+    display: block;
+    opacity: 0;
+    transition: opacity 420ms ease;
+    will-change: opacity;
+  }
+
+  .video[data-ready="true"] {
+    opacity: 1;
   }
 }
 
 @media (min-width: 1100px) {
   .video {
     object-position: 50% 46%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video {
+    display: none;
   }
 }
