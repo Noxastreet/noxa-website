@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
+
 import { EventActions } from "./EventActions";
 import styles from "./EventDetailPage.module.css";
 
@@ -79,7 +81,7 @@ function category(type: string) {
 
 export async function EventDetailPage({ slug, locale }: { slug: string; locale: "en" | "el" }) {
   const event = await loadPublicEvent(slug);
-  if (!event) notFound();
+  if (!event || !isEventCurrentlyVisible(event.starts_at, event.ends_at)) notFound();
 
   const place = [event.location_text, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
   const organizer = event.organizer_name || event.source_name;
@@ -90,8 +92,10 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
-        <Link className={styles.back} href={backHref}>← {locale === "el" ? "Meets" : "Meets"}</Link>
+        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
+          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+        </Link>
+        <Link className={styles.back} href={backHref}>← Meets</Link>
       </header>
 
       <main>
