@@ -28,9 +28,10 @@ export function LegalDocument({
         <div className="page-shell flex min-h-20 items-center justify-between gap-6">
           <Link
             href="/"
-            className="text-sm font-bold tracking-[0.28em] text-white transition-opacity hover:opacity-70"
+            aria-label="NOXA home"
+            className="inline-flex min-h-12 items-center transition-opacity hover:opacity-70"
           >
-            NOXA
+            <img className="block h-auto w-[108px]" src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
           </Link>
           <Link
             href="/"
