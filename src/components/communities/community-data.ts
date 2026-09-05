@@ -1,3 +1,5 @@
+import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
+
 const WEBSITE_DATA_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const WEBSITE_DATA_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 
@@ -22,6 +24,7 @@ export type PublicCommunity = {
 
 export type CommunityEvent = {
   id: string;
+  public_slug: string;
   title: string;
   event_type: string;
   starts_at: string;
@@ -31,6 +34,16 @@ export type CommunityEvent = {
   city: string | null;
   region: string | null;
   source_url: string;
+};
+
+export type CommunityOrganizer = {
+  id: string;
+  slug: string;
+  name: string;
+  organizer_type: string;
+  verified: boolean;
+  partner: boolean;
+  partner_label: string | null;
 };
 
 async function publicDataFetch(path: string) {
@@ -47,14 +60,11 @@ export async function loadPublishedCommunities(): Promise<PublicCommunity[]> {
     order: "verified.desc,name.asc",
     limit: "200",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/communities?${params.toString()}`);
     if (!response.ok) return [];
     return await response.json() as PublicCommunity[];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 export async function loadCommunityBySlug(slug: string): Promise<PublicCommunity | null> {
@@ -64,36 +74,41 @@ export async function loadCommunityBySlug(slug: string): Promise<PublicCommunity
     status: "eq.published",
     limit: "1",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/communities?${params.toString()}`);
     if (!response.ok) return null;
     const rows = await response.json() as PublicCommunity[];
     return rows[0] ?? null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 export async function loadCommunityEvents(communityId: string): Promise<CommunityEvent[]> {
   const params = new URLSearchParams({
-    select: "id,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_url",
+    select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,location_text,city,region,source_url",
     community_id: `eq.${communityId}`,
     status: "eq.published",
     order: "starts_at.asc",
-    limit: "20",
+    limit: "40",
   });
-
   try {
     const response = await publicDataFetch(`/rest/v1/radar_events?${params.toString()}`);
     if (!response.ok) return [];
     const rows = await response.json() as CommunityEvent[];
-    const cutoff = Date.now() - 15 * 60 * 1000;
-    return rows.filter((event) => {
-      const end = new Date(event.ends_at ?? event.starts_at).getTime();
-      return Number.isFinite(end) && end >= cutoff;
-    });
-  } catch {
-    return [];
-  }
+    return rows.filter((event) => isEventCurrentlyVisible(event.starts_at, event.ends_at));
+  } catch { return []; }
+}
+
+export async function loadCommunityOrganizers(communityId: string): Promise<CommunityOrganizer[]> {
+  const params = new URLSearchParams({
+    select: "id,slug,name,organizer_type,verified,partner,partner_label",
+    community_id: `eq.${communityId}`,
+    status: "eq.active",
+    order: "verified.desc,name.asc",
+    limit: "20",
+  });
+  try {
+    const response = await publicDataFetch(`/rest/v1/organizer_profiles?${params.toString()}`);
+    if (!response.ok) return [];
+    return await response.json() as CommunityOrganizer[];
+  } catch { return []; }
 }
