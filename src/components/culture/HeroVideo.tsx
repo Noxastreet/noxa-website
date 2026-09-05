@@ -74,19 +74,29 @@ export function HeroVideo({ className, poster, src }: Props) {
   }, [src]);
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      className={className}
-      disablePictureInPicture
-      loop
-      muted
-      playsInline
-      poster={effectivePoster}
-      preload="metadata"
-      tabIndex={-1}
-    >
-      <source media="(min-width: 768px)" src={src} type="video/mp4" />
-    </video>
+    <>
+      <img
+        alt=""
+        className="noxa-hero-mobile-poster"
+        decoding="async"
+        fetchPriority="high"
+        loading="eager"
+        src={effectivePoster}
+      />
+      <video
+        ref={videoRef}
+        autoPlay
+        className={className}
+        disablePictureInPicture
+        loop
+        muted
+        playsInline
+        poster={effectivePoster}
+        preload="metadata"
+        tabIndex={-1}
+      >
+        <source media="(min-width: 768px)" src={src} type="video/mp4" />
+      </video>
+    </>
   );
 }
