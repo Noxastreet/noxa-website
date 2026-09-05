@@ -16,7 +16,7 @@ type Props = { locale: Locale };
 
 const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
 const HERO_POSTER_URL =
-  "https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260";
+  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1200&w=750&q=75";
 
 const copy = {
   en: {
