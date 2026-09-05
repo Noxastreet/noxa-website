@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
 
@@ -132,6 +132,17 @@ function normalize(value: string) {
   return value.trim().toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+function loadSavedIds() {
+  if (typeof window === "undefined") return new Set<string>();
+  try {
+    const raw = window.localStorage.getItem(SAVED_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set<string>(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []);
+  } catch {
+    return new Set<string>();
+  }
+}
+
 export function MeetsDirectory({ events, detectedCountryCode, locale }: { events: MeetsDirectoryEvent[]; detectedCountryCode: string; locale: "en" | "el" }) {
   const countries = useMemo(() => Array.from(new Set(events.map((event) => event.countryCode))).sort(), [events]);
   const initialCountry = countries.includes(detectedCountryCode) ? detectedCountryCode : (countries.includes("GR") ? "GR" : countries[0] ?? detectedCountryCode);
@@ -140,19 +151,9 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [city, setCity] = useState("all");
   const [query, setQuery] = useState("");
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [savedIds] = useState<Set<string>>(() => loadSavedIds());
   const [locationState, setLocationState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [locationMessage, setLocationMessage] = useState("");
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(parsed)) setSavedIds(new Set(parsed.filter((item): item is string => typeof item === "string")));
-    } catch {
-      setSavedIds(new Set());
-    }
-  }, []);
 
   const countryEvents = useMemo(() => events.filter((event) => event.countryCode === country), [events, country]);
   const cities = useMemo(() => Array.from(new Set(countryEvents.map((event) => event.city).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [countryEvents]);
@@ -186,7 +187,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
     live: "LIVE", featured: "FEATURED", locationNoCity: "We found your country, but there are no events in your city yet.", locationError: "We could not detect your location.",
   };
 
-  async function useMyLocation() {
+  async function detectMyLocation() {
     if (!navigator.geolocation) {
       setLocationState("error");
       setLocationMessage(t.locationError);
@@ -253,7 +254,7 @@ export function MeetsDirectory({ events, detectedCountryCode, locale }: { events
                 <label className={styles.locationControl}><span className={styles.controlLabel}>{t.city}</span><span className={styles.selectShell}><span className={styles.pin} aria-hidden="true">●</span><select aria-label={t.city} value={city} disabled={!cities.length} onChange={(event) => setCity(event.target.value)}><option value="all">{cities.length ? t.allCities : t.noCities}</option>{cities.map((name) => <option key={name} value={name}>{name}</option>)}</select><span className={styles.chevron} aria-hidden="true">⌄</span></span></label>
               </div>
 
-              <div className={styles.nearRow}><button className={styles.nearButton} type="button" disabled={locationState === "loading"} onClick={() => void useMyLocation()}><span aria-hidden="true">◎</span>{locationState === "loading" ? t.locating : t.near}</button>{locationMessage ? <span className={locationState === "error" ? styles.locationError : styles.locationMessage}>{locationMessage}</span> : null}</div>
+              <div className={styles.nearRow}><button className={styles.nearButton} type="button" disabled={locationState === "loading"} onClick={() => void detectMyLocation()}><span aria-hidden="true">◎</span>{locationState === "loading" ? t.locating : t.near}</button>{locationMessage ? <span className={locationState === "error" ? styles.locationError : styles.locationMessage}>{locationMessage}</span> : null}</div>
 
               <div className={styles.filterGrid}>
                 <div className={styles.typeRow}><span className={styles.controlLabel}>{t.type}</span><div className={styles.chips}>{([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => <button className={filter === value ? styles.chipActive : styles.chip} key={value} onClick={() => setFilter(value)} type="button">{label}</button>)}</div></div>
