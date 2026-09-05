@@ -10,16 +10,19 @@ const checks = [
   ["greek-home", "/el", "text/html"],
   ["meets", "/meets", "text/html"],
   ["greek-meets", "/el/meets", "text/html"],
+  ["meets-archive", "/meets/archive", "text/html"],
+  ["greek-meets-archive", "/el/meets/archive", "text/html"],
   ["communities", "/communities", "text/html"],
   ["greek-communities", "/el/communities", "text/html"],
   ["organizer", "/organizer", "text/html"],
+  ["public-organizer", "/organizers/noxa", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
   ["robots", "/robots.txt", "text/plain"],
   ["sitemap", "/sitemap.xml", "application/xml"],
   ["manifest", "/manifest.webmanifest", "application/manifest+json"],
-  ["icon", "/icon.svg", "image/svg+xml"],
+  ["icon", "/icon.png", "image/png"],
 ];
 
 for (const [name, pathname, expectedType] of checks) {
@@ -35,9 +38,7 @@ for (const [name, pathname, expectedType] of checks) {
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes(expectedType)) {
-    throw new Error(
-      `${name} returned ${contentType || "no content type"}; expected ${expectedType}`,
-    );
+    throw new Error(`${name} returned ${contentType || "no content type"}; expected ${expectedType}`);
   }
 
   console.log(`✓ ${name}: ${response.status} ${contentType}`);
@@ -65,7 +66,7 @@ for (const expectedContent of [
   "href=\"/meets\"",
   "href=\"/communities\"",
   "href=\"/organizer\"",
-  "/brand/noxa-header-sticker.svg",
+  "/brand/noxa-maps-logo.png",
 ]) {
   if (!homeHtml.includes(expectedContent)) {
     throw new Error(`Home page is missing expected content: ${expectedContent}`);
@@ -93,7 +94,7 @@ for (const [name, pathname, expectedContent] of pageContentChecks) {
     throw new Error(`${name} page is missing expected content: ${expectedContent}`);
   }
 
-  if (!html.includes("/brand/noxa-header-sticker.svg")) {
+  if (!html.includes("/brand/noxa-maps-logo.png")) {
     throw new Error(`${name} page is missing the current NOXA logo asset.`);
   }
 }
@@ -116,9 +117,7 @@ const expectedHeaders = {
 for (const [header, expectedValue] of Object.entries(expectedHeaders)) {
   const actualValue = homeResponse.headers.get(header);
   if (actualValue !== expectedValue) {
-    throw new Error(
-      `Security header ${header} returned ${actualValue || "nothing"}; expected ${expectedValue}`,
-    );
+    throw new Error(`Security header ${header} returned ${actualValue || "nothing"}; expected ${expectedValue}`);
   }
 }
 
