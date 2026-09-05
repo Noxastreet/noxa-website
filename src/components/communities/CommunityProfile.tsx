@@ -5,59 +5,39 @@ import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
-import { loadCommunityBySlug, loadCommunityEvents } from "./community-data";
+import { loadCommunityBySlug, loadCommunityEvents, loadCommunityOrganizer } from "./community-data";
 import styles from "./CommunityPlatform.module.css";
 
 const copy = {
   en: {
-    eyebrow: "NOXA COMMUNITY",
-    about: "About",
-    events: "Upcoming meets",
-    noEvents: "No upcoming public meets are linked yet.",
-    instagram: "Instagram",
-    website: "Website",
-    all: "All communities",
-    verified: "VERIFIED",
+    eyebrow: "NOXA COMMUNITY", about: "About", events: "Upcoming meets", noEvents: "No upcoming public meets are linked yet.", instagram: "Instagram", website: "Website", all: "All communities", verified: "VERIFIED", organizer: "Organizer", partner: "NOXA PARTNER",
   },
   el: {
-    eyebrow: "NOXA COMMUNITY",
-    about: "Σχετικά",
-    events: "Επόμενα meets",
-    noEvents: "Δεν υπάρχουν ακόμη συνδεδεμένα δημόσια meets.",
-    instagram: "Instagram",
-    website: "Website",
-    all: "Όλες οι κοινότητες",
-    verified: "VERIFIED",
+    eyebrow: "NOXA COMMUNITY", about: "Σχετικά", events: "Επόμενα meets", noEvents: "Δεν υπάρχουν ακόμη συνδεδεμένα δημόσια meets.", instagram: "Instagram", website: "Website", all: "Όλες οι κοινότητες", verified: "VERIFIED", organizer: "Organizer", partner: "NOXA PARTNER",
   },
 } as const;
 
 function formatDate(value: string, timezone: string, locale: Locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", {
-    day: "2-digit",
-    month: "short",
-    timeZone: timezone || "Europe/Athens",
-  }).format(date);
+  return new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", { day: "2-digit", month: "short", timeZone: timezone || "Europe/Athens" }).format(date);
 }
 
 export async function CommunityProfile({ locale, slug }: { locale: Locale; slug: string }) {
   const community = await loadCommunityBySlug(slug);
   if (!community) notFound();
 
-  const events = await loadCommunityEvents(community.id);
+  const [events, organizer] = await Promise.all([loadCommunityEvents(community.id), loadCommunityOrganizer(community.id)]);
   const t = copy[locale];
   const base = locale === "el" ? "/el" : "";
   const landing = landingCopy[locale];
   const navigationCopy = {
     ...landing.navigation,
-    join: locale === "el" ? "Μπες στη λίστα" : "Join Waitlist",
+    join: locale === "el" ? "Early Access" : "Early Access",
     items: [
+      ["Meets", `${base}/meets`],
       [locale === "el" ? "Κοινότητες" : "Communities", `${base}/communities`],
-      ["NOXA Meets", "/radar"],
-      [locale === "el" ? "Ομάδες" : "Crews", `${base}/crews`],
-      [locale === "el" ? "Διαδρομές" : "Routes", `${base}/routes`],
-      [locale === "el" ? "Επιχειρήσεις" : "Business", `${base || "/"}#business`],
+      ["Organizer", `${base}/organizer`],
     ] as const,
   };
   const coverStyle = community.cover_image_url
@@ -71,10 +51,7 @@ export async function CommunityProfile({ locale, slug }: { locale: Locale; slug:
         locale={locale}
         languageCopy={landing.language}
         navigationCopy={navigationCopy}
-        languagePaths={{
-          en: `/communities/${community.slug}`,
-          el: `/el/communities/${community.slug}`,
-        }}
+        languagePaths={{ en: `/communities/${community.slug}`, el: `/el/communities/${community.slug}` }}
         homeHref={locale === "el" ? "/el" : "/"}
         joinHref={locale === "el" ? "/el#waitlist" : "/#waitlist"}
       />
@@ -107,12 +84,9 @@ export async function CommunityProfile({ locale, slug }: { locale: Locale; slug:
               {community.scene_tags.map((tag) => <span className={styles.tag} key={tag}>{tag}</span>)}
             </div>
             <div className={styles.externalLinks}>
-              {community.instagram_url ? (
-                <a className={styles.secondaryLink} href={community.instagram_url} target="_blank" rel="noreferrer">{t.instagram} ↗</a>
-              ) : null}
-              {community.website_url ? (
-                <a className={styles.secondaryLink} href={community.website_url} target="_blank" rel="noreferrer">{t.website} ↗</a>
-              ) : null}
+              {organizer ? <Link className={styles.secondaryLink} href={`${base}/organizers/${organizer.slug}`}>{t.organizer}: {organizer.name}{organizer.partner ? ` · ${organizer.partner_label || t.partner}` : ""} →</Link> : null}
+              {community.instagram_url ? <a className={styles.secondaryLink} href={community.instagram_url} target="_blank" rel="noreferrer">{t.instagram} ↗</a> : null}
+              {community.website_url ? <a className={styles.secondaryLink} href={community.website_url} target="_blank" rel="noreferrer">{t.website} ↗</a> : null}
             </div>
           </section>
 
@@ -122,29 +96,19 @@ export async function CommunityProfile({ locale, slug }: { locale: Locale; slug:
             {events.length ? (
               <div className={styles.eventList}>
                 {events.map((event) => (
-                  <a className={styles.eventCard} href={event.source_url} target="_blank" rel="noreferrer" key={event.id}>
+                  <Link className={styles.eventCard} href={`${base}/meets/${event.public_slug}`} key={event.id}>
                     <span className={styles.eventDate}>{formatDate(event.starts_at, event.timezone, locale)}</span>
-                    <div>
-                      <h3>{event.title}</h3>
-                      <p>{event.city ?? event.location_text ?? event.region ?? community.country_code}</p>
-                    </div>
-                    <span className={styles.eventArrow}>↗</span>
-                  </a>
+                    <div><h3>{event.title}</h3><p>{event.city ?? event.location_text ?? event.region ?? community.country_code}</p></div>
+                    <span className={styles.eventArrow}>→</span>
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <p className={styles.aboutText}>{t.noEvents}</p>
-            )}
+            ) : <p className={styles.aboutText}>{t.noEvents}</p>}
           </section>
         </div>
       </main>
 
-      <footer className={styles.footer}>
-        <div className={`${styles.shell} ${styles.footerInner}`}>
-          <span>© 2026 NOXA</span>
-          <span>{community.name} · NOXA Communities</span>
-        </div>
-      </footer>
+      <footer className={styles.footer}><div className={`${styles.shell} ${styles.footerInner}`}><span>© 2026 NOXA</span><span>{community.name} · NOXA Communities</span></div></footer>
     </div>
   );
 }
