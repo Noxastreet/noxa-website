@@ -18,9 +18,3 @@
     object-position: 50% 46%;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .video {
-    display: none;
-  }
-}
