@@ -57,6 +57,15 @@ function track(eventId: string, kind: MetricKind, source = "direct") {
   }).catch(() => undefined);
 }
 
+function readSaved(eventId: string) {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? "[]");
+    return Array.isArray(parsed) && parsed.includes(eventId);
+  } catch {
+    return false;
+  }
+}
+
 function icsDate(value: string) {
   return new Date(value).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
@@ -83,7 +92,7 @@ function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: n
   return lines;
 }
 
-export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt, timezone, locationLabel, organizerName, mapQuery, locale, isPast = false }: Props) {
+export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt, locationLabel, organizerName, mapQuery, locale, isPast = false }: Props) {
   const [shared, setShared] = useState(false);
   const [saved, setSaved] = useState(false);
   const [storyBusy, setStoryBusy] = useState(false);
@@ -92,13 +101,13 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
 
   useEffect(() => {
     void track(eventId, "view", trafficSource());
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      setSaved(Array.isArray(parsed) && parsed.includes(eventId));
-    } catch {
-      setSaved(false);
-    }
+    const syncSaved = () => setSaved(readSaved(eventId));
+    const timer = window.setTimeout(syncSaved, 0);
+    window.addEventListener("storage", syncSaved);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("storage", syncSaved);
+    };
   }, [eventId]);
 
   async function share() {
@@ -118,8 +127,7 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
 
   function toggleSave() {
     try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
+      const parsed = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? "[]");
       const next = new Set<string>(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []);
       if (next.has(eventId)) next.delete(eventId); else next.add(eventId);
       window.localStorage.setItem(SAVED_KEY, JSON.stringify(Array.from(next)));
@@ -147,11 +155,9 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${eventTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "noxa-event"}.ics`;
-    document.body.appendChild(anchor);
+    anchor.download = `${eventTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "noxa-event"}.ics`;
     anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    URL.revokeObjectURL(url);
   }
 
   async function shareStory() {
@@ -175,14 +181,8 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
 
       const logo = new Image();
       logo.src = "/brand/noxa-maps-logo.png";
-      await new Promise<void>((resolve) => {
-        if (logo.complete) resolve();
-        else {
-          logo.onload = () => resolve();
-          logo.onerror = () => resolve();
-        }
-      });
-      if (logo.naturalWidth) ctx.drawImage(logo, 72, 92, 520, 133);
+      await new Promise<void>((resolve) => { logo.onload = () => resolve(); logo.onerror = () => resolve(); });
+      if (logo.complete && logo.naturalWidth) ctx.drawImage(logo, 72, 92, 520, 133);
 
       ctx.fillStyle = "#e32c49";
       ctx.font = "800 30px -apple-system, BlinkMacSystemFont, sans-serif";
@@ -191,7 +191,7 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
       ctx.font = "800 78px -apple-system, BlinkMacSystemFont, sans-serif";
       wrapCanvasText(ctx, eventTitle, 910, 5).forEach((line, index) => ctx.fillText(line, 72, 530 + index * 92));
 
-      const date = new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", { weekday: "short", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: timezone || "Europe/Athens" }).format(new Date(startsAt));
+      const date = new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", { weekday: "short", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt));
       ctx.fillStyle = "#ffffff";
       ctx.font = "750 42px -apple-system, BlinkMacSystemFont, sans-serif";
       ctx.fillText(date, 72, 1240);
@@ -214,10 +214,8 @@ export function EventActions({ eventId, eventTitle, eventType, startsAt, endsAt,
         const anchor = document.createElement("a");
         anchor.href = url;
         anchor.download = "noxa-meet-story.png";
-        document.body.appendChild(anchor);
         anchor.click();
-        anchor.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 500);
+        URL.revokeObjectURL(url);
       }
       void track(eventId, "share");
     } catch {
