@@ -23,7 +23,7 @@ const copy = {
     nav: {
       meets: "Meets",
       communities: "Communities",
-      organizer: "Organizer",
+      organizers: "Organizers",
       app: "NOXA App",
     },
     hero: {
@@ -40,11 +40,11 @@ const copy = {
         body: "Discover car and moto communities near you.",
         cta: "Explore Communities",
       },
-      organizer: {
+      organizers: {
         eyebrow: "ORGANIZERS",
-        title: "Run your events on NOXA.",
-        body: "Create, publish and manage your meets from one place.",
-        cta: "Organizer Login",
+        title: "Meet the people behind the events.",
+        body: "Discover verified teams, companies, pages and groups running automotive events.",
+        cta: "Explore Organizers",
       },
     },
     culture: {
@@ -60,7 +60,7 @@ const copy = {
     footer: {
       meets: "Meets",
       communities: "Communities",
-      organizers: "Organizer",
+      organizers: "Organizers",
       app: "Early Access",
       instagram: "Instagram",
     },
@@ -69,7 +69,7 @@ const copy = {
     nav: {
       meets: "Meets",
       communities: "Κοινότητες",
-      organizer: "Organizer",
+      organizers: "Organizers",
       app: "NOXA App",
     },
     hero: {
@@ -86,11 +86,11 @@ const copy = {
         body: "Ανακάλυψε car και moto κοινότητες κοντά σου.",
         cta: "Δες Κοινότητες",
       },
-      organizer: {
+      organizers: {
         eyebrow: "ORGANIZERS",
-        title: "Διαχειρίσου τα events σου στο NOXA.",
-        body: "Δημιούργησε, δημοσίευσε και διαχειρίσου τα meets σου.",
-        cta: "Organizer Login",
+        title: "Βρες αυτούς που βρίσκονται πίσω από τα events.",
+        body: "Ανακάλυψε verified teams, εταιρείες, pages και groups που διοργανώνουν automotive events.",
+        cta: "Δες Organizers",
       },
     },
     culture: {
@@ -106,7 +106,7 @@ const copy = {
     footer: {
       meets: "Meets",
       communities: "Κοινότητες",
-      organizers: "Organizer",
+      organizers: "Organizers",
       app: "Early Access",
       instagram: "Instagram",
     },
@@ -119,7 +119,7 @@ export function CultureLandingV2({ locale }: Props) {
   const home = locale === "el" ? "/el" : "/";
   const meets = locale === "el" ? "/el/meets" : "/meets";
   const communities = locale === "el" ? "/el/communities" : "/communities";
-  const organizer = locale === "el" ? "/el/organizer" : "/organizer";
+  const organizers = locale === "el" ? "/el/organizers" : "/organizers";
 
   const navigationCopy = {
     ...base.navigation,
@@ -127,7 +127,7 @@ export function CultureLandingV2({ locale }: Props) {
     items: [
       [t.nav.meets, meets],
       [t.nav.communities, communities],
-      [t.nav.organizer, organizer],
+      [t.nav.organizers, organizers],
     ] as const,
   };
 
@@ -185,13 +185,13 @@ export function CultureLandingV2({ locale }: Props) {
                 </div>
               </Link>
 
-              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={organizer}>
+              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={organizers}>
                 <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
                 <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
-                  <p className={styles.eyebrow}>{t.paths.organizer.eyebrow}</p>
-                  <h3>{t.paths.organizer.title}</h3>
-                  <p>{t.paths.organizer.body}</p>
-                  <strong>{t.paths.organizer.cta} <span aria-hidden="true">→</span></strong>
+                  <p className={styles.eyebrow}>{t.paths.organizers.eyebrow}</p>
+                  <h3>{t.paths.organizers.title}</h3>
+                  <p>{t.paths.organizers.body}</p>
+                  <strong>{t.paths.organizers.cta} <span aria-hidden="true">→</span></strong>
                 </div>
               </Link>
             </div>
@@ -233,7 +233,7 @@ export function CultureLandingV2({ locale }: Props) {
             <nav aria-label="Footer">
               <Link href={meets}>{t.footer.meets}</Link>
               <Link href={communities}>{t.footer.communities}</Link>
-              <Link href={organizer}>{t.footer.organizers}</Link>
+              <Link href={organizers}>{t.footer.organizers}</Link>
               <a href="#app">{t.footer.app}</a>
               <a href="https://www.instagram.com/noxa_app/" rel="noreferrer" target="_blank">{t.footer.instagram}</a>
             </nav>

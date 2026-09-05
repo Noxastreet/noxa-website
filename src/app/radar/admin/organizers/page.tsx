@@ -1,13 +1,1 @@
-import type { Metadata } from "next";
-
-import { OrganizerAdminConsole } from "@/components/organizers/OrganizerAdminConsole";
-
-export const metadata: Metadata = {
-  title: "NOXA Organizers Admin",
-  description: "Private NOXA organizer access and invitation console.",
-  robots: { index: false, follow: false },
-};
-
-export default function OrganizerAdminPage() {
-  return <OrganizerAdminConsole />;
-}
+import type {Metadata} from "next";import Link from "next/link";import {OrganizerAdminConsole} from "@/components/organizers/OrganizerAdminConsole";export const metadata:Metadata={title:"NOXA Organizers Admin",description:"Private NOXA organizer access and invitation console.",robots:{index:false,follow:false}};export default function OrganizerAdminPage(){return <><div className="mx-auto flex justify-end pt-4" style={{width:"min(calc(100% - 32px), 1120px)"}}><Link className="rounded-full border border-white/10 px-4 py-3 text-sm font-semibold text-white" href="/radar/admin/organizers/applications">Review organizer applications →</Link></div><OrganizerAdminConsole/></>}

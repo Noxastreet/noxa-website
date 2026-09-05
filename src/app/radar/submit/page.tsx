@@ -1,15 +1,1 @@
-import type { Metadata } from "next";
-
-import { RadarSubmitForm } from "@/components/radar/RadarSubmitForm";
-
-export const metadata: Metadata = {
-  title: "Submit an event for review — NOXA Meets",
-  description: "Suggest a public automotive or motorcycle event for NOXA review. Public submissions never publish directly.",
-  alternates: {
-    canonical: "https://noxastreetapp.com/radar/submit",
-  },
-};
-
-export default function RadarSubmitPage() {
-  return <RadarSubmitForm />;
-}
+import type {Metadata} from "next";import {RadarSubmitForm} from "@/components/radar/RadarSubmitForm";export const metadata:Metadata={title:"Suggest an event for review — NOXA Meets",description:"Legacy NOXA event suggestion route.",robots:{index:false,follow:false},alternates:{canonical:"https://noxastreetapp.com/meets/submit"}};export default function RadarSubmitPage(){return <RadarSubmitForm locale="en"/>}
