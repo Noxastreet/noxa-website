@@ -13,6 +13,7 @@ import {
 } from "@/lib/meets/dateFilters";
 
 import { FollowSubscriptionForm } from "./FollowSubscriptionForm";
+import { MobileMeetFilters } from "./MobileMeetFilters";
 import growth from "./MeetsDirectoryGrowth.module.css";
 import styles from "./MeetsDirectory.module.css";
 
@@ -217,6 +218,12 @@ export function MeetsDirectory({
 
   const hasActiveFilters = selectedCity !== "all" || filter !== "all" || dateFilter !== "all" || query.trim() !== "";
   const countryLabel = countryName(country, locale);
+  const resetFilters = () => {
+    setFilter("all");
+    setCity("all");
+    setDateFilter("all");
+    setQuery("");
+  };
   const stateLabel = (event: MeetsDirectoryEvent) => {
     const state = eventDiscoveryState(event.startsAt, event.endsAt, event.timezone || "Europe/Athens");
     if (state === "happening") return t.happening;
@@ -268,7 +275,7 @@ export function MeetsDirectory({
               <p>{t.sectionBody}</p>
             </div>
 
-            <div className={styles.discoveryPanel} aria-label="Meet filters">
+            <div className={`${styles.discoveryPanel} ${growth.compactPanel}`} aria-label="Meet filters">
               <label className={growth.searchControl}>
                 <span>{t.search}</span>
                 <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.searchPlaceholder} />
@@ -278,41 +285,59 @@ export function MeetsDirectory({
                   <button key={value} className={dateFilter === value ? growth.dateChipActive : growth.dateChip} type="button" aria-pressed={dateFilter === value} onClick={() => setDateFilter(value)}>{label}</button>
                 ))}
               </div>
-              <div className={styles.locationGrid}>
-                <label className={styles.locationControl}>
-                  <span className={styles.controlLabel}>{t.country}</span>
-                  <span className={styles.selectShell}>
-                    <span className={styles.flag} aria-hidden="true">{countryFlag(country)}</span>
-                    <select aria-label={t.country} value={country} onChange={(event) => { setCountry(event.target.value); setCity("all"); }}>
-                      {(countries.length ? countries : [country]).map((code) => <option key={code} value={code}>{countryName(code, locale)}</option>)}
-                    </select>
-                    <span className={styles.chevron} aria-hidden="true">⌄</span>
-                  </span>
-                </label>
-                <label className={styles.locationControl}>
-                  <span className={styles.controlLabel}>{t.city}</span>
-                  <span className={styles.selectShell}>
-                    <span className={styles.pin} aria-hidden="true">●</span>
-                    <select aria-label={t.city} value={selectedCity} disabled={!cities.length} onChange={(event) => setCity(event.target.value)}>
-                      <option value="all">{cities.length ? t.allCities : t.noCities}</option>
-                      {cities.map((name) => <option key={name} value={name}>{name}</option>)}
-                    </select>
-                    <span className={styles.chevron} aria-hidden="true">⌄</span>
-                  </span>
-                </label>
-              </div>
-              <div className={styles.typeRow}>
-                <span className={styles.controlLabel}>{t.type}</span>
-                <div className={styles.chips}>
-                  {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
-                    <button className={filter === value ? styles.chipActive : styles.chip} key={value} onClick={() => setFilter(value)} type="button" aria-pressed={filter === value}>{label}</button>
-                  ))}
+
+              <div className={growth.desktopFilters}>
+                <div className={styles.locationGrid}>
+                  <label className={styles.locationControl}>
+                    <span className={styles.controlLabel}>{t.country}</span>
+                    <span className={styles.selectShell}>
+                      <span className={styles.flag} aria-hidden="true">{countryFlag(country)}</span>
+                      <select aria-label={t.country} value={country} onChange={(event) => { setCountry(event.target.value); setCity("all"); }}>
+                        {(countries.length ? countries : [country]).map((code) => <option key={code} value={code}>{countryName(code, locale)}</option>)}
+                      </select>
+                      <span className={styles.chevron} aria-hidden="true">⌄</span>
+                    </span>
+                  </label>
+                  <label className={styles.locationControl}>
+                    <span className={styles.controlLabel}>{t.city}</span>
+                    <span className={styles.selectShell}>
+                      <span className={styles.pin} aria-hidden="true">●</span>
+                      <select aria-label={t.city} value={selectedCity} disabled={!cities.length} onChange={(event) => setCity(event.target.value)}>
+                        <option value="all">{cities.length ? t.allCities : t.noCities}</option>
+                        {cities.map((name) => <option key={name} value={name}>{name}</option>)}
+                      </select>
+                      <span className={styles.chevron} aria-hidden="true">⌄</span>
+                    </span>
+                  </label>
+                </div>
+                <div className={styles.typeRow}>
+                  <span className={styles.controlLabel}>{t.type}</span>
+                  <div className={styles.chips}>
+                    {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
+                      <button className={filter === value ? styles.chipActive : styles.chip} key={value} onClick={() => setFilter(value)} type="button" aria-pressed={filter === value}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className={styles.filterFooter}>
+                  <span>{visible.length} {t.found}</span>
+                  {hasActiveFilters ? <button className={styles.resetButton} type="button" onClick={resetFilters}>{t.reset}</button> : null}
                 </div>
               </div>
-              <div className={styles.filterFooter}>
-                <span>{visible.length} {t.found}</span>
-                {hasActiveFilters ? <button className={styles.resetButton} type="button" onClick={() => { setFilter("all"); setCity("all"); setDateFilter("all"); setQuery(""); }}>{t.reset}</button> : null}
-              </div>
+
+              <MobileMeetFilters
+                locale={locale}
+                country={country}
+                countryLabel={countryLabel}
+                countries={countries}
+                city={selectedCity}
+                cities={cities}
+                filter={filter}
+                eventCount={visible.length}
+                onCountryChange={(nextCountry) => { setCountry(nextCountry); setCity("all"); }}
+                onCityChange={setCity}
+                onFilterChange={setFilter}
+                onReset={resetFilters}
+              />
             </div>
 
             {selectedCity !== "all" ? <div className={growth.followWrap}><FollowSubscriptionForm locale={locale} target={{ type: "city", city: selectedCity, countryCode: country }} title={t.followCity(selectedCity)} /></div> : null}
@@ -356,7 +381,7 @@ export function MeetsDirectory({
                 <h3>{event.title}</h3><p>{eventLocation(event)}</p>
                 <div className={styles.cardFooter}><small className={styles.organizer}>{event.organizer}</small><strong className={styles.cardLink}>{t.view} <span aria-hidden="true">↗</span></strong></div>
               </Link>;
-            })}</div> : lead ? null : <div className={styles.empty}><strong>{t.noEvents}</strong><p>{t.noEventsBody}</p>{hasActiveFilters ? <button type="button" onClick={() => { setFilter("all"); setCity("all"); setDateFilter("all"); setQuery(""); }}>{t.reset}</button> : null}</div>}
+            })}</div> : lead ? null : <div className={styles.empty}><strong>{t.noEvents}</strong><p>{t.noEventsBody}</p>{hasActiveFilters ? <button type="button" onClick={resetFilters}>{t.reset}</button> : null}</div>}
           </div>
         </section>
       </main>
