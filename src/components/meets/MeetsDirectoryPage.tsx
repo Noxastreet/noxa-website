@@ -21,6 +21,8 @@ type Row = {
   region: string | null;
   organizer_name: string | null;
   source_name: string;
+  featured: boolean | null;
+  partner_badge: string | null;
 };
 
 function fallbackCountry(value: string | null) {
@@ -34,9 +36,19 @@ function savedCountry(value: string | undefined) {
   return code && /^[A-Z]{2}$/.test(code) ? code : null;
 }
 
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "organizer";
+}
+
 async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
   const query = new URLSearchParams({
-    select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,organizer_name,source_name",
+    select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,organizer_name,source_name,featured,partner_badge",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "500",
@@ -48,20 +60,26 @@ async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
     });
     if (!response.ok) return [];
     const rows = await response.json() as Row[];
-    return rows.filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at)).map((row) => ({
-      id: row.id,
-      slug: row.public_slug,
-      countryCode: row.country_code,
-      title: row.title,
-      eventType: row.event_type,
-      startsAt: row.starts_at,
-      endsAt: row.ends_at,
-      timezone: row.timezone,
-      location: row.location_text ?? row.city ?? row.region ?? row.country_code,
-      city: row.city ?? "",
-      region: row.region ?? "",
-      organizer: row.organizer_name ?? row.source_name,
-    }));
+    return rows.filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at)).map((row) => {
+      const organizer = row.organizer_name ?? row.source_name;
+      return {
+        id: row.id,
+        slug: row.public_slug,
+        countryCode: row.country_code,
+        title: row.title,
+        eventType: row.event_type,
+        startsAt: row.starts_at,
+        endsAt: row.ends_at,
+        timezone: row.timezone,
+        location: row.location_text ?? row.city ?? row.region ?? row.country_code,
+        city: row.city ?? "",
+        region: row.region ?? "",
+        organizer,
+        organizerSlug: slugify(organizer),
+        featured: Boolean(row.featured),
+        partnerBadge: row.partner_badge,
+      };
+    });
   } catch {
     return [];
   }
