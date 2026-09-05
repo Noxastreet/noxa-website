@@ -195,7 +195,9 @@ export function CommunityApplicationForm({ locale }: { locale: Locale }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"}>NOXA</Link>
+        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home">
+          <img src="/brand/noxa-header-sticker.svg" alt="" aria-hidden="true" />
+        </Link>
         <Link className={styles.backLink} href={directoryHref}>{t.back}</Link>
       </header>
 
