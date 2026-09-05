@@ -13,7 +13,7 @@ import refine from "./CultureLandingV2Refine.module.css";
 
 type Props = { locale: Locale };
 
-const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4";
+const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
 const HERO_POSTER_URL =
   "https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260";
 
@@ -22,7 +22,6 @@ const copy = {
     nav: {
       meets: "Meets",
       communities: "Communities",
-      add: "Add Event",
       organizer: "Organizer",
       app: "NOXA App",
     },
@@ -31,7 +30,6 @@ const copy = {
       title: "Find car & moto meets across Greece.",
       body: "Events, communities and automotive culture — all in one place.",
       primary: "Explore Meets",
-      secondary: "Add an Event",
       app: "NOXA App · Coming soon",
     },
     paths: {
@@ -62,7 +60,6 @@ const copy = {
       meets: "Meets",
       communities: "Communities",
       organizers: "Organizer",
-      add: "Add Event",
       app: "Early Access",
       instagram: "Instagram",
     },
@@ -71,7 +68,6 @@ const copy = {
     nav: {
       meets: "Meets",
       communities: "Κοινότητες",
-      add: "Πρόσθεσε Event",
       organizer: "Organizer",
       app: "NOXA App",
     },
@@ -80,7 +76,6 @@ const copy = {
       title: "Βρες car & moto meets σε όλη την Ελλάδα.",
       body: "Events, κοινότητες και automotive culture — όλα σε ένα μέρος.",
       primary: "Βρες Meets",
-      secondary: "Πρόσθεσε Event",
       app: "NOXA App · Σύντομα",
     },
     paths: {
@@ -111,7 +106,6 @@ const copy = {
       meets: "Meets",
       communities: "Κοινότητες",
       organizers: "Organizer",
-      add: "Πρόσθεσε Event",
       app: "Early Access",
       instagram: "Instagram",
     },
@@ -125,7 +119,6 @@ export function CultureLandingV2({ locale }: Props) {
   const meets = locale === "el" ? "/el/meets" : "/meets";
   const communities = locale === "el" ? "/el/communities" : "/communities";
   const organizer = locale === "el" ? "/el/organizer" : "/organizer";
-  const addEvent = locale === "el" ? "/el/meets/submit" : "/meets/submit";
 
   const navigationCopy = {
     ...base.navigation,
@@ -133,7 +126,6 @@ export function CultureLandingV2({ locale }: Props) {
     items: [
       [t.nav.meets, meets],
       [t.nav.communities, communities],
-      [t.nav.add, addEvent],
       [t.nav.organizer, organizer],
     ] as const,
   };
@@ -172,7 +164,6 @@ export function CultureLandingV2({ locale }: Props) {
               <p className={styles.heroBody}>{t.hero.body}</p>
               <div className={styles.heroActions}>
                 <Link className={styles.primaryButton} href={meets}>{t.hero.primary} <span aria-hidden="true">→</span></Link>
-                <Link className={styles.secondaryButton} href={addEvent}>{t.hero.secondary}</Link>
               </div>
               <a className={styles.appHint} href="#app">{t.hero.app} <span aria-hidden="true">↓</span></a>
             </div>
@@ -245,7 +236,6 @@ export function CultureLandingV2({ locale }: Props) {
               <Link href={meets}>{t.footer.meets}</Link>
               <Link href={communities}>{t.footer.communities}</Link>
               <Link href={organizer}>{t.footer.organizers}</Link>
-              <Link href={addEvent}>{t.footer.add}</Link>
               <a href="#app">{t.footer.app}</a>
               <a href="https://www.instagram.com/noxa_app/" rel="noreferrer" target="_blank">{t.footer.instagram}</a>
             </nav>
