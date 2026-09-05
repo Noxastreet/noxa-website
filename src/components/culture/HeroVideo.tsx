@@ -4,11 +4,10 @@ import { useEffect, useRef } from "react";
 
 type Props = {
   className?: string;
-  poster: string;
   src: string;
 };
 
-export function HeroVideo({ className, poster, src }: Props) {
+export function HeroVideo({ className, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -86,7 +85,6 @@ export function HeroVideo({ className, poster, src }: Props) {
       loop
       muted
       playsInline
-      poster={poster}
       preload="metadata"
       tabIndex={-1}
     >

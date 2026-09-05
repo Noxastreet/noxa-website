@@ -15,8 +15,8 @@ import refine from "./CultureLandingV2Refine.module.css";
 type Props = { locale: Locale };
 
 const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
-const HERO_POSTER_URL =
-  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1200&w=750&q=75";
+const DESKTOP_HERO_POSTER_URL =
+  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
 
 const copy = {
   en: {
@@ -133,7 +133,7 @@ export function CultureLandingV2({ locale }: Props) {
 
   return (
     <div className={styles.site}>
-      <link rel="preload" href={HERO_POSTER_URL} as="image" fetchPriority="high" />
+      <link rel="preload" href={DESKTOP_HERO_POSTER_URL} as="image" media="(min-width: 821px)" fetchPriority="high" />
       <DocumentLanguage locale={locale} />
       <a className="skip-link" href="#main-content">{base.skipToContent}</a>
       <div className={refine.headerCompact}>
@@ -150,11 +150,7 @@ export function CultureLandingV2({ locale }: Props) {
       <main id="main-content">
         <section className={`${styles.hero} ${refine.heroRefined}`} id="top">
           <div className={`${styles.heroMedia} ${videoStyles.media}`} aria-hidden="true">
-            <HeroVideo
-              className={videoStyles.video}
-              poster={HERO_POSTER_URL}
-              src={HERO_VIDEO_URL}
-            />
+            <HeroVideo className={videoStyles.video} src={HERO_VIDEO_URL} />
           </div>
           <div className={styles.heroShade} aria-hidden="true" />
           <div className={styles.heroNoise} aria-hidden="true" />
