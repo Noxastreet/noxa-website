@@ -1,5 +1,5 @@
 .media.media {
-  background-image: url("https://images.pexels.com/videos/35716927/4k-cars-blue-car-car-aesthetics-car-show-35716927.jpeg?auto=compress&dpr=1&h=750&w=1260");
+  background-image: url("/api/media/culture-image?asset=hero");
   background-position: 50% 50%;
   background-size: cover;
 }
