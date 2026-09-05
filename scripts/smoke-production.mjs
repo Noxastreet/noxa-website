@@ -10,6 +10,8 @@ const checks = [
   ["greek-home", "/el", "text/html"],
   ["meets", "/meets", "text/html"],
   ["greek-meets", "/el/meets", "text/html"],
+  ["meets-archive", "/meets/archive", "text/html"],
+  ["greek-meets-archive", "/el/meets/archive", "text/html"],
   ["communities", "/communities", "text/html"],
   ["greek-communities", "/el/communities", "text/html"],
   ["organizer", "/organizer", "text/html"],
@@ -19,7 +21,7 @@ const checks = [
   ["robots", "/robots.txt", "text/plain"],
   ["sitemap", "/sitemap.xml", "application/xml"],
   ["manifest", "/manifest.webmanifest", "application/manifest+json"],
-  ["icon", "/icon.svg", "image/svg+xml"],
+  ["icon", "/icon.png", "image/png"],
 ];
 
 for (const [name, pathname, expectedType] of checks) {
@@ -65,7 +67,7 @@ for (const expectedContent of [
   "href=\"/meets\"",
   "href=\"/communities\"",
   "href=\"/organizer\"",
-  "/brand/noxa-header-sticker.svg",
+  "/brand/noxa-maps-logo.png",
 ]) {
   if (!homeHtml.includes(expectedContent)) {
     throw new Error(`Home page is missing expected content: ${expectedContent}`);
@@ -79,6 +81,7 @@ if (homeHtml.includes("href=\"/meets/submit\"")) {
 const pageContentChecks = [
   ["meets", "/meets", "Find your next meet."],
   ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
+  ["meets-archive", "/meets/archive", "Past events."],
   ["communities", "/communities", "Find your scene."],
   ["greek-communities", "/el/communities", "Βρες τη σκηνή σου."],
 ];
@@ -93,7 +96,7 @@ for (const [name, pathname, expectedContent] of pageContentChecks) {
     throw new Error(`${name} page is missing expected content: ${expectedContent}`);
   }
 
-  if (!html.includes("/brand/noxa-header-sticker.svg")) {
+  if (!html.includes("/brand/noxa-maps-logo.png")) {
     throw new Error(`${name} page is missing the current NOXA logo asset.`);
   }
 }
@@ -123,7 +126,7 @@ for (const [header, expectedValue] of Object.entries(expectedHeaders)) {
 }
 
 const permissionsPolicy = homeResponse.headers.get("permissions-policy") ?? "";
-for (const directive of ["camera=()", "microphone=()", "geolocation=()"] ) {
+for (const directive of ["camera=()", "microphone=()", "geolocation=(self)"]) {
   if (!permissionsPolicy.includes(directive)) {
     throw new Error(`Permissions-Policy is missing ${directive}`);
   }
