@@ -122,7 +122,7 @@ for (const [header, expectedValue] of Object.entries(expectedHeaders)) {
 }
 
 const permissionsPolicy = homeResponse.headers.get("permissions-policy") ?? "";
-for (const directive of ["camera=()", "microphone=()", "geolocation=()"] ) {
+for (const directive of ["camera=()", "microphone=()", "geolocation=(self)"] ) {
   if (!permissionsPolicy.includes(directive)) {
     throw new Error(`Permissions-Policy is missing ${directive}`);
   }
