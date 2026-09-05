@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 22
       - name: Restore npm and Next.js caches
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.npm
