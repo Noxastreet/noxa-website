@@ -20,6 +20,9 @@ export function HeroVideo({ className, poster, src }: Props) {
     const video = videoRef.current;
     if (!video) return;
 
+    const desktopMedia = window.matchMedia("(min-width: 768px)");
+    if (!desktopMedia.matches) return;
+
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let needsGesture = reducedMotion;
 
@@ -80,9 +83,10 @@ export function HeroVideo({ className, poster, src }: Props) {
       muted
       playsInline
       poster={effectivePoster}
-      preload="auto"
-      src={src}
+      preload="metadata"
       tabIndex={-1}
-    />
+    >
+      <source media="(min-width: 768px)" src={src} type="video/mp4" />
+    </video>
   );
 }
