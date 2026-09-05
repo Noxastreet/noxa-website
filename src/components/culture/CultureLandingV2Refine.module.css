@@ -91,6 +91,7 @@
   .heroRefined h1 {
     max-width: 11ch;
     font-size: clamp(42px, 11.5vw, 60px);
+    text-wrap: wrap;
   }
 
   .pathsRefined {
