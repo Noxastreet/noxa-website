@@ -4,7 +4,7 @@ import { CommunityDirectory } from "@/components/communities/CommunityDirectory"
 
 export const metadata: Metadata = {
   title: "NOXA Communities — Automotive κοινότητες στην Ελλάδα",
-  description: "Ανακάλυψε πραγματικές car και moto κοινότητες, διοργανωτές και local automotive scenes σε όλη την Ελλάδα στο NOXA.",
+  description: "Ανακάλυψε πραγματικές car και moto κοινότητες, clubs και local automotive scenes σε όλη την Ελλάδα στο NOXA.",
   alternates: {
     canonical: "https://noxastreetapp.com/el/communities",
     languages: {
