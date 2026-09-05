@@ -10,6 +10,9 @@ type Props = {
 
 export function HeroVideo({ className, poster, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const effectivePoster = poster.includes("images.pexels.com")
+    ? "/api/media/culture-image?asset=hero"
+    : poster;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -69,7 +72,7 @@ export function HeroVideo({ className, poster, src }: Props) {
       loop
       muted
       playsInline
-      poster={poster}
+      poster={effectivePoster}
       preload="auto"
       src={src}
       tabIndex={-1}
