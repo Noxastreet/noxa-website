@@ -24,6 +24,7 @@ type SiteHeaderProps = {
   locale: Locale;
   navigationCopy: LandingCopy["navigation"];
   languagePaths?: Partial<Record<Locale, string>>;
+  currentPath?: string;
   homeHref?: string;
   joinHref?: string;
 };
@@ -33,6 +34,7 @@ export function SiteHeader({
   locale,
   navigationCopy,
   languagePaths,
+  currentPath,
   homeHref = "#top",
   joinHref = "#waitlist",
 }: SiteHeaderProps) {
@@ -145,7 +147,7 @@ export function SiteHeader({
             aria-label={navigationCopy.primaryLabel}
           >
             {navigationItems.map(([label, href]) => {
-              const isActive = activeHref === href;
+              const isActive = activeHref === href || currentPath === href;
 
               return (
                 <a
@@ -288,7 +290,7 @@ export function SiteHeader({
 
           <nav className="mt-4 grid gap-2" aria-label={navigationCopy.mobileLabel}>
             {navigationItems.map(([label, href]) => {
-              const isActive = activeHref === href;
+              const isActive = activeHref === href || currentPath === href;
 
               return (
                 <a
@@ -333,3 +335,4 @@ export function SiteHeader({
     </>
   );
 }
+
