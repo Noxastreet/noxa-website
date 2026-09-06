@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 
 const HERO_POSTER_URL =
   "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
+const INITIAL_PLAY_DELAY_MS = 1600;
 
 type Props = {
   canvasClassName?: string;
@@ -19,6 +20,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     if (!video) return;
 
     let gestureRetryArmed = false;
+    let sourceAttached = false;
 
     const configureVideo = () => {
       video.muted = true;
@@ -31,6 +33,13 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
       video.setAttribute("loop", "");
       video.setAttribute("playsinline", "");
       video.setAttribute("webkit-playsinline", "");
+    };
+
+    const attachSource = () => {
+      if (sourceAttached) return;
+      sourceAttached = true;
+      video.src = src;
+      video.load();
     };
 
     const disarmGestureRetry = () => {
@@ -51,6 +60,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
       if (document.visibilityState !== "visible") return;
 
       configureVideo();
+      attachSource();
 
       try {
         await video.play();
@@ -74,10 +84,6 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
       }
     };
 
-    configureVideo();
-    if (video.readyState === HTMLMediaElement.HAVE_NOTHING) video.load();
-    void tryPlay();
-
     video.addEventListener("loadedmetadata", retryVisible);
     video.addEventListener("loadeddata", retryVisible);
     video.addEventListener("canplay", retryVisible);
@@ -87,10 +93,10 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     window.addEventListener("online", retryVisible);
     document.addEventListener("visibilitychange", retryVisible);
 
-    const retryTimer = window.setTimeout(() => void tryPlay(), 1200);
+    const initialPlayTimer = window.setTimeout(() => void tryPlay(), INITIAL_PLAY_DELAY_MS);
 
     return () => {
-      window.clearTimeout(retryTimer);
+      window.clearTimeout(initialPlayTimer);
       disarmGestureRetry();
       video.removeEventListener("loadedmetadata", retryVisible);
       video.removeEventListener("loadeddata", retryVisible);
@@ -107,7 +113,6 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     <>
       <video
         ref={videoRef}
-        autoPlay
         className={className}
         controls={false}
         disablePictureInPicture
@@ -116,8 +121,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
         muted
         playsInline
         poster={HERO_POSTER_URL}
-        preload="auto"
-        src={src}
+        preload="none"
         tabIndex={-1}
       />
       {canvasClassName ? <canvas className={canvasClassName} aria-hidden="true" /> : null}
