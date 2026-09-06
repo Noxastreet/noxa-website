@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
+const HERO_POSTER_URL =
+  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
+
 type Props = {
   canvasClassName?: string;
   className?: string;
@@ -112,6 +115,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
         loop
         muted
         playsInline
+        poster={HERO_POSTER_URL}
         preload="auto"
         src={src}
         tabIndex={-1}
