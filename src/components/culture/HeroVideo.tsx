@@ -8,158 +8,96 @@ type Props = {
   src: string;
 };
 
-type VideoWithFrameCallback = HTMLVideoElement & {
-  requestVideoFrameCallback?: (callback: (now: DOMHighResTimeStamp) => void) => number;
-  cancelVideoFrameCallback?: (handle: number) => void;
-};
-
 export function HeroVideo({ canvasClassName, className, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current as VideoWithFrameCallback | null;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    const video = videoRef.current;
+    if (!video) return;
 
-    const mobileMedia = window.matchMedia("(max-width: 820px)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let needsGesture = false;
-    let videoFrameHandle: number | undefined;
-    let animationFrameHandle: number | undefined;
+    let retryTimer: number | undefined;
+    let gestureRetryArmed = false;
 
-    const drawMobileFrame = () => {
-      if (!mobileMedia.matches || reducedMotion.matches || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
-
-      const width = Math.max(1, Math.round(canvas.clientWidth));
-      const height = Math.max(1, Math.round(canvas.clientHeight));
-      if (canvas.width !== width) canvas.width = width;
-      if (canvas.height !== height) canvas.height = height;
-
-      const context = canvas.getContext("2d", { alpha: false });
-      if (!context) return;
-
-      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
-      const sourceWidth = width / scale;
-      const sourceHeight = height / scale;
-      const sourceX = (video.videoWidth - sourceWidth) / 2;
-      const sourceY = (video.videoHeight - sourceHeight) / 2;
-
-      context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
-      canvas.dataset.ready = "true";
+    const configureVideo = () => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.setAttribute("muted", "");
+      video.setAttribute("autoplay", "");
+      video.setAttribute("loop", "");
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
     };
 
-    const stopMobileRenderer = () => {
-      if (videoFrameHandle !== undefined && video.cancelVideoFrameCallback) {
-        video.cancelVideoFrameCallback(videoFrameHandle);
-      }
-      if (animationFrameHandle !== undefined) {
-        window.cancelAnimationFrame(animationFrameHandle);
-      }
-      videoFrameHandle = undefined;
-      animationFrameHandle = undefined;
+    const disarmGestureRetry = () => {
+      if (!gestureRetryArmed) return;
+      gestureRetryArmed = false;
+      document.removeEventListener("pointerdown", retryAfterGesture);
+      document.removeEventListener("touchstart", retryAfterGesture);
     };
 
-    const scheduleMobileFrame = () => {
-      if (!mobileMedia.matches || reducedMotion.matches || video.paused || video.ended) return;
-
-      if (video.requestVideoFrameCallback) {
-        videoFrameHandle = video.requestVideoFrameCallback(() => {
-          videoFrameHandle = undefined;
-          drawMobileFrame();
-          scheduleMobileFrame();
-        });
-      } else {
-        animationFrameHandle = window.requestAnimationFrame(() => {
-          animationFrameHandle = undefined;
-          drawMobileFrame();
-          scheduleMobileFrame();
-        });
-      }
-    };
-
-    const startMobileRenderer = () => {
-      if (!mobileMedia.matches || reducedMotion.matches) return;
-      drawMobileFrame();
-      if (videoFrameHandle === undefined && animationFrameHandle === undefined) scheduleMobileFrame();
+    const armGestureRetry = () => {
+      if (gestureRetryArmed) return;
+      gestureRetryArmed = true;
+      document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
+      document.addEventListener("touchstart", retryAfterGesture, { passive: true });
     };
 
     const tryPlay = async () => {
-      if (reducedMotion.matches || document.visibilityState !== "visible") return;
+      if (document.visibilityState !== "visible") return;
 
-      video.muted = true;
-      video.defaultMuted = true;
-      video.setAttribute("muted", "");
-      video.setAttribute("playsinline", "");
-      video.setAttribute("webkit-playsinline", "");
+      configureVideo();
 
       try {
         await video.play();
-        needsGesture = false;
-        startMobileRenderer();
+        disarmGestureRetry();
       } catch {
-        needsGesture = true;
+        armGestureRetry();
       }
     };
 
-    const retryReady = () => {
-      drawMobileFrame();
+    function retryAfterGesture() {
       void tryPlay();
-    };
+    }
+
     const retryVisible = () => {
       if (document.visibilityState === "visible") void tryPlay();
-      else {
-        stopMobileRenderer();
-        video.pause();
-      }
     };
-    const retryAfterGesture = () => {
-      if (needsGesture) void tryPlay();
-    };
-    const handleViewportChange = () => {
-      stopMobileRenderer();
-      canvas.removeAttribute("data-ready");
-      void tryPlay();
-    };
-    const handleMotionPreference = () => {
-      stopMobileRenderer();
-      canvas.removeAttribute("data-ready");
-      if (reducedMotion.matches) {
-        video.pause();
-        needsGesture = false;
-      } else {
+
+    const retryIfPaused = () => {
+      if (!video.ended && video.paused && document.visibilityState === "visible") {
         void tryPlay();
       }
     };
-    const handleResize = () => drawMobileFrame();
 
+    configureVideo();
+    if (video.readyState === HTMLMediaElement.HAVE_NOTHING) video.load();
     void tryPlay();
 
-    video.addEventListener("loadeddata", retryReady);
-    video.addEventListener("canplay", retryReady);
-    video.addEventListener("playing", startMobileRenderer);
+    video.addEventListener("loadedmetadata", retryVisible);
+    video.addEventListener("loadeddata", retryVisible);
+    video.addEventListener("canplay", retryVisible);
+    video.addEventListener("pause", retryIfPaused);
     window.addEventListener("pageshow", retryVisible);
     window.addEventListener("focus", retryVisible);
-    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("online", retryVisible);
     document.addEventListener("visibilitychange", retryVisible);
-    document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
-    document.addEventListener("touchstart", retryAfterGesture, { passive: true });
-    mobileMedia.addEventListener("change", handleViewportChange);
-    reducedMotion.addEventListener("change", handleMotionPreference);
+
+    retryTimer = window.setTimeout(() => void tryPlay(), 1200);
 
     return () => {
-      stopMobileRenderer();
-      video.removeEventListener("loadeddata", retryReady);
-      video.removeEventListener("canplay", retryReady);
-      video.removeEventListener("playing", startMobileRenderer);
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+      disarmGestureRetry();
+      video.removeEventListener("loadedmetadata", retryVisible);
+      video.removeEventListener("loadeddata", retryVisible);
+      video.removeEventListener("canplay", retryVisible);
+      video.removeEventListener("pause", retryIfPaused);
       window.removeEventListener("pageshow", retryVisible);
       window.removeEventListener("focus", retryVisible);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("online", retryVisible);
       document.removeEventListener("visibilitychange", retryVisible);
-      document.removeEventListener("pointerdown", retryAfterGesture);
-      document.removeEventListener("touchstart", retryAfterGesture);
-      mobileMedia.removeEventListener("change", handleViewportChange);
-      reducedMotion.removeEventListener("change", handleMotionPreference);
     };
   }, [src]);
 
@@ -169,15 +107,17 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
         ref={videoRef}
         autoPlay
         className={className}
+        controls={false}
         disablePictureInPicture
+        disableRemotePlayback
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
         src={src}
         tabIndex={-1}
       />
-      <canvas ref={canvasRef} className={canvasClassName} aria-hidden="true" />
+      {canvasClassName ? <canvas className={canvasClassName} aria-hidden="true" /> : null}
     </>
   );
 }
