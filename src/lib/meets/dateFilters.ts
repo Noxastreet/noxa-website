@@ -1,6 +1,10 @@
+import { eventInterval } from "./eventVisibility.ts";
+
 export type MeetDateFilter = "today" | "tomorrow" | "weekend" | "month" | "all";
 
 type DateParts = { year: number; month: number; day: number };
+
+type LocalDayInterval = { startSerial: number; endSerial: number };
 
 function dateParts(value: Date, timeZone: string): DateParts {
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -22,24 +26,36 @@ function weekday(parts: DateParts) {
   return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay();
 }
 
+function localDayInterval(startsAt: string, endsAt: string | null, timeZone: string): LocalDayInterval | null {
+  const interval = eventInterval(startsAt, endsAt);
+  if (!interval) return null;
+  return {
+    startSerial: serialDay(dateParts(new Date(interval.startMs), timeZone)),
+    endSerial: serialDay(dateParts(new Date(interval.endMs), timeZone)),
+  };
+}
+
 export function isSameLocalDay(value: string, now: Date, timeZone: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return false;
   return serialDay(dateParts(date, timeZone)) === serialDay(dateParts(now, timeZone));
 }
 
-export function isThisWeekend(value: string, now: Date, timeZone: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return false;
+export function isThisWeekend(
+  startsAt: string,
+  now: Date,
+  timeZone: string,
+  endsAt: string | null = null,
+) {
+  const interval = localDayInterval(startsAt, endsAt, timeZone);
+  if (!interval) return false;
 
   const current = dateParts(now, timeZone);
   const currentWeekday = weekday(current);
   const currentSerial = serialDay(current);
-  const daysUntilFriday = currentWeekday >= 5 ? -(currentWeekday - 5) : 5 - currentWeekday;
-  const fridaySerial = currentSerial + daysUntilFriday;
-  const eventSerial = serialDay(dateParts(date, timeZone));
+  const fridaySerial = currentSerial + (currentWeekday === 0 ? -2 : 5 - currentWeekday);
 
-  return eventSerial >= fridaySerial && eventSerial <= fridaySerial + 2;
+  return interval.startSerial <= fridaySerial + 2 && interval.endSerial >= fridaySerial;
 }
 
 export function matchesDateFilter(
@@ -47,19 +63,27 @@ export function matchesDateFilter(
   filter: MeetDateFilter,
   timeZone = "Europe/Athens",
   now = new Date(),
+  endsAt: string | null = null,
 ) {
-  const start = new Date(startsAt);
-  if (Number.isNaN(start.getTime())) return false;
+  const interval = localDayInterval(startsAt, endsAt, timeZone);
+  if (!interval) return false;
   if (filter === "all") return true;
 
-  const startParts = dateParts(start, timeZone);
   const nowParts = dateParts(now, timeZone);
-  const deltaDays = serialDay(startParts) - serialDay(nowParts);
+  const nowSerial = serialDay(nowParts);
 
-  if (filter === "today") return deltaDays === 0;
-  if (filter === "tomorrow") return deltaDays === 1;
-  if (filter === "weekend") return isThisWeekend(startsAt, now, timeZone);
-  return startParts.year === nowParts.year && startParts.month === nowParts.month;
+  if (filter === "today") return interval.startSerial <= nowSerial && interval.endSerial >= nowSerial;
+  if (filter === "tomorrow") {
+    const tomorrowSerial = nowSerial + 1;
+    return interval.startSerial <= tomorrowSerial && interval.endSerial >= tomorrowSerial;
+  }
+  if (filter === "weekend") return isThisWeekend(startsAt, now, timeZone, endsAt);
+
+  const monthStart = serialDay({ year: nowParts.year, month: nowParts.month, day: 1 });
+  const nextMonthStart = nowParts.month === 12
+    ? serialDay({ year: nowParts.year + 1, month: 1, day: 1 })
+    : serialDay({ year: nowParts.year, month: nowParts.month + 1, day: 1 });
+  return interval.startSerial < nextMonthStart && interval.endSerial >= monthStart;
 }
 
 export function eventDiscoveryState(
@@ -68,17 +92,16 @@ export function eventDiscoveryState(
   timeZone = "Europe/Athens",
   now = new Date(),
 ): "happening" | "today" | "weekend" | null {
+  const interval = eventInterval(startsAt, endsAt);
   const nowMs = now.getTime();
-  const startMs = new Date(startsAt).getTime();
-  const endMs = endsAt ? new Date(endsAt).getTime() : startMs + 3 * 60 * 60 * 1000;
-  if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs <= nowMs && endMs >= nowMs) return "happening";
-  if (matchesDateFilter(startsAt, "today", timeZone, now)) return "today";
-  if (matchesDateFilter(startsAt, "weekend", timeZone, now)) return "weekend";
+  if (interval && interval.startMs <= nowMs && interval.endMs >= nowMs) return "happening";
+  if (matchesDateFilter(startsAt, "today", timeZone, now, endsAt)) return "today";
+  if (matchesDateFilter(startsAt, "weekend", timeZone, now, endsAt)) return "weekend";
   return null;
 }
 
 export type DiscoveryQuery = { country: string; city: string; type: string; date: string; q: string };
-export type DiscoveryEvent = { title: string; organizer: string; city: string; eventType: string; startsAt: string; timezone: string | null };
+export type DiscoveryEvent = { title: string; organizer: string; city: string; eventType: string; startsAt: string; endsAt?: string | null; timezone: string | null };
 const DISCOVERY_MOTORSPORT = new Set(["track_day", "drag", "drift", "rally"]);
 const DISCOVERY_MOTO = new Set(["moto_meet"]);
 
@@ -102,7 +125,7 @@ function matchesDiscoveryType(eventType: string, type: string) {
 export function matchesDiscoveryEvent(event: DiscoveryEvent, state: DiscoveryQuery, locale: "en" | "el", now = new Date()) {
   if (!matchesDiscoveryType(event.eventType, state.type)) return false;
   if (state.city !== "all" && event.city !== state.city) return false;
-  if (!matchesDateFilter(event.startsAt, state.date as MeetDateFilter, event.timezone || "Europe/Athens", now)) return false;
+  if (!matchesDateFilter(event.startsAt, state.date as MeetDateFilter, event.timezone || "Europe/Athens", now, event.endsAt ?? null)) return false;
   const query = state.q.trim().toLocaleLowerCase(locale === "el" ? "el-GR" : "en-US");
   if (!query) return true;
   return [event.title, event.organizer, event.city].join(" ").toLocaleLowerCase(locale === "el" ? "el-GR" : "en-US").includes(query);

@@ -1,3 +1,5 @@
+import { eventEndIso } from "./eventVisibility.ts";
+
 export type CalendarEvent = {
   id: string;
   title: string;
@@ -14,14 +16,8 @@ export function escapeIcs(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
 }
 
-function calendarEndIso(event: CalendarEvent) {
-  const start = new Date(event.startsAt).getTime();
-  if (event.endsAt) { const end = new Date(event.endsAt).getTime(); if (Number.isFinite(end) && end >= start) return new Date(end).toISOString(); }
-  return new Date(start + 3 * 60 * 60 * 1000).toISOString();
-}
-
 export function buildIcsCalendar(event: CalendarEvent, url: string, now = new Date()) {
-  const endIso = calendarEndIso(event);
+  const endIso = eventEndIso(event.startsAt, event.endsAt);
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -44,7 +40,7 @@ export function buildIcsCalendar(event: CalendarEvent, url: string, now = new Da
 }
 
 export function buildGoogleCalendarUrl(event: CalendarEvent, url: string) {
-  const endIso = calendarEndIso(event);
+  const endIso = eventEndIso(event.startsAt, event.endsAt);
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: event.title,
