@@ -15,7 +15,6 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     const video = videoRef.current;
     if (!video) return;
 
-    let retryTimer: number | undefined;
     let gestureRetryArmed = false;
 
     const configureVideo = () => {
@@ -85,10 +84,10 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     window.addEventListener("online", retryVisible);
     document.addEventListener("visibilitychange", retryVisible);
 
-    retryTimer = window.setTimeout(() => void tryPlay(), 1200);
+    const retryTimer = window.setTimeout(() => void tryPlay(), 1200);
 
     return () => {
-      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+      window.clearTimeout(retryTimer);
       disarmGestureRetry();
       video.removeEventListener("loadedmetadata", retryVisible);
       video.removeEventListener("loadeddata", retryVisible);
