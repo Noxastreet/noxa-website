@@ -12,8 +12,9 @@ export function HeroVideo({ className, src }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const currentVideo = videoRef.current;
+    if (!currentVideo) return;
+    const video: HTMLVideoElement = currentVideo;
 
     let gestureRetryArmed = false;
 
