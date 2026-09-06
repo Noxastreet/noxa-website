@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 const HERO_POSTER_URL =
   "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
-const INITIAL_PLAY_DELAY_MS = 1600;
+const INITIAL_PLAY_DELAY_MS = 3000;
 
 type Props = {
   canvasClassName?: string;
@@ -75,11 +75,11 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     }
 
     const retryVisible = () => {
-      if (document.visibilityState === "visible") void tryPlay();
+      if (document.visibilityState === "visible" && sourceAttached) void tryPlay();
     };
 
     const retryIfPaused = () => {
-      if (!video.ended && video.paused && document.visibilityState === "visible") {
+      if (sourceAttached && !video.ended && video.paused && document.visibilityState === "visible") {
         void tryPlay();
       }
     };
@@ -111,6 +111,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
 
   return (
     <>
+      <link rel="preload" href={HERO_POSTER_URL} as="image" fetchPriority="high" />
       <video
         ref={videoRef}
         className={className}
@@ -120,7 +121,6 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
         loop
         muted
         playsInline
-        poster={HERO_POSTER_URL}
         preload="none"
         tabIndex={-1}
       />
