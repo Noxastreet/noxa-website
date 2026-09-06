@@ -3,6 +3,7 @@
   background-position: 50% 50%;
   background-size: cover;
   animation: none;
+  filter: none;
   transform: scale(1.015);
 }
 
