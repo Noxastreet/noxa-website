@@ -158,6 +158,10 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
       void tryPlay();
     }
 
+    const retryCanPlay = () => {
+      void tryPlay();
+    };
+
     const retryVisible = () => {
       if (document.visibilityState === "visible" && sourceAttached) {
         void tryPlay();
@@ -185,7 +189,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
     if (posterImage.complete) drawPoster();
 
     video.addEventListener("loadeddata", drawVideoFrame);
-    video.addEventListener("canplay", () => void tryPlay());
+    video.addEventListener("canplay", retryCanPlay);
     video.addEventListener("playing", startRenderer);
     video.addEventListener("pause", retryIfPaused);
     window.addEventListener("pageshow", retryVisible);
@@ -202,6 +206,7 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
       disarmGestureRetry();
       if (posterImage) posterImage.onload = null;
       video.removeEventListener("loadeddata", drawVideoFrame);
+      video.removeEventListener("canplay", retryCanPlay);
       video.removeEventListener("playing", startRenderer);
       video.removeEventListener("pause", retryIfPaused);
       window.removeEventListener("pageshow", retryVisible);
