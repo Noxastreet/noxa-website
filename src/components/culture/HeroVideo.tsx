@@ -2,10 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
+const HERO_POSTER_URL =
+  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
+const INITIAL_PLAY_DELAY_MS = 2500;
+const MAX_CANVAS_DPR = 1.5;
+
 type Props = {
   canvasClassName?: string;
   className?: string;
   src: string;
+};
+
+type VideoFrameSource = HTMLVideoElement & {
+  requestVideoFrameCallback?: (callback: () => void) => number;
+  cancelVideoFrameCallback?: (handle: number) => void;
 };
 
 export function HeroVideo({ canvasClassName, className, src }: Props) {
@@ -13,181 +23,215 @@ export function HeroVideo({ canvasClassName, className, src }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
+    const video = videoRef.current as VideoFrameSource | null;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    const mobileMedia = window.matchMedia("(max-width: 820px)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let needsGesture = reducedMotion;
-    let mobileLoadTimer: number | undefined;
-    let animationFrame: number | undefined;
-    let lastFrameAt = 0;
+    let gestureRetryArmed = false;
+    let sourceAttached = false;
+    let videoFrameHandle: number | undefined;
+    let animationFrameHandle: number | undefined;
+    let posterImage: HTMLImageElement | null = null;
 
-    const drawMobileFrame = () => {
-      if (!mobileMedia.matches || reducedMotion || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) return;
 
-      const width = Math.max(1, Math.round(canvas.clientWidth));
-      const height = Math.max(1, Math.round(canvas.clientHeight));
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width !== width) canvas.width = width;
       if (canvas.height !== height) canvas.height = height;
+    };
 
-      const context = canvas.getContext("2d", { alpha: false });
-      if (!context) return;
+    const drawCover = (source: CanvasImageSource, sourceWidth: number, sourceHeight: number) => {
+      if (!sourceWidth || !sourceHeight) return;
+      resizeCanvas();
 
-      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
-      const sourceWidth = width / scale;
-      const sourceHeight = height / scale;
-      const sourceX = (video.videoWidth - sourceWidth) / 2;
-      const sourceY = (video.videoHeight - sourceHeight) / 2;
+      const width = canvas.width;
+      const height = canvas.height;
+      const scale = Math.max(width / sourceWidth, height / sourceHeight);
+      const cropWidth = width / scale;
+      const cropHeight = height / scale;
+      const cropX = (sourceWidth - cropWidth) / 2;
+      const cropY = (sourceHeight - cropHeight) / 2;
 
-      context.drawImage(
-        video,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
-        0,
-        0,
-        width,
-        height,
-      );
+      context.drawImage(source, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
       canvas.dataset.ready = "true";
     };
 
-    const renderMobileFrame = (timestamp: number) => {
-      if (!mobileMedia.matches || reducedMotion) {
-        animationFrame = undefined;
-        return;
-      }
-
-      if (timestamp - lastFrameAt >= 33) {
-        drawMobileFrame();
-        lastFrameAt = timestamp;
-      }
-      animationFrame = window.requestAnimationFrame(renderMobileFrame);
+    const drawPoster = () => {
+      if (!posterImage?.complete || !posterImage.naturalWidth || !posterImage.naturalHeight) return;
+      drawCover(posterImage, posterImage.naturalWidth, posterImage.naturalHeight);
     };
 
-    const startMobileRenderer = () => {
-      if (!mobileMedia.matches || reducedMotion) return;
-      drawMobileFrame();
-      if (animationFrame === undefined) {
-        animationFrame = window.requestAnimationFrame(renderMobileFrame);
+    const drawVideoFrame = () => {
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth || !video.videoHeight) return;
+      drawCover(video, video.videoWidth, video.videoHeight);
+    };
+
+    const stopRenderer = () => {
+      if (videoFrameHandle !== undefined && video.cancelVideoFrameCallback) {
+        video.cancelVideoFrameCallback(videoFrameHandle);
+      }
+      if (animationFrameHandle !== undefined) {
+        window.cancelAnimationFrame(animationFrameHandle);
+      }
+      videoFrameHandle = undefined;
+      animationFrameHandle = undefined;
+    };
+
+    const scheduleFrame = () => {
+      if (video.paused || video.ended || document.visibilityState !== "visible") return;
+
+      if (video.requestVideoFrameCallback) {
+        videoFrameHandle = video.requestVideoFrameCallback(() => {
+          videoFrameHandle = undefined;
+          drawVideoFrame();
+          scheduleFrame();
+        });
+      } else {
+        animationFrameHandle = window.requestAnimationFrame(() => {
+          animationFrameHandle = undefined;
+          drawVideoFrame();
+          scheduleFrame();
+        });
       }
     };
 
-    const stopMobileRenderer = () => {
-      if (animationFrame !== undefined) {
-        window.cancelAnimationFrame(animationFrame);
-        animationFrame = undefined;
-      }
+    const startRenderer = () => {
+      drawVideoFrame();
+      if (videoFrameHandle === undefined && animationFrameHandle === undefined) scheduleFrame();
     };
 
-    const tryPlay = async (allowReducedMotion = false) => {
-      if (document.visibilityState !== "visible") return;
-      if (reducedMotion && !allowReducedMotion) return;
-
+    const configureVideo = () => {
       video.muted = true;
       video.defaultMuted = true;
+      video.autoplay = true;
+      video.loop = true;
+      video.playsInline = true;
       video.setAttribute("muted", "");
+      video.setAttribute("autoplay", "");
+      video.setAttribute("loop", "");
       video.setAttribute("playsinline", "");
       video.setAttribute("webkit-playsinline", "");
+    };
+
+    const attachSource = () => {
+      if (sourceAttached) return;
+      sourceAttached = true;
+      video.src = src;
+      video.load();
+    };
+
+    const disarmGestureRetry = () => {
+      if (!gestureRetryArmed) return;
+      gestureRetryArmed = false;
+      document.removeEventListener("pointerdown", retryAfterGesture);
+      document.removeEventListener("touchstart", retryAfterGesture);
+    };
+
+    const armGestureRetry = () => {
+      if (gestureRetryArmed) return;
+      gestureRetryArmed = true;
+      document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
+      document.addEventListener("touchstart", retryAfterGesture, { passive: true });
+    };
+
+    const tryPlay = async () => {
+      if (document.visibilityState !== "visible") return;
+
+      configureVideo();
+      attachSource();
 
       try {
         await video.play();
-        needsGesture = false;
-        startMobileRenderer();
+        disarmGestureRetry();
+        startRenderer();
       } catch {
-        needsGesture = true;
+        armGestureRetry();
       }
     };
 
-    const loadMobileVideo = () => {
-      if (!mobileMedia.matches || reducedMotion) return;
-
-      if (video.getAttribute("src") !== src) {
-        video.src = src;
-        video.load();
-      }
-
-      void tryPlay();
-    };
-
-    const scheduleMobileLoad = () => {
-      if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
-      mobileLoadTimer = window.setTimeout(loadMobileVideo, 1100);
-    };
-
-    const retryVisible = () => {
-      if (document.visibilityState === "visible") void tryPlay();
-      else stopMobileRenderer();
-    };
-    const retryReady = () => {
-      drawMobileFrame();
-      void tryPlay();
-    };
-    const retryAfterGesture = () => {
-      if (needsGesture) void tryPlay(true);
-    };
-    const handleViewportChange = () => {
-      if (mobileMedia.matches) {
-        scheduleMobileLoad();
-      } else {
-        if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
-        stopMobileRenderer();
-        void tryPlay();
-      }
-    };
-    const handleResize = () => drawMobileFrame();
-
-    if (mobileMedia.matches) {
-      scheduleMobileLoad();
-    } else if (!reducedMotion) {
+    function retryAfterGesture() {
       void tryPlay();
     }
 
-    video.addEventListener("loadeddata", retryReady);
-    video.addEventListener("canplay", retryReady);
-    video.addEventListener("playing", startMobileRenderer);
+    const retryCanPlay = () => {
+      void tryPlay();
+    };
+
+    const retryVisible = () => {
+      if (document.visibilityState === "visible" && sourceAttached) {
+        void tryPlay();
+      } else if (document.visibilityState !== "visible") {
+        stopRenderer();
+      }
+    };
+
+    const retryIfPaused = () => {
+      stopRenderer();
+      if (sourceAttached && !video.ended && document.visibilityState === "visible") {
+        void tryPlay();
+      }
+    };
+
+    const handleResize = () => {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && !video.paused) drawVideoFrame();
+      else drawPoster();
+    };
+
+    posterImage = new Image();
+    posterImage.decoding = "async";
+    posterImage.onload = drawPoster;
+    posterImage.src = HERO_POSTER_URL;
+    if (posterImage.complete) drawPoster();
+
+    video.addEventListener("loadeddata", drawVideoFrame);
+    video.addEventListener("canplay", retryCanPlay);
+    video.addEventListener("playing", startRenderer);
+    video.addEventListener("pause", retryIfPaused);
     window.addEventListener("pageshow", retryVisible);
     window.addEventListener("focus", retryVisible);
+    window.addEventListener("online", retryVisible);
     window.addEventListener("resize", handleResize, { passive: true });
     document.addEventListener("visibilitychange", retryVisible);
-    document.addEventListener("pointerdown", retryAfterGesture, { passive: true });
-    document.addEventListener("touchstart", retryAfterGesture, { passive: true });
-    mobileMedia.addEventListener("change", handleViewportChange);
+
+    const initialPlayTimer = window.setTimeout(() => void tryPlay(), INITIAL_PLAY_DELAY_MS);
 
     return () => {
-      if (mobileLoadTimer !== undefined) window.clearTimeout(mobileLoadTimer);
-      stopMobileRenderer();
-      video.removeEventListener("loadeddata", retryReady);
-      video.removeEventListener("canplay", retryReady);
-      video.removeEventListener("playing", startMobileRenderer);
+      window.clearTimeout(initialPlayTimer);
+      stopRenderer();
+      disarmGestureRetry();
+      if (posterImage) posterImage.onload = null;
+      video.removeEventListener("loadeddata", drawVideoFrame);
+      video.removeEventListener("canplay", retryCanPlay);
+      video.removeEventListener("playing", startRenderer);
+      video.removeEventListener("pause", retryIfPaused);
       window.removeEventListener("pageshow", retryVisible);
       window.removeEventListener("focus", retryVisible);
+      window.removeEventListener("online", retryVisible);
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("visibilitychange", retryVisible);
-      document.removeEventListener("pointerdown", retryAfterGesture);
-      document.removeEventListener("touchstart", retryAfterGesture);
-      mobileMedia.removeEventListener("change", handleViewportChange);
     };
   }, [src]);
 
   return (
     <>
+      <link rel="preload" href={HERO_POSTER_URL} as="image" fetchPriority="high" />
       <video
         ref={videoRef}
-        autoPlay
         className={className}
+        controls={false}
         disablePictureInPicture
+        disableRemotePlayback
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="none"
         tabIndex={-1}
-      >
-        <source media="(min-width: 821px)" src={src} type="video/mp4" />
-      </video>
+      />
       <canvas ref={canvasRef} className={canvasClassName} aria-hidden="true" />
     </>
   );
