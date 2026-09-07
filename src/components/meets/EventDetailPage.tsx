@@ -11,6 +11,7 @@ import styles from "./EventDetailPage.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
+const NOXA_EVENT_FALLBACK = "radial-gradient(circle at 78% 24%, rgba(200,16,46,.28), transparent 32%), linear-gradient(135deg,#111114 0%,#08080a 46%,#050505 100%)";
 
 const CATEGORY_LABELS: Record<"en" | "el", Record<string, string>> = {
   en: {
@@ -152,7 +153,9 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const pastText = locale === "el" ? "ΟΛΟΚΛΗΡΩΜΕΝΟ EVENT" : "PAST EVENT";
   const category = categoryLabel(event.event_type, locale);
   const hasCoverImage = Boolean(event.cover_image_url);
-  const heroMediaStyle = event.cover_image_url ? { backgroundImage: `url(${JSON.stringify(event.cover_image_url)})` } : undefined;
+  const heroMediaStyle = {
+    backgroundImage: event.cover_image_url ? `url(${JSON.stringify(event.cover_image_url)})` : NOXA_EVENT_FALLBACK,
+  };
 
   return (
     <div className={styles.page}>
@@ -186,7 +189,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                   {locale === "el" ? "ΕΙΚΟΝΑ EVENT · ΠΗΓΗ ↗" : "EVENT IMAGE · SOURCE ↗"}
                 </a>
               ) : <span className={styles.imageCaption}>{locale === "el" ? "ΕΙΚΟΝΑ EVENT" : "EVENT IMAGE"}</span>
-            ) : <span className={styles.imageCaption}>{locale === "el" ? "NOXA CULTURE · ΕΝΔΕΙΚΤΙΚΗ ΦΩΤΟΓΡΑΦΙΑ" : "NOXA CULTURE · EDITORIAL IMAGE"}</span>}
+            ) : <span className={styles.imageCaption}>NOXA MEETS</span>}
           </div>
         </section>
 
