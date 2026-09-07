@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
+import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import {
   buildDiscoveryQuery,
   eventDiscoveryState,
@@ -14,6 +14,7 @@ import {
 } from "@/lib/meets/dateFilters";
 
 import { FollowSubscriptionForm } from "./FollowSubscriptionForm";
+import mediaStyles from "./EventMedia.module.css";
 import { MobileMeetFilters } from "./MobileMeetFilters";
 import growth from "./MeetsDirectoryGrowth.module.css";
 import styles from "./MeetsDirectory.module.css";
@@ -33,6 +34,8 @@ export type MeetsDirectoryEvent = {
   organizer: string;
   featured: boolean;
   partnerBadge: string | null;
+  coverImageUrl: string | null;
+  coverImageAlt: string | null;
 };
 
 type Filter = "all" | "car" | "moto" | "motorsport";
@@ -94,6 +97,10 @@ function formatEventDate(event: MeetsDirectoryEvent, locale: "en" | "el") {
 function eventLocation(event: MeetsDirectoryEvent) {
   if (!event.city || event.location.toLocaleLowerCase().includes(event.city.toLocaleLowerCase())) return event.location;
   return `${event.location} · ${event.city}`;
+}
+
+function coverStyle(url: string | null) {
+  return url ? { backgroundImage: `url(${JSON.stringify(url)})` } : undefined;
 }
 
 export function MeetsDirectory({
@@ -342,7 +349,7 @@ export function MeetsDirectory({
               const discoveryLabel = stateLabel(lead);
               return (
                 <Link className={styles.featuredCard} href={`${locale === "el" ? "/el" : ""}/meets/${lead.slug}`}>
-                  <div className={styles.featuredMedia} aria-hidden="true">
+                  <div className={styles.featuredMedia} style={coverStyle(lead.coverImageUrl)} aria-hidden="true">
                     <span className={styles.featuredCategory}>{CATEGORY[lead.eventType] ?? "EVENT"}</span>
                   </div>
                   <div className={styles.featuredContent}>
@@ -363,6 +370,7 @@ export function MeetsDirectory({
               const date = formatEventDate(event, locale);
               const discoveryLabel = stateLabel(event);
               return <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`} key={event.id}>
+                {event.coverImageUrl ? <div className={mediaStyles.cardMedia} style={coverStyle(event.coverImageUrl)} aria-hidden="true" /> : null}
                 <div className={styles.cardTop}>
                   <div className={styles.dateBadge} aria-label={`${date.weekday} ${date.day} ${date.month}`}><span>{date.weekday}</span><strong>{date.day}</strong><small>{date.month}</small></div>
                   <div className={styles.cardMeta}><span className={styles.category}>{CATEGORY[event.eventType] ?? "EVENT"}</span><span className={styles.time}>{date.time}</span></div>
@@ -382,4 +390,3 @@ export function MeetsDirectory({
     </div>
   );
 }
-
