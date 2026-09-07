@@ -11,29 +11,51 @@ import styles from "./EventDetailPage.module.css";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
-const CATEGORY_LABELS: Record<string, string> = {
-  car_meet: "CAR MEET",
-  moto_meet: "MOTO MEET",
-  track_day: "TRACK DAY",
-  drag: "DRAG RACING",
-  drift: "DRIFT",
-  rally: "RALLY",
-  show: "AUTO SHOW",
-  cars_and_coffee: "CARS & COFFEE",
-  group_drive: "GROUP DRIVE",
-  festival: "FESTIVAL",
-  other: "EVENT",
+
+const CATEGORY_LABELS: Record<"en" | "el", Record<string, string>> = {
+  en: {
+    car_meet: "CAR MEET",
+    moto_meet: "MOTO MEET",
+    track_day: "TRACK DAY",
+    drag: "DRAG RACING",
+    drift: "DRIFT",
+    rally: "RALLY",
+    show: "AUTO SHOW",
+    cars_and_coffee: "CARS & COFFEE",
+    group_drive: "GROUP DRIVE",
+    festival: "FESTIVAL",
+    karting: "KARTING",
+    dexterity: "DEXTERITY",
+    other: "EVENT",
+  },
+  el: {
+    car_meet: "CAR MEET",
+    moto_meet: "MOTO MEET",
+    track_day: "TRACK DAY",
+    drag: "DRAG RACING",
+    drift: "DRIFT",
+    rally: "ΡΑΛΛΥ",
+    show: "AUTO SHOW",
+    cars_and_coffee: "CARS & COFFEE",
+    group_drive: "GROUP DRIVE",
+    festival: "FESTIVAL",
+    karting: "KARTING",
+    dexterity: "ΔΕΞΙΟΤΕΧΝΙΑ",
+    other: "EVENT",
+  },
 };
 
 export type EventRow = {
   id: string;
   public_slug: string;
   title: string;
+  title_el: string | null;
   event_type: string;
   starts_at: string;
   ends_at: string | null;
   timezone: string | null;
   location_text: string | null;
+  location_text_el: string | null;
   city: string | null;
   region: string | null;
   country_code: string;
@@ -43,19 +65,46 @@ export type EventRow = {
   source_name: string;
   source_url: string;
   summary: string | null;
+  summary_el: string | null;
   featured: boolean;
   partner_badge: string | null;
   cover_image_url: string | null;
   cover_image_source_url: string | null;
   cover_image_alt: string | null;
+  cover_image_alt_el: string | null;
   latitude: number | null;
   longitude: number | null;
   location_precision: string | null;
 };
 
+export type LocalizedEventContent = {
+  title: string;
+  summary: string | null;
+  locationText: string | null;
+  coverImageAlt: string | null;
+};
+
+export function localizePublicEvent(event: EventRow, locale: "en" | "el"): LocalizedEventContent {
+  if (locale === "el") {
+    return {
+      title: event.title_el?.trim() || event.title,
+      summary: event.summary_el?.trim() || event.summary,
+      locationText: event.location_text_el?.trim() || event.location_text,
+      coverImageAlt: event.cover_image_alt_el?.trim() || event.cover_image_alt,
+    };
+  }
+
+  return {
+    title: event.title,
+    summary: event.summary,
+    locationText: event.location_text,
+    coverImageAlt: event.cover_image_alt,
+  };
+}
+
 export async function loadPublicEvent(slug: string): Promise<EventRow | null> {
   const query = new URLSearchParams({
-    select: "id,public_slug,title,event_type,starts_at,ends_at,timezone,location_text,city,region,country_code,organizer_name,organizer_url,organizer_profile_id,source_name,source_url,summary,featured,partner_badge,cover_image_url,cover_image_source_url,cover_image_alt,latitude,longitude,location_precision",
+    select: "id,public_slug,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,country_code,organizer_name,organizer_url,organizer_profile_id,source_name,source_url,summary,summary_el,featured,partner_badge,cover_image_url,cover_image_source_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
     public_slug: `eq.${slug}`,
     status: "eq.published",
     limit: "1",
@@ -85,17 +134,22 @@ function formatDate(value: string, timezone: string | null, locale: "en" | "el")
   }).format(new Date(value));
 }
 
+function categoryLabel(eventType: string, locale: "en" | "el") {
+  return CATEGORY_LABELS[locale][eventType] ?? CATEGORY_LABELS[locale].other;
+}
+
 export async function EventDetailPage({ slug, locale }: { slug: string; locale: "en" | "el" }) {
   const event = await loadPublicEvent(slug);
   if (!event) notFound();
 
+  const content = localizePublicEvent(event, locale);
   const past = isPastEvent(event.starts_at, event.ends_at);
-  const place = [event.location_text, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
+  const place = [content.locationText, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
   const organizer = event.organizer_name || event.source_name;
   const profile = event.organizer_profile_id ? await loadOrganizerById(event.organizer_profile_id) : null;
   const organizerUrl = event.organizer_url || event.source_url;
   const base = locale === "el" ? "/el" : "";
-  const pastText = "PAST EVENT";
+  const pastText = locale === "el" ? "ΟΛΟΚΛΗΡΩΜΕΝΟ EVENT" : "PAST EVENT";
   const hasCoverImage = Boolean(event.cover_image_url);
   const heroMediaStyle = event.cover_image_url ? { backgroundImage: `url(${JSON.stringify(event.cover_image_url)})` } : undefined;
 
@@ -110,7 +164,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
             className={styles.heroMedia}
             style={heroMediaStyle}
             role={hasCoverImage ? "img" : undefined}
-            aria-label={hasCoverImage ? event.cover_image_alt?.trim() || event.title : undefined}
+            aria-label={hasCoverImage ? content.coverImageAlt?.trim() || content.title : undefined}
             aria-hidden={hasCoverImage ? undefined : true}
           />
           <div className={styles.heroShade} aria-hidden="true" />
@@ -121,8 +175,8 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
               {event.featured ? <span className={styles.featuredBadge}>FEATURED</span> : null}
               {event.partner_badge ? <span className={styles.partnerBadge}>{event.partner_badge}</span> : null}
             </div>
-            <p className={styles.category}>{CATEGORY_LABELS[event.event_type] ?? "EVENT"}</p>
-            <h1>{event.title}</h1>
+            <p className={styles.category}>{categoryLabel(event.event_type, locale)}</p>
+            <h1>{content.title}</h1>
             <p className={styles.heroMeta}>{formatDate(event.starts_at, event.timezone, locale)}</p>
             <p className={styles.heroPlace}>{place}</p>
             {hasCoverImage ? (
@@ -142,7 +196,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 {!past ? (
                   <EventActions
                     eventId={event.id}
-                    eventTitle={event.title}
+                    eventTitle={content.title}
                     startsAt={event.starts_at}
                     endsAt={event.ends_at}
                     location={place}
@@ -159,7 +213,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 )}
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΣΧΕΤΙΚΑ" : "ABOUT"}</span>
-                  <p>{event.summary?.trim() || (locale === "el" ? "Δες τις επίσημες πληροφορίες του organizer." : "Check the organizer's official details.")}</p>
+                  <p>{content.summary?.trim() || (locale === "el" ? "Δες τις επίσημες πληροφορίες του organizer." : "Check the organizer's official details.")}</p>
                 </section>
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΤΟΠΟΘΕΣΙΑ" : "LOCATION"}</span>

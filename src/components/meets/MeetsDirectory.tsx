@@ -58,6 +58,8 @@ const CATEGORY: Record<string, string> = {
   cars_and_coffee: "CARS & COFFEE",
   group_drive: "GROUP DRIVE",
   festival: "FESTIVAL",
+  karting: "KARTING",
+  dexterity: "DEXTERITY",
   other: "EVENT",
 };
 const DATE_VALUES = new Set<MeetDateFilter>(["today", "tomorrow", "weekend", "month", "all"]);

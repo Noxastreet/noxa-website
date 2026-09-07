@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
@@ -65,13 +66,16 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get("x-noxa-locale") === "el" ? "el" : "en";
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <link rel="preconnect" href="https://videos.pexels.com" />
         <link rel="preconnect" href="https://images.pexels.com" />

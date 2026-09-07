@@ -63,6 +63,11 @@ assert.equal(matchesDiscoveryEvent(combinedEvent, combinedState, "en", now), tru
 assert.equal(matchesDiscoveryEvent({ ...combinedEvent, city: "Athens" }, combinedState, "en", now), false);
 assert.equal(matchesDiscoveryEvent({ ...combinedEvent, eventType: "moto_meet" }, combinedState, "en", now), false);
 
+const motorsportState = { country: "GR", city: "all", type: "motorsport", date: "all", q: "" };
+assert.equal(matchesDiscoveryEvent({ ...combinedEvent, eventType: "karting" }, motorsportState, "en", now), true);
+assert.equal(matchesDiscoveryEvent({ ...combinedEvent, eventType: "dexterity" }, motorsportState, "en", now), true);
+assert.equal(matchesDiscoveryEvent({ ...combinedEvent, eventType: "car_meet" }, motorsportState, "en", now), false);
+
 const memory = new Map();
 const storage = { getItem: (key) => memory.has(key) ? memory.get(key) : null, setItem: (key, value) => memory.set(key, value) };
 assert.equal(toggleSavedEvent(storage, "event-a"), true);
