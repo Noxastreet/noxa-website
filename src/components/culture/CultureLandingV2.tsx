@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
-import { SiteHeader } from "@/components/navigation/SiteHeader";
+import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
@@ -15,8 +15,6 @@ import refine from "./CultureLandingV2Refine.module.css";
 type Props = { locale: Locale };
 
 const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
-const DESKTOP_HERO_POSTER_URL =
-  "/_next/image?url=https%3A%2F%2Fimages.pexels.com%2Fphotos%2F17716197%2Fpexels-photo-17716197.jpeg%3Fauto%3Dcompress%26cs%3Dtinysrgb%26w%3D1600&w=1200&q=75";
 
 const copy = {
   en: {
@@ -121,30 +119,13 @@ export function CultureLandingV2({ locale }: Props) {
   const communities = locale === "el" ? "/el/communities" : "/communities";
   const organizers = locale === "el" ? "/el/organizers" : "/organizers";
 
-  const navigationCopy = {
-    ...base.navigation,
-    join: t.nav.app,
-    items: [
-      [t.nav.meets, meets],
-      [t.nav.communities, communities],
-      [t.nav.organizers, organizers],
-    ] as const,
-  };
 
   return (
     <div className={styles.site}>
-      <link rel="preload" href={DESKTOP_HERO_POSTER_URL} as="image" media="(min-width: 821px)" fetchPriority="high" />
       <DocumentLanguage locale={locale} />
       <a className="skip-link" href="#main-content">{base.skipToContent}</a>
       <div className={refine.headerCompact}>
-        <SiteHeader
-          homeHref={home}
-          joinHref="#app"
-          languageCopy={base.language}
-          languagePaths={{ en: "/", el: "/el" }}
-          locale={locale}
-          navigationCopy={navigationCopy}
-        />
+        <WebsiteHeader locale={locale} />
       </div>
 
       <main id="main-content">
@@ -153,8 +134,6 @@ export function CultureLandingV2({ locale }: Props) {
             <HeroVideo className={videoStyles.video} src={HERO_VIDEO_URL} />
           </div>
           <div className={styles.heroShade} aria-hidden="true" />
-          <div className={styles.heroNoise} aria-hidden="true" />
-          <div className={styles.heroAccent} aria-hidden="true" />
           <div className={styles.shell}>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>{t.hero.eyebrow}</p>
@@ -179,7 +158,7 @@ export function CultureLandingV2({ locale }: Props) {
                 <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
                 <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
                   <p className={styles.eyebrow}>{t.paths.communities.eyebrow}</p>
-                  <h3>{t.paths.communities.title}</h3>
+                  <h2>{t.paths.communities.title}</h2>
                   <p>{t.paths.communities.body}</p>
                   <strong>{t.paths.communities.cta} <span aria-hidden="true">→</span></strong>
                 </div>
@@ -189,7 +168,7 @@ export function CultureLandingV2({ locale }: Props) {
                 <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
                 <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
                   <p className={styles.eyebrow}>{t.paths.organizers.eyebrow}</p>
-                  <h3>{t.paths.organizers.title}</h3>
+                  <h2>{t.paths.organizers.title}</h2>
                   <p>{t.paths.organizers.body}</p>
                   <strong>{t.paths.organizers.cta} <span aria-hidden="true">→</span></strong>
                 </div>
@@ -251,3 +230,4 @@ export function CultureLandingV2({ locale }: Props) {
     </div>
   );
 }
+

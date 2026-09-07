@@ -229,12 +229,16 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
   return (
     <>
       <div className={styles.actions}>
+        <div className={styles.mainActions}>
         <button className={styles.primaryAction} onClick={openMap} type="button">{t.map}</button>
-        <button className={styles.secondaryAction} onClick={toggleSave} type="button">{saved ? `♥ ${t.saved}` : `♡ ${t.save}`}</button>
+        <button className={styles.secondaryAction} aria-pressed={saved} onClick={toggleSave} type="button">{saved ? `♥ ${t.saved}` : `♡ ${t.save}`}</button>
         <button className={styles.secondaryAction} onClick={() => void share()} type="button">{shared ? t.copied : t.share}</button>
+        </div>
+        <div className={styles.utilityActions} role="group" aria-label={locale === "el" ? "Ημερολόγιο και κοινοποίηση" : "Calendar and sharing"}>
         <button className={styles.secondaryAction} onClick={downloadIcs} type="button">{t.calendar}</button>
         <button className={styles.secondaryAction} onClick={googleCalendar} type="button">{t.google}</button>
         <button className={styles.secondaryAction} onClick={() => void storyCard()} type="button">{t.story}</button>
+        </div>
         <button className={styles.textAction} onClick={() => setReportOpen(true)} type="button">{t.report}</button>
       </div>
       {reportOpen ? (
@@ -255,3 +259,4 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
     </>
   );
 }
+

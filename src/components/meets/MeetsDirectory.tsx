@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { NoxaLogo } from "@/components/brand/NoxaLogo";
+import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
+import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import {
   buildDiscoveryQuery,
   eventDiscoveryState,
@@ -234,15 +235,11 @@ export function MeetsDirectory({
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href={locale === "el" ? "/el" : "/"} aria-label="NOXA home"><NoxaLogo /></Link>
-        <div className={styles.headerActions}>
-          <a className={styles.headerExplore} href="#events">{t.explore}</a>
-          <Link className={styles.addHeader} href={locale === "el" ? "/el/meets/submit" : "/meets/submit"}>＋ {t.add}</Link>
-        </div>
-      </header>
+      <DocumentLanguage locale={locale} />
+      <a className="skip-link" href="#main-content">{locale === "el" ? "Μετάβαση στο περιεχόμενο" : "Skip to content"}</a>
+      <WebsiteHeader locale={locale} path="/meets" action="submit" />
 
-      <main>
+      <main id="main-content">
         <section className={styles.hero}>
           <div className={styles.heroMedia} aria-hidden="true">
             <video className={styles.heroVideo} autoPlay loop muted playsInline preload="metadata" tabIndex={-1}>
@@ -250,11 +247,9 @@ export function MeetsDirectory({
             </video>
           </div>
           <div className={styles.heroShade} aria-hidden="true" />
-          <div className={styles.heroNoise} aria-hidden="true" />
           <div className={`${styles.shell} ${styles.heroContent}`}>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>{t.eyebrow}</p>
-              <p className={styles.heroKicker}>{t.heroKicker}</p>
               <h1>{t.title}</h1>
               <p className={styles.heroBody}>{t.body}</p>
               <div className={styles.heroActions}>
@@ -348,7 +343,7 @@ export function MeetsDirectory({
               return (
                 <Link className={styles.featuredCard} href={`${locale === "el" ? "/el" : ""}/meets/${lead.slug}`}>
                   <div className={styles.featuredMedia} aria-hidden="true">
-                    <span className={styles.featuredCategory}>{CATEGORY[lead.eventType] ?? "EVENT"}</span><span className={styles.featuredIndex}>01</span>
+                    <span className={styles.featuredCategory}>{CATEGORY[lead.eventType] ?? "EVENT"}</span>
                   </div>
                   <div className={styles.featuredContent}>
                     <div className={styles.featuredTopline}><span>{lead.featured ? t.featured : t.nextUp}</span><span>{date.weekday} · {date.day} {date.month} · {date.time}</span></div>
@@ -364,11 +359,10 @@ export function MeetsDirectory({
               );
             })() : null}
 
-            {remaining.length ? <div className={styles.grid}>{remaining.map((event, index) => {
+            {remaining.length ? <div className={styles.grid}>{remaining.map((event) => {
               const date = formatEventDate(event, locale);
               const discoveryLabel = stateLabel(event);
               return <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`} key={event.id}>
-                <div className={styles.cardNumber} aria-hidden="true">{String(index + 2).padStart(2, "0")}</div>
                 <div className={styles.cardTop}>
                   <div className={styles.dateBadge} aria-label={`${date.weekday} ${date.day} ${date.month}`}><span>{date.weekday}</span><strong>{date.day}</strong><small>{date.month}</small></div>
                   <div className={styles.cardMeta}><span className={styles.category}>{CATEGORY[event.eventType] ?? "EVENT"}</span><span className={styles.time}>{date.time}</span></div>
@@ -388,3 +382,4 @@ export function MeetsDirectory({
     </div>
   );
 }
+
