@@ -150,6 +150,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const organizerUrl = event.organizer_url || event.source_url;
   const base = locale === "el" ? "/el" : "";
   const pastText = locale === "el" ? "ΟΛΟΚΛΗΡΩΜΕΝΟ EVENT" : "PAST EVENT";
+  const category = categoryLabel(event.event_type, locale);
   const hasCoverImage = Boolean(event.cover_image_url);
   const heroMediaStyle = event.cover_image_url ? { backgroundImage: `url(${JSON.stringify(event.cover_image_url)})` } : undefined;
 
@@ -175,7 +176,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
               {event.featured ? <span className={styles.featuredBadge}>FEATURED</span> : null}
               {event.partner_badge ? <span className={styles.partnerBadge}>{event.partner_badge}</span> : null}
             </div>
-            <p className={styles.category}>{categoryLabel(event.event_type, locale)}</p>
+            <p className={styles.category}>{category}</p>
             <h1>{content.title}</h1>
             <p className={styles.heroMeta}>{formatDate(event.starts_at, event.timezone, locale)}</p>
             <p className={styles.heroPlace}>{place}</p>
@@ -197,9 +198,12 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                   <EventActions
                     eventId={event.id}
                     eventTitle={content.title}
+                    eventCategory={category}
                     startsAt={event.starts_at}
                     endsAt={event.ends_at}
+                    timezone={event.timezone}
                     location={place}
+                    coverImageUrl={event.cover_image_url}
                     latitude={event.latitude}
                     longitude={event.longitude}
                     locationPrecision={event.location_precision}

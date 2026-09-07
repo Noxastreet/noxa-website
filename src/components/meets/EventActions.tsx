@@ -15,9 +15,12 @@ type IconName = "map" | "heart" | "share" | "calendar" | "download" | "external"
 type Props = {
   eventId: string;
   eventTitle: string;
+  eventCategory: string;
   startsAt: string;
   endsAt: string | null;
+  timezone: string | null;
   location: string;
+  coverImageUrl: string | null;
   latitude: number | null;
   longitude: number | null;
   locationPrecision: string | null;
@@ -83,23 +86,224 @@ function download(name: string, blob: Blob) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  const words = text.split(/\s+/);
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines = 4) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
   for (const word of words) {
     const next = line ? `${line} ${word}` : word;
-    if (ctx.measureText(next).width <= maxWidth) line = next;
-    else {
-      if (line) lines.push(line);
-      line = word;
+    if (ctx.measureText(next).width <= maxWidth) {
+      line = next;
+      continue;
+    }
+    if (line) lines.push(line);
+    line = word;
+    if (lines.length >= maxLines) break;
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  if (lines.length === maxLines && words.length) {
+    const consumed = lines.join(" ").split(/\s+/).length;
+    if (consumed < words.length) {
+      let last = lines[maxLines - 1];
+      while (last.length > 1 && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+      lines[maxLines - 1] = `${last}…`;
     }
   }
-  if (line) lines.push(line);
-  return lines.slice(0, 4);
+  return lines;
 }
 
-export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, latitude, longitude, locationPrecision, locale }: Props) {
+function loadStoryImage(url: string) {
+  return new Promise<HTMLImageElement | null>((resolve) => {
+    const image = new Image();
+    let settled = false;
+    const finish = (value: HTMLImageElement | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      resolve(value);
+    };
+    const resolvedUrl = new URL(url, window.location.origin);
+    if (resolvedUrl.origin !== window.location.origin) image.crossOrigin = "anonymous";
+    image.decoding = "async";
+    image.onload = () => finish(image);
+    image.onerror = () => finish(null);
+    const timeout = window.setTimeout(() => finish(null), 4500);
+    image.src = resolvedUrl.href;
+  });
+}
+
+function drawCoverCrop(ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, width: number, height: number) {
+  const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = Math.max(0, (image.naturalWidth - sourceWidth) / 2);
+  const sourceY = Math.max(0, (image.naturalHeight - sourceHeight) / 2);
+  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+}
+
+function canvasBlob(canvas: HTMLCanvasElement) {
+  return new Promise<Blob | null>((resolve) => {
+    try {
+      canvas.toBlob(resolve, "image/png", 0.94);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+function renderStoryCanvas({
+  eventTitle,
+  eventCategory,
+  startsAt,
+  timezone,
+  location,
+  locale,
+  coverImage,
+}: {
+  eventTitle: string;
+  eventCategory: string;
+  startsAt: string;
+  timezone: string | null;
+  location: string;
+  locale: "en" | "el";
+  coverImage: HTMLImageElement | null;
+}) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.fillStyle = "#050505";
+  ctx.fillRect(0, 0, 1080, 1920);
+
+  if (coverImage) {
+    drawCoverCrop(ctx, coverImage, 0, 0, 1080, 980);
+    const imageShade = ctx.createLinearGradient(0, 0, 0, 1060);
+    imageShade.addColorStop(0, "rgba(5,5,5,0.10)");
+    imageShade.addColorStop(0.55, "rgba(5,5,5,0.34)");
+    imageShade.addColorStop(1, "rgba(5,5,5,1)");
+    ctx.fillStyle = imageShade;
+    ctx.fillRect(0, 0, 1080, 1080);
+  } else {
+    const ambient = ctx.createRadialGradient(900, 230, 20, 900, 230, 620);
+    ambient.addColorStop(0, "rgba(200,16,46,0.34)");
+    ambient.addColorStop(0.42, "rgba(200,16,46,0.10)");
+    ambient.addColorStop(1, "rgba(5,5,5,0)");
+    ctx.fillStyle = ambient;
+    ctx.fillRect(0, 0, 1080, 980);
+    ctx.strokeStyle = "rgba(255,255,255,0.035)";
+    ctx.lineWidth = 1;
+    for (let x = -240; x < 1320; x += 120) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + 520, 760);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(255,255,255,0.025)";
+    ctx.font = "900 520px system-ui,sans-serif";
+    ctx.fillText("N", 650, 760);
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "800 46px system-ui,sans-serif";
+  ctx.fillText("NOXA", 72, 132);
+  ctx.fillStyle = "#e32c49";
+  ctx.font = "700 25px system-ui,sans-serif";
+  ctx.fillText("MEETS", 238, 130);
+  ctx.fillRect(72, 174, 64, 6);
+
+  ctx.font = "700 28px system-ui,sans-serif";
+  const categoryWidth = Math.min(430, ctx.measureText(eventCategory).width + 54);
+  ctx.fillStyle = "rgba(5,5,5,0.72)";
+  ctx.beginPath();
+  ctx.roundRect(72, 250, categoryWidth, 58, 29);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.16)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = "#f5f5f7";
+  ctx.fillText(eventCategory, 99, 289);
+
+  const titleTop = 990;
+  ctx.fillStyle = "#f5f5f7";
+  ctx.font = "800 78px system-ui,sans-serif";
+  const titleLines = wrapText(ctx, eventTitle, 930, 4);
+  titleLines.forEach((line, index) => ctx.fillText(line, 72, titleTop + index * 90));
+
+  const localeCode = locale === "el" ? "el-GR" : "en-GB";
+  const eventTimeZone = timezone || "Europe/Athens";
+  const dateText = new Intl.DateTimeFormat(localeCode, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: eventTimeZone,
+  }).format(new Date(startsAt));
+
+  const infoTop = Math.max(1440, titleTop + titleLines.length * 90 + 84);
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(72, infoTop - 54);
+  ctx.lineTo(1008, infoTop - 54);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#e32c49";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(74, infoTop - 4, 42, 42);
+  ctx.beginPath();
+  ctx.moveTo(84, infoTop - 14);
+  ctx.lineTo(84, infoTop + 2);
+  ctx.moveTo(106, infoTop - 14);
+  ctx.lineTo(106, infoTop + 2);
+  ctx.moveTo(76, infoTop + 8);
+  ctx.lineTo(114, infoTop + 8);
+  ctx.stroke();
+  ctx.fillStyle = "#f5f5f7";
+  ctx.font = "600 35px system-ui,sans-serif";
+  wrapText(ctx, dateText, 840, 2).forEach((line, index) => ctx.fillText(line, 144, infoTop + 28 + index * 44));
+
+  const locationTop = infoTop + 142;
+  ctx.strokeStyle = "#e32c49";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(94, locationTop + 6, 20, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(94, locationTop + 6, 6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(82, locationTop + 24);
+  ctx.lineTo(94, locationTop + 42);
+  ctx.lineTo(106, locationTop + 24);
+  ctx.stroke();
+  ctx.fillStyle = "#a1a1a6";
+  ctx.font = "500 34px system-ui,sans-serif";
+  wrapText(ctx, location, 840, 2).forEach((line, index) => ctx.fillText(line, 144, locationTop + 22 + index * 43));
+
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(72, 1750);
+  ctx.lineTo(1008, 1750);
+  ctx.stroke();
+  ctx.fillStyle = "#e32c49";
+  ctx.font = "700 31px system-ui,sans-serif";
+  ctx.fillText("noxastreetapp.com", 72, 1812);
+  ctx.fillStyle = "#a1a1a6";
+  ctx.font = "600 24px system-ui,sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText(locale === "el" ? "ΒΡΕΣ ΤΟ EVENT ΣΤΟ NOXA" : "FIND THE EVENT ON NOXA", 1008, 1810);
+  ctx.textAlign = "left";
+
+  return canvas;
+}
+
+export function EventActions({ eventId, eventTitle, eventCategory, startsAt, endsAt, timezone, location, coverImageUrl, latitude, longitude, locationPrecision, locale }: Props) {
   const [shared, setShared] = useState(false);
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -195,38 +399,17 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
 
   async function storyCard() {
     setShareOpen(false);
-    const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1920;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 1920);
-    gradient.addColorStop(0, "#050505");
-    gradient.addColorStop(0.62, "#0b0b0d");
-    gradient.addColorStop(1, "#17050a");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1080, 1920);
-    ctx.fillStyle = "#c8102e";
-    ctx.fillRect(72, 180, 72, 8);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "800 54px system-ui,sans-serif";
-    ctx.fillText("NOXA MEETS", 72, 280);
-    ctx.font = "800 92px system-ui,sans-serif";
-    wrapText(ctx, eventTitle, 930).forEach((line, index) => ctx.fillText(line, 72, 520 + index * 108));
-    ctx.fillStyle = "#a1a1a6";
-    ctx.font = "500 42px system-ui,sans-serif";
-    const date = new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", {
-      weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Athens",
-    }).format(new Date(startsAt));
-    ctx.fillText(date, 72, 1100);
-    wrapText(ctx, location, 900).slice(0, 2).forEach((line, index) => ctx.fillText(line, 72, 1190 + index * 58));
-    ctx.fillStyle = "#e32c49";
-    ctx.font = "700 34px system-ui,sans-serif";
-    ctx.fillText("noxastreetapp.com", 72, 1750);
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 0.94));
+    const coverImage = coverImageUrl ? await loadStoryImage(coverImageUrl) : null;
+    let canvas = renderStoryCanvas({ eventTitle, eventCategory, startsAt, timezone, location, locale, coverImage });
+    if (!canvas) return;
+    let blob = await canvasBlob(canvas);
+    if (!blob && coverImage) {
+      canvas = renderStoryCanvas({ eventTitle, eventCategory, startsAt, timezone, location, locale, coverImage: null });
+      if (!canvas) return;
+      blob = await canvasBlob(canvas);
+    }
     if (!blob) return;
+
     const file = new File([blob], "noxa-meet-story.png", { type: "image/png" });
     void track(eventId, "share");
     try {
