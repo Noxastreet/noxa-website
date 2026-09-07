@@ -64,6 +64,7 @@ const CATEGORY: Record<string, string> = {
 };
 const DATE_VALUES = new Set<MeetDateFilter>(["today", "tomorrow", "weekend", "month", "all"]);
 const TYPE_VALUES = new Set<Filter>(["all", "car", "moto", "motorsport"]);
+const NOXA_EVENT_FALLBACK = "radial-gradient(circle at 78% 24%, rgba(200,16,46,.28), transparent 32%), linear-gradient(135deg,#111114 0%,#08080a 46%,#050505 100%)";
 
 function countryName(code: string, locale: "en" | "el") {
   try {
@@ -102,7 +103,7 @@ function eventLocation(event: MeetsDirectoryEvent) {
 }
 
 function coverStyle(url: string | null) {
-  return url ? { backgroundImage: `url(${JSON.stringify(url)})` } : undefined;
+  return { backgroundImage: url ? `url(${JSON.stringify(url)})` : NOXA_EVENT_FALLBACK };
 }
 
 export function MeetsDirectory({
