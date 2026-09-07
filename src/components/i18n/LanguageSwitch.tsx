@@ -47,7 +47,7 @@ export function LanguageSwitch({
             href={destination}
             hrefLang={option}
             lang={option}
-            aria-label={languageName}
+            aria-label={`${option.toUpperCase()} — ${languageName}`}
             title={languageName}
             aria-current={isActive ? "page" : undefined}
             className={`inline-flex min-h-10 items-center justify-center rounded-full text-xs font-bold tracking-[0.12em] transition-[background-color,color,transform] duration-[180ms] ${
@@ -74,3 +74,4 @@ export function LanguageSwitch({
     </div>
   );
 }
+

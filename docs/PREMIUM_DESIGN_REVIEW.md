@@ -18,7 +18,9 @@ No new dependencies or media assets, no data/schema/API changes, no Map View. Se
 - ESLint: zero errors; eight existing warnings in unchanged admin/organizer components.
 - Production build on Node 22.23.2: PASS.
 - Existing Meets and platform fixtures: PASS.
-- Preview browser acceptance: pending at branch creation.
+- Desktop preview on initial commit f5d0274: home → Meets → filtered results → Event, EN/EL event switching, Saved pressed state and unsave verified. No horizontal overflow observed on inspected desktop pages.
+- CI for f5d0274: typecheck, lint, build, route smoke and fixtures PASS; security PASS. Lighthouse fails LCP (median 2807ms); performance 95, accessibility 96, TBT115ms, CLS0.
+- Follow-up: keep section reveal fully opaque for contrast and include EN/EL in language accessible names; matching smoke assertions updated. Final CI/browser results recorded in PR #84.
 - Real mobile/iPhone Safari: NOT VERIFIED. The available cloud browser has no viewport/emulation capability; localhost is inaccessible from that browser.
 - Performance: NOT VERIFIED for this candidate. Video asset is unchanged and previous Lighthouse debt remains.
 
