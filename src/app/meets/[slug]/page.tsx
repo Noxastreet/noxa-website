@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { EventDetailPage, loadPublicEvent } from "@/components/meets/EventDetailPage";
+import { EventDetailPage, loadPublicEvent, localizePublicEvent } from "@/components/meets/EventDetailPage";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -8,9 +8,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const event = await loadPublicEvent(slug);
   if (!event) return {};
+  const content = localizePublicEvent(event, "en");
   return {
-    title: `${event.title} — NOXA Meets`,
-    description: event.summary?.trim() || `${event.title} — ${event.city ?? event.country_code}.`,
+    title: `${content.title} — NOXA Meets`,
+    description: content.summary?.trim() || `${content.title} — ${event.city ?? event.country_code}.`,
     alternates: {
       canonical: `https://noxastreetapp.com/meets/${event.public_slug}`,
       languages: {
@@ -20,8 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     openGraph: {
       type: "article",
-      title: event.title,
-      description: event.summary?.trim() || `${event.title} on NOXA Meets`,
+      title: content.title,
+      description: content.summary?.trim() || `${content.title} on NOXA Meets`,
       url: `https://noxastreetapp.com/meets/${event.public_slug}`,
     },
   };

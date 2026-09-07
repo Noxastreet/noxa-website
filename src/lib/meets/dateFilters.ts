@@ -102,7 +102,7 @@ export function eventDiscoveryState(
 
 export type DiscoveryQuery = { country: string; city: string; type: string; date: string; q: string };
 export type DiscoveryEvent = { title: string; organizer: string; city: string; eventType: string; startsAt: string; endsAt?: string | null; timezone: string | null };
-const DISCOVERY_MOTORSPORT = new Set(["track_day", "drag", "drift", "rally"]);
+const DISCOVERY_MOTORSPORT = new Set(["track_day", "drag", "drift", "rally", "karting", "dexterity"]);
 const DISCOVERY_MOTO = new Set(["moto_meet"]);
 
 export function buildDiscoveryQuery(state: DiscoveryQuery) {

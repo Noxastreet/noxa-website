@@ -13,11 +13,13 @@ type Row = {
   public_slug: string;
   country_code: string;
   title: string;
+  title_el: string | null;
   event_type: string;
   starts_at: string;
   ends_at: string | null;
   timezone: string | null;
   location_text: string | null;
+  location_text_el: string | null;
   city: string | null;
   region: string | null;
   organizer_name: string | null;
@@ -26,6 +28,7 @@ type Row = {
   partner_badge: string | null;
   cover_image_url: string | null;
   cover_image_alt: string | null;
+  cover_image_alt_el: string | null;
 };
 
 function fallbackCountry(value: string | null) {
@@ -39,9 +42,9 @@ function savedCountry(value: string | undefined) {
   return code && /^[A-Z]{2}$/.test(code) ? code : null;
 }
 
-async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
+async function loadEvents(locale: "en" | "el"): Promise<MeetsDirectoryEvent[]> {
   const query = new URLSearchParams({
-    select: "id,public_slug,country_code,title,event_type,starts_at,ends_at,timezone,location_text,city,region,organizer_name,source_name,featured,partner_badge,cover_image_url,cover_image_alt",
+    select: "id,public_slug,country_code,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,organizer_name,source_name,featured,partner_badge,cover_image_url,cover_image_alt,cover_image_alt_el",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "500",
@@ -55,31 +58,37 @@ async function loadEvents(): Promise<MeetsDirectoryEvent[]> {
     const rows = await response.json() as Row[];
     return rows
       .filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at))
-      .map((row) => ({
-        id: row.id,
-        slug: row.public_slug,
-        countryCode: row.country_code,
-        title: row.title,
-        eventType: row.event_type,
-        startsAt: row.starts_at,
-        endsAt: row.ends_at,
-        timezone: row.timezone,
-        location: row.location_text ?? row.city ?? row.region ?? row.country_code,
-        city: row.city ?? "",
-        region: row.region ?? "",
-        organizer: row.organizer_name ?? row.source_name,
-        featured: row.featured,
-        partnerBadge: row.partner_badge,
-        coverImageUrl: row.cover_image_url,
-        coverImageAlt: row.cover_image_alt,
-      }));
+      .map((row) => {
+        const localizedTitle = locale === "el" ? row.title_el?.trim() || row.title : row.title;
+        const localizedLocation = locale === "el" ? row.location_text_el?.trim() || row.location_text : row.location_text;
+        const localizedCoverAlt = locale === "el" ? row.cover_image_alt_el?.trim() || row.cover_image_alt : row.cover_image_alt;
+
+        return {
+          id: row.id,
+          slug: row.public_slug,
+          countryCode: row.country_code,
+          title: localizedTitle,
+          eventType: row.event_type,
+          startsAt: row.starts_at,
+          endsAt: row.ends_at,
+          timezone: row.timezone,
+          location: localizedLocation ?? row.city ?? row.region ?? row.country_code,
+          city: row.city ?? "",
+          region: row.region ?? "",
+          organizer: row.organizer_name ?? row.source_name,
+          featured: row.featured,
+          partnerBadge: row.partner_badge,
+          coverImageUrl: row.cover_image_url,
+          coverImageAlt: localizedCoverAlt,
+        };
+      });
   } catch {
     return [];
   }
 }
 
 export async function MeetsDirectoryPage({ locale, initialFilters = {} }: { locale: "en" | "el"; initialFilters?: InitialFilters }) {
-  const [requestHeaders, cookieStore, events] = await Promise.all([headers(), cookies(), loadEvents()]);
+  const [requestHeaders, cookieStore, events] = await Promise.all([headers(), cookies(), loadEvents(locale)]);
   const detectedCountryCode = savedCountry(cookieStore.get("noxa_country")?.value) ?? requestHeaders.get("x-vercel-ip-country") ?? fallbackCountry(requestHeaders.get("accept-language"));
   return <MeetsDirectory detectedCountryCode={detectedCountryCode} events={events} initialFilters={initialFilters} locale={locale} />;
 }
