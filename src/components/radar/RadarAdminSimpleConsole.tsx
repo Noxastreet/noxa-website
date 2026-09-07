@@ -5,6 +5,10 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
+import {
+  radarCandidateQualityIssues,
+  radarQualityIssueSummary,
+} from "@/lib/radarQuality";
 
 import { RadarAiAnalyzeButton } from "./RadarAiAnalyzeButton";
 import styles from "./RadarAdminSimple.module.css";
@@ -36,10 +40,12 @@ type RadarCandidate = {
   country_code: string;
   event_type: string;
   starts_at: string | null;
+  ends_at: string | null;
   timezone: string | null;
   location_text: string | null;
   city: string | null;
   organizer_name: string | null;
+  summary: string | null;
   original_url: string;
   ai_confidence: number | string | null;
   ai_reason: string | null;
@@ -244,6 +250,11 @@ function groupDateSummary(group: ReviewGroup) {
   return `${group.candidates.length} dates · ${first}${first === last ? "" : `–${last}`}`;
 }
 
+function qualityLine(candidate: RadarCandidate) {
+  const issues = radarCandidateQualityIssues(candidate);
+  return issues.length ? `BLOCKED · ${radarQualityIssueSummary(issues)}` : "READY · required publication data verified";
+}
+
 async function getUser(accessToken: string): Promise<AuthUser | null> {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: apiHeaders(accessToken),
@@ -288,7 +299,7 @@ async function isRadarAdmin(accessToken: string) {
 async function loadDashboard(accessToken: string): Promise<DashboardData> {
   const headers = apiHeaders(accessToken);
   const [candidateResponse, eventResponse, sourceResponse] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/radar_candidates?select=id,title,country_code,event_type,starts_at,timezone,location_text,city,organizer_name,original_url,ai_confidence,ai_reason,status,created_at&status=in.(new,needs_review)&order=starts_at.asc.nullslast&limit=250`, { headers, cache: "no-store" }),
+    fetch(`${SUPABASE_URL}/rest/v1/radar_candidates?select=id,title,country_code,event_type,starts_at,ends_at,timezone,location_text,city,organizer_name,summary,original_url,ai_confidence,ai_reason,status,created_at&status=in.(new,needs_review)&order=starts_at.asc.nullslast&limit=250`, { headers, cache: "no-store" }),
     fetch(`${SUPABASE_URL}/rest/v1/radar_events?select=id,title,country_code,event_type,starts_at,timezone,city,location_text,source_name,source_url,status,published_at&status=eq.published&order=starts_at.asc&limit=500`, { headers, cache: "no-store" }),
     fetch(`${SUPABASE_URL}/rest/v1/radar_sources?select=id,name,platform,url,country_code,active,trust_level,last_checked_at,last_error,created_at&order=active.desc,created_at.desc&limit=250`, { headers, cache: "no-store" }),
   ]);
@@ -465,9 +476,12 @@ export function RadarAdminSimpleConsole() {
 
   async function reviewCandidate(candidate: RadarCandidate, status: "approved" | "rejected") {
     if (!session) return;
-    if (status === "approved" && !candidate.starts_at) {
-      setError("This event needs a date before approval.");
-      return;
+    if (status === "approved") {
+      const issues = radarCandidateQualityIssues(candidate);
+      if (issues.length) {
+        setError(`Quality Gate blocked publication: ${radarQualityIssueSummary(issues)}.`);
+        return;
+      }
     }
     setBusy(true);
     setError("");
@@ -482,7 +496,13 @@ export function RadarAdminSimpleConsole() {
           updated_at: new Date().toISOString(),
         }),
       });
-      if (!response.ok) throw new Error("Could not update this event.");
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { message?: string } | null;
+        const gateMessage = payload?.message?.startsWith("RADAR_QUALITY_GATE:")
+          ? payload.message.replace("RADAR_QUALITY_GATE:", "Quality Gate blocked publication: ").replaceAll("_", " ")
+          : null;
+        throw new Error(gateMessage ?? "Could not update this event.");
+      }
       await refreshDashboard();
     } catch (candidateError) {
       setError(candidateError instanceof Error ? candidateError.message : "Could not update this event.");
@@ -648,6 +668,7 @@ export function RadarAdminSimpleConsole() {
               const expanded = expandedGroup === group.key;
               const first = group.candidates[0];
               const single = group.candidates.length === 1;
+              const firstIssues = radarCandidateQualityIssues(first);
               return (
                 <article className={styles.groupCard} key={group.key}>
                   <div className={styles.groupTop}>
@@ -661,11 +682,17 @@ export function RadarAdminSimpleConsole() {
                   </div>
 
                   {single ? (
-                    <div className={styles.compactActions}>
-                      <a href={first.original_url} rel="noreferrer" target="_blank">Source ↗</a>
-                      <button disabled={busy} onClick={() => void reviewCandidate(first, "rejected")} type="button">Reject</button>
-                      <button className={styles.approve} disabled={busy || !first.starts_at} onClick={() => void reviewCandidate(first, "approved")} type="button">{first.starts_at ? "Approve" : "Needs date"}</button>
-                    </div>
+                    <>
+                      <div className={styles.groupSummary} aria-live="polite">
+                        <span>Quality Gate</span>
+                        <span>{qualityLine(first)}</span>
+                      </div>
+                      <div className={styles.compactActions}>
+                        <a href={first.original_url} rel="noreferrer" target="_blank">Source ↗</a>
+                        <button disabled={busy} onClick={() => void reviewCandidate(first, "rejected")} type="button">Reject</button>
+                        <button className={styles.approve} disabled={busy || firstIssues.length > 0} onClick={() => void reviewCandidate(first, "approved")} type="button">{firstIssues.length ? "Blocked" : "Approve"}</button>
+                      </div>
+                    </>
                   ) : (
                     <button
                       aria-expanded={expanded}
@@ -680,19 +707,26 @@ export function RadarAdminSimpleConsole() {
 
                   {!single && expanded ? (
                     <div className={styles.dateList}>
-                      {group.candidates.map((candidate) => (
-                        <div className={styles.dateRow} key={candidate.id}>
-                          <div className={styles.dateInfo}>
-                            <strong>{formatDate(candidate.starts_at)}</strong>
-                            <span>{confidenceLabel(candidate.ai_confidence)}</span>
+                      {group.candidates.map((candidate) => {
+                        const issues = radarCandidateQualityIssues(candidate);
+                        return (
+                          <div className={styles.dateRow} key={candidate.id}>
+                            <div className={styles.dateInfo}>
+                              <strong>{formatDate(candidate.starts_at)}</strong>
+                              <span>{confidenceLabel(candidate.ai_confidence)}</span>
+                            </div>
+                            <div className={styles.groupSummary} aria-live="polite">
+                              <span>Quality Gate</span>
+                              <span>{qualityLine(candidate)}</span>
+                            </div>
+                            <div className={styles.dateActions}>
+                              <a href={candidate.original_url} rel="noreferrer" target="_blank" aria-label={`Open source for ${formatDate(candidate.starts_at)}`}>↗</a>
+                              <button disabled={busy} onClick={() => void reviewCandidate(candidate, "rejected")} type="button">Reject</button>
+                              <button className={styles.approve} disabled={busy || issues.length > 0} onClick={() => void reviewCandidate(candidate, "approved")} type="button">{issues.length ? "Blocked" : "Approve"}</button>
+                            </div>
                           </div>
-                          <div className={styles.dateActions}>
-                            <a href={candidate.original_url} rel="noreferrer" target="_blank" aria-label={`Open source for ${formatDate(candidate.starts_at)}`}>↗</a>
-                            <button disabled={busy} onClick={() => void reviewCandidate(candidate, "rejected")} type="button">Reject</button>
-                            <button className={styles.approve} disabled={busy || !candidate.starts_at} onClick={() => void reviewCandidate(candidate, "approved")} type="button">Approve</button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : null}
                 </article>
