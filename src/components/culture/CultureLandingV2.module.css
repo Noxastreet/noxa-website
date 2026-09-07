@@ -340,6 +340,10 @@
   align-items: start;
 }
 
+.appSection .eyebrow {
+  color: var(--text);
+}
+
 .appSection h2 {
   max-width: 9ch;
   margin-top: 14px;
