@@ -6,19 +6,34 @@ import type { FormEvent } from "react";
 import { buildGoogleCalendarUrl, buildIcsCalendar } from "@/lib/meets/calendar";
 import { readSavedEvents, toggleSavedEvent } from "@/lib/meets/savedEvents";
 
-import styles from "./EventDetailPage.module.css";
+import actionStyles from "./EventActionsCleanup.module.css";
+import pageStyles from "./EventDetailPage.module.css";
 
 const TRACK_ENDPOINT = "https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/event-track";
 type MetricKind = "view" | "share" | "map_click";
+type IconName = "map" | "heart" | "share" | "calendar" | "download" | "external" | "link" | "story";
 type Props = {
   eventId: string;
   eventTitle: string;
   startsAt: string;
   endsAt: string | null;
   location: string;
-  mapQuery: string;
+  latitude: number | null;
+  longitude: number | null;
+  locationPrecision: string | null;
   locale: "en" | "el";
 };
+
+function Icon({ name, filled = false }: { name: IconName; filled?: boolean }) {
+  if (name === "map") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>;
+  if (name === "heart") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true" style={{ fill: filled ? "currentColor" : "none" }}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>;
+  if (name === "share") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m0 0 4 4m-4-4L8 7"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>;
+  if (name === "calendar") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4m8-4v4M3 10h18"/></svg>;
+  if (name === "download") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>;
+  if (name === "external") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>;
+  if (name === "link") return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>;
+  return <svg className={actionStyles.icon} viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="m15.5 7 .6 1.4L17.5 9l-1.4.6-.6 1.4-.6-1.4L13.5 9l1.4-.6.6-1.4Z"/></svg>;
+}
 
 function hostnameMatches(host: string, domain: string) {
   return host === domain || host.endsWith(`.${domain}`);
@@ -84,12 +99,15 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines.slice(0, 4);
 }
 
-export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, mapQuery, locale }: Props) {
+export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, latitude, longitude, locationPrecision, locale }: Props) {
   const [shared, setShared] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportState, setReportState] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [reportMessage, setReportMessage] = useState("");
+  const hasExactMap = locationPrecision === "exact" && typeof latitude === "number" && Number.isFinite(latitude) && typeof longitude === "number" && Number.isFinite(longitude);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -100,20 +118,25 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
   }, [eventId]);
 
   const t = locale === "el" ? {
-    map: "Άνοιξε Χάρτη", share: "Κοινοποίηση", copied: "Αντιγράφηκε", save: "Αποθήκευση", saved: "Αποθηκεύτηκε",
-    calendar: "Apple / .ics", google: "Google Calendar", story: "Story Card", report: "Διόρθωση Event",
+    map: "Χάρτης", share: "Κοινοποίηση", copied: "Αντιγράφηκε", save: "Αποθήκευση", saved: "Αποθηκεύτηκε",
+    calendar: "Ημερολόγιο", apple: "Apple / .ics", google: "Google Calendar", nativeShare: "Κοινοποίηση event", copyLink: "Αντιγραφή link", story: "Story Card", report: "Διόρθωση Event",
     reportTitle: "Αναφορά / διόρθωση", reason: "Λόγος", details: "Λεπτομέρειες (προαιρετικό)", email: "Email (προαιρετικό)",
     send: "Αποστολή", sending: "Αποστολή…", sent: "Η αναφορά αποθηκεύτηκε για έλεγχο.", close: "Κλείσιμο",
     reasons: { time: "Λάθος ημερομηνία/ώρα", location: "Λάθος τοποθεσία", cancelled: "Ακυρώθηκε", duplicate: "Διπλό event", other: "Άλλο" },
   } : {
-    map: "Open Map", share: "Share", copied: "Copied", save: "Save", saved: "Saved",
-    calendar: "Apple / .ics", google: "Google Calendar", story: "Story Card", report: "Correct Event",
+    map: "Map", share: "Share", copied: "Copied", save: "Save", saved: "Saved",
+    calendar: "Calendar", apple: "Apple / .ics", google: "Google Calendar", nativeShare: "Share event", copyLink: "Copy link", story: "Story Card", report: "Correct Event",
     reportTitle: "Report / correct event", reason: "Reason", details: "Details (optional)", email: "Email (optional)",
     send: "Submit", sending: "Sending…", sent: "Report saved for review.", close: "Close",
     reasons: { time: "Wrong date/time", location: "Wrong location", cancelled: "Cancelled", duplicate: "Duplicate", other: "Other" },
   };
 
-  async function share() {
+  function closeMenus() {
+    setShareOpen(false);
+    setCalendarOpen(false);
+  }
+
+  async function shareEvent() {
     const url = window.location.href;
     try {
       if (navigator.share) await navigator.share({ title: eventTitle, url });
@@ -125,12 +148,28 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
       void track(eventId, "share");
     } catch {
       // Dismissing the native share sheet is not an error the user needs to see.
+    } finally {
+      setShareOpen(false);
+    }
+  }
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShared(true);
+      window.setTimeout(() => setShared(false), 1800);
+      void track(eventId, "share");
+    } catch {
+      // Clipboard can be unavailable in some embedded browsers.
+    } finally {
+      setShareOpen(false);
     }
   }
 
   function openMap() {
+    if (!hasExactMap || latitude === null || longitude === null) return;
     void track(eventId, "map_click");
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, "_blank", "noopener,noreferrer");
   }
 
   function toggleSave() {
@@ -142,6 +181,7 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
     const ics = buildIcsCalendar({ id: eventId, title: eventTitle, startsAt, endsAt, location }, url);
     const filename = eventTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "noxa-event";
     download(`${filename}.ics`, new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    setCalendarOpen(false);
   }
 
   function googleCalendar() {
@@ -150,9 +190,11 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
       "_blank",
       "noopener,noreferrer",
     );
+    setCalendarOpen(false);
   }
 
   async function storyCard() {
+    setShareOpen(false);
     const canvas = document.createElement("canvas");
     canvas.width = 1080;
     canvas.height = 1920;
@@ -186,6 +228,7 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 0.94));
     if (!blob) return;
     const file = new File([blob], "noxa-meet-story.png", { type: "image/png" });
+    void track(eventId, "share");
     try {
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: eventTitle });
@@ -228,30 +271,40 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
 
   return (
     <>
-      <div className={styles.actions}>
-        <div className={styles.mainActions}>
-        <button className={styles.primaryAction} onClick={openMap} type="button">{t.map}</button>
-        <button className={styles.secondaryAction} aria-pressed={saved} onClick={toggleSave} type="button">{saved ? `♥ ${t.saved}` : `♡ ${t.save}`}</button>
-        <button className={styles.secondaryAction} onClick={() => void share()} type="button">{shared ? t.copied : t.share}</button>
+      <div className={actionStyles.actions}>
+        {(shareOpen || calendarOpen) ? <button className={actionStyles.menuBackdrop} type="button" aria-label={t.close} onClick={closeMenus} /> : null}
+        <div className={actionStyles.toolbar}>
+          {hasExactMap ? <button className={`${actionStyles.actionButton} ${actionStyles.primary}`} onClick={openMap} type="button"><Icon name="map" />{t.map}</button> : null}
+          <button className={`${actionStyles.actionButton} ${actionStyles.secondary} ${saved ? actionStyles.pressed : ""}`} aria-pressed={saved} onClick={toggleSave} type="button"><Icon name="heart" filled={saved} />{saved ? t.saved : t.save}</button>
+          <div className={actionStyles.menuWrap}>
+            <button className={actionStyles.menuTrigger} aria-expanded={shareOpen} onClick={() => { setShareOpen((open) => !open); setCalendarOpen(false); }} type="button"><Icon name="share" />{shared ? t.copied : t.share}</button>
+            {shareOpen ? <div className={actionStyles.menuPanel} role="menu">
+              <button className={actionStyles.menuItem} onClick={() => void shareEvent()} role="menuitem" type="button"><span className={actionStyles.menuItemIcon}><Icon name="share" /></span>{t.nativeShare}</button>
+              <button className={actionStyles.menuItem} onClick={() => void copyLink()} role="menuitem" type="button"><span className={actionStyles.menuItemIcon}><Icon name="link" /></span>{t.copyLink}</button>
+              <button className={actionStyles.menuItem} onClick={() => void storyCard()} role="menuitem" type="button"><span className={actionStyles.menuItemIcon}><Icon name="story" /></span>{t.story}</button>
+            </div> : null}
+          </div>
+          <div className={actionStyles.menuWrap}>
+            <button className={actionStyles.menuTrigger} aria-expanded={calendarOpen} onClick={() => { setCalendarOpen((open) => !open); setShareOpen(false); }} type="button"><Icon name="calendar" />{t.calendar}</button>
+            {calendarOpen ? <div className={actionStyles.menuPanel} role="menu">
+              <button className={actionStyles.menuItem} onClick={downloadIcs} role="menuitem" type="button"><span className={actionStyles.menuItemIcon}><Icon name="download" /></span>{t.apple}</button>
+              <button className={actionStyles.menuItem} onClick={googleCalendar} role="menuitem" type="button"><span className={actionStyles.menuItemIcon}><Icon name="external" /></span>{t.google}</button>
+            </div> : null}
+          </div>
         </div>
-        <div className={styles.utilityActions} role="group" aria-label={locale === "el" ? "Ημερολόγιο και κοινοποίηση" : "Calendar and sharing"}>
-        <button className={styles.secondaryAction} onClick={downloadIcs} type="button">{t.calendar}</button>
-        <button className={styles.secondaryAction} onClick={googleCalendar} type="button">{t.google}</button>
-        <button className={styles.secondaryAction} onClick={() => void storyCard()} type="button">{t.story}</button>
-        </div>
-        <button className={styles.textAction} onClick={() => setReportOpen(true)} type="button">{t.report}</button>
+        <button className={actionStyles.textAction} onClick={() => setReportOpen(true)} type="button">{t.report}</button>
       </div>
       {reportOpen ? (
-        <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReportOpen(false); }}>
-          <div className={styles.reportModal} role="dialog" aria-modal="true" aria-labelledby="report-title">
-            <div className={styles.modalHeader}><h2 id="report-title">{t.reportTitle}</h2><button type="button" onClick={() => setReportOpen(false)} aria-label={t.close}>×</button></div>
+        <div className={pageStyles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReportOpen(false); }}>
+          <div className={pageStyles.reportModal} role="dialog" aria-modal="true" aria-labelledby="report-title">
+            <div className={pageStyles.modalHeader}><h2 id="report-title">{t.reportTitle}</h2><button type="button" onClick={() => setReportOpen(false)} aria-label={t.close}>×</button></div>
             <form onSubmit={submitReport}>
               <label><span>{t.reason}</span><select name="reason" required defaultValue=""><option value="" disabled>—</option>{Object.entries(t.reasons).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
               <label><span>{t.details}</span><textarea name="details" maxLength={1500} rows={4} /></label>
               <label><span>{t.email}</span><input name="email" type="email" maxLength={254} /></label>
-              <input className={styles.honeypot} name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-              <button className={styles.primaryAction} disabled={reportState === "sending"} type="submit">{reportState === "sending" ? t.sending : t.send}</button>
-              {reportMessage ? <p className={reportState === "error" ? styles.reportError : styles.reportStatus} role="status">{reportMessage}</p> : null}
+              <input className={pageStyles.honeypot} name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              <button className={pageStyles.primaryAction} disabled={reportState === "sending"} type="submit">{reportState === "sending" ? t.sending : t.send}</button>
+              {reportMessage ? <p className={reportState === "error" ? pageStyles.reportError : pageStyles.reportStatus} role="status">{reportMessage}</p> : null}
             </form>
           </div>
         </div>
@@ -259,4 +312,3 @@ export function EventActions({ eventId, eventTitle, startsAt, endsAt, location, 
     </>
   );
 }
-
