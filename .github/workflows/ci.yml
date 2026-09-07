@@ -50,6 +50,8 @@ jobs:
         run: npm run test:meets-growth
       - name: Platform flow consistency
         run: npm run test:platform-flows
+      - name: Event publication quality fixtures
+        run: npm run test:publication-quality
       - name: Lint
         run: npm run lint
       - name: Production build
