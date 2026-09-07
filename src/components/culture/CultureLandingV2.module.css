@@ -194,7 +194,8 @@
   position: relative;
   min-height: 480px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.09);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-card);
   border-radius: 12px;
   background-position: center;
   background-size: cover;
@@ -216,7 +217,7 @@
 
 .pathCard:hover {
   transform: translateY(-4px);
-  border-color: rgba(255,255,255,.2);
+  border-color: var(--color-text-secondary);
   box-shadow: 0 26px 80px rgba(0,0,0,.32);
 }
 
@@ -356,9 +357,9 @@
 }
 
 .waitlistWrap {
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid var(--color-border-strong);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.018));
+  background: var(--color-surface-raised);
   padding: 24px;
   box-shadow: 0 24px 80px rgba(0,0,0,.2);
 }

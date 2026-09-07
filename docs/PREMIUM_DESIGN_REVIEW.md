@@ -33,3 +33,7 @@ No new dependencies or media assets, no data/schema/API changes, no Map View. Se
 - Review the visual direction with the owner. Do not merge or deploy production without separate authorization.
 
 Remaining data accuracy, Saved list, reports/RLS and reliability findings remain tracked in the Notion website roadmap. Do not mark those fixed because their UI was styled.
+
+## Owner feedback: separate cards from the page
+
+The owner approved the direction but found the surfaces monotonous and card boundaries hard to distinguish. Reuse existing graphite tokens: raised surfaces for event/organizer/waitlist cards, a quieter surface for filters/empty states, and stronger neutral borders with restrained shadows. Keep separation visible without hover on touch devices. Improve metadata contrast on the raised surfaces and add explicit keyboard focus to homepage event cards. No layout, media, data or interaction logic changes. Exact-head build/CI and preview evidence are recorded in PR #84.
