@@ -4,12 +4,15 @@ import { readdir, readFile } from "node:fs/promises";
 const migrationFiles = await readdir("supabase/migrations");
 const automationMigrationName = migrationFiles.find((name) => name.endsWith("_automotive_map_automation_20260908.sql"));
 const runtimeMigrationName = migrationFiles.find((name) => name.endsWith("_automotive_map_collector_runtime_hardening.sql"));
+const triggerSecurityMigrationName = migrationFiles.find((name) => name.endsWith("_automotive_map_quality_trigger_security.sql"));
 assert.ok(automationMigrationName, "Map Content Expansion automation migration must exist");
 assert.ok(runtimeMigrationName, "Map collector runtime hardening migration must exist");
+assert.ok(triggerSecurityMigrationName, "Map Quality Gate trigger security migration must exist");
 
-const [migration, runtimeMigration, collector] = await Promise.all([
+const [migration, runtimeMigration, triggerSecurityMigration, collector] = await Promise.all([
   readFile(`supabase/migrations/${automationMigrationName}`, "utf8"),
   readFile(`supabase/migrations/${runtimeMigrationName}`, "utf8"),
+  readFile(`supabase/migrations/${triggerSecurityMigrationName}`, "utf8"),
   readFile("supabase/functions/automotive-map-collector/index.ts", "utf8"),
 ]);
 
@@ -52,6 +55,20 @@ assert.ok(
 );
 assert.ok(runtimeMigration.includes("timeout_milliseconds := 60000"), "scheduled collector must override pg_net's 5-second timeout");
 assert.ok(runtimeMigration.includes("cron.unschedule"), "runtime hardening must replace the previous collector job instead of duplicating it");
+
+for (const required of [
+  "private.enforce_automotive_map_candidate_quality()",
+  "security definer",
+  "set search_path = public, private",
+  "private.automotive_map_candidate_quality_issues(new)",
+  "revoke all on function private.enforce_automotive_map_candidate_quality() from public",
+]) {
+  assert.ok(triggerSecurityMigration.includes(required), `Quality Gate trigger security migration must include ${required}`);
+}
+assert.ok(
+  !triggerSecurityMigration.includes("grant usage on schema private"),
+  "collector integration must not open the private schema to service/public roles",
+);
 
 for (const required of [
   "const OVERPASS_URL = \"https://overpass-api.de/api/interpreter\"",
