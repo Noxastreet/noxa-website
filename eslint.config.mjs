@@ -12,7 +12,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["src/components/map/AutomotiveMap.tsx", "src/components/map/HomepageMapCanvas.tsx"],
+    files: ["src/components/map/AutomotiveMap.tsx"],
     rules: {
       "react-hooks/refs": "off",
       "react-hooks/preserve-manual-memoization": "off",
