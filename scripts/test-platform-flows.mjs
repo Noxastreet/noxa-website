@@ -16,10 +16,9 @@ const eventDetail = read("src/components/meets/EventDetailPage.tsx");
 // Public organizer product is intentionally hidden until it is ready.
 expect(!websiteHeader.includes("/organizers"), "Public header must not expose Organizers");
 expect(!communities.includes("/organizers"), "Community navigation must not expose Organizers");
-expect(!meetSubmit.includes('href={`${base}/organizer`}'), "Event suggestion must not expose Organizer Dashboard");
-expect(!meetSubmit.includes("Verified organizers"), "Event suggestion must not advertise verified organizer publishing");
 expect(proxy.includes("isPublicOrganizerPath") && proxy.includes('"/meets"'), "Proxy must redirect public organizer routes to Meets");
 expect(visibility.includes('a[href="/organizers"]') && visibility.includes('a[href="/organizer"]'), "Visibility layer must hide remaining public organizer entry points");
+expect(visibility.includes('RadarSubmitForm-module') && visibility.includes('__notice'), "Event suggestion organizer promotion must be hidden by the visibility layer");
 expect(!sitemap.includes('page("/organizers"') && !sitemap.includes('page("/organizer"'), "Sitemap must not publish organizer product routes");
 expect(robots.includes('"/organizer"') && robots.includes('"/organizers"'), "robots.txt must disallow organizer product routes");
 expect(eventDetail.includes("Official event information") && !eventDetail.includes("OrganizerProfile"), "Event detail must show source information instead of organizer product UI");

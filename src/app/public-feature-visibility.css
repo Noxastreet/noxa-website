@@ -34,8 +34,9 @@ a[href^="/el/organizers/"] {
   opacity: 0 !important;
 }
 
-/* Community applications must not advertise the unfinished organizer product. */
-[class*="CommunityApplicationForm-module"][class*="__notice"] {
+/* Public application forms must not advertise the unfinished organizer product. */
+[class*="CommunityApplicationForm-module"][class*="__notice"],
+[class*="RadarSubmitForm-module"][class*="__notice"] {
   display: none !important;
 }
 
