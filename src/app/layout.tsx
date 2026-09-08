@@ -6,6 +6,7 @@ import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGat
 
 import "./globals.css";
 import "./header-logo.css";
+import "./public-feature-visibility.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),

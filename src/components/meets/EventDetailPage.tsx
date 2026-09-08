@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { loadOrganizerById } from "@/components/organizers/organizer-data";
 import { isPastEvent } from "@/lib/meets/eventVisibility";
 
 import { EventActions } from "./EventActions";
@@ -146,9 +145,6 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const content = localizePublicEvent(event, locale);
   const past = isPastEvent(event.starts_at, event.ends_at);
   const place = [content.locationText, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
-  const organizer = event.organizer_name || event.source_name;
-  const profile = event.organizer_profile_id ? await loadOrganizerById(event.organizer_profile_id) : null;
-  const organizerUrl = event.organizer_url || event.source_url;
   const base = locale === "el" ? "/el" : "";
   const pastText = locale === "el" ? "ΟΛΟΚΛΗΡΩΜΕΝΟ EVENT" : "PAST EVENT";
   const category = categoryLabel(event.event_type, locale);
@@ -220,7 +216,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 )}
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΣΧΕΤΙΚΑ" : "ABOUT"}</span>
-                  <p>{content.summary?.trim() || (locale === "el" ? "Δες τις επίσημες πληροφορίες του organizer." : "Check the organizer's official details.")}</p>
+                  <p>{content.summary?.trim() || (locale === "el" ? "Δες τις επίσημες πληροφορίες της εκδήλωσης." : "Check the official event details.")}</p>
                 </section>
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΤΟΠΟΘΕΣΙΑ" : "LOCATION"}</span>
@@ -228,14 +224,10 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 </section>
               </div>
               <aside className={styles.organizerCard}>
-                <span>{locale === "el" ? "ΔΙΟΡΓΑΝΩΤΗΣ" : "ORGANIZED BY"}</span>
-                <h2>{organizer}</h2>
-                {profile ? (
-                  <Link href={`${base}/organizers/${profile.slug}`}>{locale === "el" ? "Προφίλ organizer" : "Organizer profile"} →</Link>
-                ) : (
-                  <a href={organizerUrl} rel="noreferrer" target="_blank">{locale === "el" ? "Επίσημη πηγή" : "Official source"} ↗</a>
-                )}
-                <small>{profile?.verified ? "VERIFIED ORGANIZER" : (locale === "el" ? "Οι τελικές λεπτομέρειες παραμένουν ευθύνη του organizer." : "Final event details remain the organizer's responsibility.")}</small>
+                <span>{locale === "el" ? "ΠΗΓΗ" : "SOURCE"}</span>
+                <h2>{locale === "el" ? "Επίσημες πληροφορίες event" : "Official event information"}</h2>
+                <a href={event.source_url} rel="noreferrer" target="_blank">{locale === "el" ? "Άνοιγμα πηγής" : "Open source"} ↗</a>
+                <small>{locale === "el" ? "Έλεγξε την επίσημη πηγή για τις τελευταίες αλλαγές." : "Check the official source for the latest changes."}</small>
               </aside>
             </div>
           </div>
