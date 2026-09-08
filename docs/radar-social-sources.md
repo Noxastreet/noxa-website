@@ -1,42 +1,35 @@
 # NOXA Radar social sources
 
-Radar supports `instagram` and `facebook` as source platforms in the separate NOXA Radar database.
+Radar stores `instagram` and `facebook` sources in the separate NOXA Radar database.
 
-## Public-only rule
+## Current production policy
 
-The social collector only attempts to read content that is publicly reachable without authentication. It must not bypass login walls, CAPTCHA, private groups, private profiles, rate limits, or other access controls.
+Automatic Instagram/Facebook HTML scraping is disabled.
 
-Supported best-effort inputs:
+NOXA must not bypass login walls, CAPTCHA, private profiles/groups, rate limits, or other Meta access controls. Until an official Meta API connection is available, active social sources are recorded as:
 
-- a public Instagram post / Reel URL;
-- a public Instagram organizer profile when its public HTML exposes post links;
-- a public Facebook Event URL;
-- a public Facebook Page/post URL when its public HTML exposes event/post links.
+- `radar_source_checks.status = unsupported`;
+- zero items seen/new;
+- a clear message that an official Meta API connection is required.
 
-Every discovered item keeps the original social URL and is written to `radar_candidates` for admin review. It is never published automatically.
+This is an expected limitation, not a Radar infrastructure failure. The social collector run can finish successfully while reporting those sources as unsupported.
 
-## Expected Meta limitations
+## Why
 
-Meta can return login redirects, HTTP 401/403/429, or other restrictions for server-side public HTML requests. These restrictions are expected source limitations, not Radar infrastructure failures:
+Public Meta HTML is unstable for server-side collection and can return login redirects, HTTP 401/403/429, or hydration-only pages. Continuing to parse that HTML adds noise and security risk without reliable event discovery.
 
-- HTTP `429` / rate limiting → `radar_source_checks.status = rate_limited`;
-- login-required / HTTP `401` / `403` → `radar_source_checks.status = unsupported`;
-- unexpected network/parser/database errors → `radar_source_checks.status = failed`.
-
-Expected Meta access restrictions must not make the whole social collector run `failed` and must never trigger bypass behavior.
-
-The stable long-term path is an official Meta API connection for organizer accounts/content that the API is allowed to expose. The public HTML collector remains a best-effort fallback, not a dependency for the rest of Radar.
+The long-term supported path is an official Meta API connection for organizer accounts/content that the API is allowed to expose.
 
 ## Scheduling
 
-- `radar-collector`: existing structured website collector.
-- `radar-social-collector`: isolated Instagram/Facebook collector.
+- `radar-collector`: structured website collector; remains the reliable automatic discovery path.
+- `radar-social-collector`: isolated social-source status collector; does not scrape Meta HTML.
 
-They run independently so a Meta restriction cannot break official website ingestion. Manual `Scan sources` runs both collectors and combines their result summary.
+They stay independent so social limitations cannot affect official website ingestion. Manual `Scan sources` can still call both collectors and receive a normal summary.
 
 ## Review policy
 
-- Preserve organizer/source attribution and original URL.
-- Do not infer a missing event year/date from a social post.
-- Candidates without a confirmed event date stay in Review and cannot be approved until the date is confirmed.
+- Preserve organizer/source attribution and original URLs already stored in Radar.
+- Do not infer event facts from inaccessible social pages.
 - No private user data should be collected or stored.
+- Re-enable automatic social ingestion only after a supported API path is designed and verified.
