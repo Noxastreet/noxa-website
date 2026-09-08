@@ -71,7 +71,10 @@ assert.ok(
 );
 
 for (const required of [
-  "const OVERPASS_URL = \"https://overpass-api.de/api/interpreter\"",
+  "const OVERPASS_URLS = [",
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "const GREECE_BBOX = \"34.4,18.2,42.6,30.4\"",
   "const VERIFY_THRESHOLD = 0.98",
   "const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000",
   "validCronSecret",
@@ -94,9 +97,12 @@ for (const required of [
   "OSM discovery unavailable",
   "tags.highway === \"raceway\"",
   "tags[\"contact:url\"]",
-  "nwr(area.gr)[\"highway\"=\"raceway\"]",
+  "nwr[\"highway\"=\"raceway\"](${GREECE_BBOX})",
+  "Promise.allSettled",
+  "for (const url of OVERPASS_URLS)",
+  "AbortSignal.timeout(16_000)",
   "out center tags qt",
-  "NOXA-Map-Collector/1.1",
+  "NOXA-Map-Collector/1.2",
 ]) {
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
@@ -126,7 +132,7 @@ assert.ok(
   "registry retry must pass the existing candidate into the update path instead of creating a duplicate",
 );
 assert.ok(
-  !collector.includes('wr(area.gr)["route"="road"]["scenic"="yes"]'),
+  !collector.includes('["route"="road"]["scenic"="yes"]'),
   "general venue collector must not spend its runtime budget on scenic-route discovery",
 );
 assert.ok(
