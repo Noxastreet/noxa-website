@@ -12,7 +12,9 @@ export type RadarQualityIssueCode =
   | "short_summary"
   | "placeholder_summary"
   | "invalid_source_url"
-  | "invalid_country";
+  | "invalid_country"
+  | "map_location_not_exact"
+  | "map_coordinates_missing";
 
 export type RadarQualityCandidate = {
   title: string;
@@ -25,6 +27,9 @@ export type RadarQualityCandidate = {
   organizer_name: string | null;
   summary?: string | null;
   original_url: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  location_precision?: "unknown" | "approximate" | "exact" | null;
 };
 
 const SOURCE_ONLY_ORGANIZERS = new Set([
@@ -49,6 +54,8 @@ const ISSUE_LABELS: Record<RadarQualityIssueCode, string> = {
   placeholder_summary: "summary is a collector placeholder",
   invalid_source_url: "invalid source URL",
   invalid_country: "invalid country code",
+  map_location_not_exact: "exact map location is not verified",
+  map_coordinates_missing: "map coordinates are missing",
 };
 
 function normalizedKey(value: string | null | undefined) {
@@ -111,6 +118,9 @@ export function radarCandidateQualityIssues(candidate: RadarQualityCandidate): R
 
   if (!isHttpUrl(candidate.original_url)) issues.push("invalid_source_url");
   if (!/^[A-Z]{2}$/.test(candidate.country_code)) issues.push("invalid_country");
+
+  if (candidate.location_precision !== "exact") issues.push("map_location_not_exact");
+  if (candidate.latitude == null || candidate.longitude == null) issues.push("map_coordinates_missing");
 
   return issues;
 }
