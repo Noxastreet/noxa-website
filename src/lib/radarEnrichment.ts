@@ -1,4 +1,4 @@
-import { radarCandidateQualityIssues, type RadarQualityCandidate } from "./radarQuality";
+import { radarCandidateQualityIssues, type RadarQualityCandidate } from "./radarQuality.ts";
 
 export const RADAR_EVENT_TYPES = [
   "car_meet",
@@ -42,7 +42,7 @@ export function sameTrustedSource(originalUrl: string, sourceUrl: string | null 
   try {
     const original = new URL(originalUrl);
     const source = new URL(sourceUrl);
-    if (!['https:', 'http:'].includes(original.protocol) || !['https:', 'http:'].includes(source.protocol)) return false;
+    if (!["https:", "http:"].includes(original.protocol) || !["https:", "http:"].includes(source.protocol)) return false;
     const originalHost = original.hostname.toLowerCase().replace(/^www\./, "");
     const sourceHost = source.hostname.toLowerCase().replace(/^www\./, "");
     return originalHost === sourceHost || originalHost.endsWith(`.${sourceHost}`) || sourceHost.endsWith(`.${originalHost}`);
