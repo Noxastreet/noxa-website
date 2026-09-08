@@ -6,6 +6,7 @@ const OVERPASS_URLS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ] as const;
+const GREECE_OSM_AREA_ID = 3600192307;
 const MAX_SOURCE_BYTES = 900_000;
 const MAX_DISCOVERED_HOSTS = 48;
 const VERIFY_THRESHOLD = 0.98;
@@ -688,18 +689,19 @@ async function fetchOverpass(query: string) {
 }
 
 async function loadOverpassElements() {
-  // Venue discovery is split into small exact-country queries so one heavy category
-  // or public Overpass instance cannot consume the collector's entire runtime budget.
+  // Greece relation 192307 maps to Overpass area 3600192307. Using the stable
+  // area id preserves the exact country boundary without repeating an expensive
+  // ISO relation lookup in every split query.
   const queries = [
     `[out:json][timeout:12];
-      area["ISO3166-1"="GR"][admin_level=2]->.gr;
+      area(${GREECE_OSM_AREA_ID})->.gr;
       (
         nwr(area.gr)["sport"~"kart|karting|motorsport|motocross|motorcycle|motor racing",i];
         nwr(area.gr)["highway"="raceway"];
       );
       out center tags qt;`,
     `[out:json][timeout:12];
-      area["ISO3166-1"="GR"][admin_level=2]->.gr;
+      area(${GREECE_OSM_AREA_ID})->.gr;
       nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i];
       out center tags qt;`,
   ];
