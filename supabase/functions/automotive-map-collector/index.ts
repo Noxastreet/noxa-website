@@ -732,7 +732,16 @@ Deno.serve(async (req: Request) => {
   try {
     const [sources, candidates] = await Promise.all([loadSources(), loadCandidates()]);
     const registryResults = await collectRegistrySources(sources, candidates);
-    const osmResults = await collectOsmDiscoveries(sources, candidates);
+    let osmResults: ProcessResult[] = [];
+    try {
+      osmResults = await collectOsmDiscoveries(sources, candidates);
+    } catch (error) {
+      osmResults = [{
+        outcome: "failed",
+        key: "osm-discovery",
+        reason: error instanceof Error ? error.message : "OSM discovery unavailable",
+      }];
+    }
     const results = [...registryResults, ...osmResults];
     const count = (outcome: ProcessResult["outcome"]) => results.filter((result) => result.outcome === outcome).length;
     return json({
