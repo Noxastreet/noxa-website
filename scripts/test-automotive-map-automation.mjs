@@ -74,6 +74,7 @@ for (const required of [
   "const OVERPASS_URLS = [",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "const GREECE_OSM_AREA_ID = 3600192307",
   "const VERIFY_THRESHOLD = 0.98",
   "const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000",
   "validCronSecret",
@@ -96,7 +97,7 @@ for (const required of [
   "OSM discovery unavailable",
   "tags.highway === \"raceway\"",
   "tags[\"contact:url\"]",
-  "area[\"ISO3166-1\"=\"GR\"][admin_level=2]->.gr",
+  "area(${GREECE_OSM_AREA_ID})->.gr",
   "nwr(area.gr)[\"highway\"=\"raceway\"]",
   "Promise.allSettled",
   "for (const url of OVERPASS_URLS)",
@@ -109,11 +110,16 @@ for (const required of [
 
 assert.ok(
   !collector.includes("GREECE_BBOX"),
-  "Greece discovery must use the exact OSM country area rather than a rectangle that includes neighbouring countries",
+  "Greece discovery must never fall back to a rectangle that includes neighbouring countries",
 );
 assert.ok(
-  collector.match(/area\["ISO3166-1"="GR"\]\[admin_level=2\]->\.gr/g)?.length === 2,
-  "each split Overpass query must independently constrain discovery to the Greece country area",
+  !collector.includes('area["ISO3166-1"="GR"]'),
+  "split queries must use the direct Greece area id rather than repeatedly resolving the country relation",
+);
+assert.equal(
+  collector.match(/area\(\$\{GREECE_OSM_AREA_ID\}\)->\.gr/g)?.length,
+  2,
+  "each split Overpass query must independently use the exact Greece area",
 );
 assert.ok(
   collector.includes("hint: hintFromElement(element)"),
