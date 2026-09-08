@@ -1,7 +1,7 @@
 const baseUrl = process.env.PRODUCTION_URL;
 if (!baseUrl) throw new Error("PRODUCTION_URL is required");
 
-const userAgent = "NOXA-production-smoke/3.2";
+const userAgent = "NOXA-production-smoke/3.3";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
@@ -152,7 +152,7 @@ for (const [header, expected] of Object.entries(expectedHeaders)) {
   if (actual !== expected) throw new Error(`Security header ${header}: ${actual}`);
 }
 const policy = homeResponse.headers.get("permissions-policy") ?? "";
-for (const directive of ["camera=()", "microphone=()", "geolocation=()"]) {
+for (const directive of ["camera=()", "microphone=()", "geolocation=(self)"]) {
   if (!policy.includes(directive)) throw new Error(`Permissions-Policy missing ${directive}`);
 }
 
