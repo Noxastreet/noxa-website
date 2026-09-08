@@ -23,10 +23,10 @@ export function HomepageMapCanvas() {
     const mountMap = async () => {
       if (disposed || mapRef.current || !containerRef.current) return;
 
-      const module = await import("maplibre-gl");
+      const mapLibreModule = await import("maplibre-gl");
       if (disposed || mapRef.current || !containerRef.current) return;
 
-      const maplibregl = module.default;
+      const maplibregl = mapLibreModule.default;
       const map = new maplibregl.Map({
         container: containerRef.current,
         style: NOXA_BASEMAP_STYLE_URL,
