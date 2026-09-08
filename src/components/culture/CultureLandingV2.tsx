@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
+import { HomepageMapPreview } from "@/components/map/HomepageMapPreview";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
@@ -18,12 +19,7 @@ const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
 
 const copy = {
   en: {
-    nav: {
-      meets: "Meets",
-      communities: "Communities",
-      organizers: "Organizers",
-      app: "NOXA App",
-    },
+    nav: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · GREECE",
       title: "Find car & moto meets across Greece.",
@@ -45,31 +41,17 @@ const copy = {
         cta: "Explore Organizers",
       },
     },
-    culture: {
-      line1: "Different cars.",
-      line2: "Same passion.",
-    },
+    culture: { line1: "Different cars.", line2: "Same passion." },
     app: {
       eyebrow: "NOXA APP · COMING SOON",
       title: "The road becomes social.",
       body: "Meets. Crews. Routes. Live Map.",
       cta: "Join Early Access",
     },
-    footer: {
-      meets: "Meets",
-      communities: "Communities",
-      organizers: "Organizers",
-      app: "Early Access",
-      instagram: "Instagram",
-    },
+    footer: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "Early Access", instagram: "Instagram" },
   },
   el: {
-    nav: {
-      meets: "Meets",
-      communities: "Κοινότητες",
-      organizers: "Organizers",
-      app: "NOXA App",
-    },
+    nav: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · ΕΛΛΑΔΑ",
       title: "Βρες car & moto meets σε όλη την Ελλάδα.",
@@ -91,23 +73,14 @@ const copy = {
         cta: "Δες Organizers",
       },
     },
-    culture: {
-      line1: "Different cars.",
-      line2: "Same passion.",
-    },
+    culture: { line1: "Different cars.", line2: "Same passion." },
     app: {
       eyebrow: "NOXA APP · ΣΥΝΤΟΜΑ",
       title: "The road becomes social.",
       body: "Meets. Crews. Routes. Live Map.",
       cta: "Μπες στο Early Access",
     },
-    footer: {
-      meets: "Meets",
-      communities: "Κοινότητες",
-      organizers: "Organizers",
-      app: "Early Access",
-      instagram: "Instagram",
-    },
+    footer: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "Early Access", instagram: "Instagram" },
   },
 } as const;
 
@@ -118,7 +91,6 @@ export function CultureLandingV2({ locale }: Props) {
   const meets = locale === "el" ? "/el/meets" : "/meets";
   const communities = locale === "el" ? "/el/communities" : "/communities";
   const organizers = locale === "el" ? "/el/organizers" : "/organizers";
-
 
   return (
     <div className={styles.site}>
@@ -150,6 +122,8 @@ export function CultureLandingV2({ locale }: Props) {
         <div className={styles.cinematicBand}>
           <RadarHomeSpotlight locale={locale} />
         </div>
+
+        <HomepageMapPreview locale={locale} />
 
         <section className={`${styles.pathsSection} ${styles.revealSection} ${refine.pathsRefined}`}>
           <div className={styles.shell}>
@@ -230,4 +204,3 @@ export function CultureLandingV2({ locale }: Props) {
     </div>
   );
 }
-

@@ -1,0 +1,418 @@
+.section {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  background:
+    radial-gradient(circle at 70% 18%, rgba(200, 16, 46, .08), transparent 32%),
+    #050505;
+  padding: 92px 0 108px;
+}
+
+.shell {
+  width: min(100% - 36px, 1220px);
+  margin-inline: auto;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, .6fr);
+  align-items: end;
+  gap: 40px;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #e32c49;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  max-width: 12ch;
+  margin: 12px 0 0;
+  font-size: clamp(42px, 6vw, 78px);
+  font-weight: 760;
+  line-height: .98;
+  letter-spacing: -.055em;
+}
+
+.headingAside {
+  padding-bottom: 5px;
+}
+
+.headingAside p {
+  margin: 0;
+  color: rgba(245, 245, 247, .64);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.headingAside a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  border-bottom: 1px solid rgba(227, 44, 73, .65);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.mapFrame {
+  position: relative;
+  display: block;
+  height: min(680px, 66vw);
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 28px;
+  background: #080a0d;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, .45);
+  color: #fff;
+  text-decoration: none;
+  isolation: isolate;
+}
+
+.mapFrame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 5, 5, .25), transparent 22%, transparent 70%, rgba(5, 5, 5, .32)),
+    radial-gradient(circle at 50% 48%, transparent 42%, rgba(5, 5, 5, .3) 100%);
+}
+
+.mapArtwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms cubic-bezier(.2, .7, .2, 1);
+}
+
+.mapFrame:hover .mapArtwork {
+  transform: scale(1.025);
+}
+
+.mapTopbar {
+  position: absolute;
+  z-index: 5;
+  top: 22px;
+  left: 22px;
+  display: flex;
+  width: min(560px, calc(100% - 44px));
+  align-items: center;
+  gap: 10px;
+}
+
+.mapBrand,
+.searchMock,
+.locationMock {
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(9, 10, 12, .86);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(14px);
+}
+
+.mapBrand {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 14px;
+  padding: 0 14px;
+  color: #e32c49;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.searchMock {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  border-radius: 14px;
+  padding: 0 16px;
+  color: rgba(245, 245, 247, .52);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.locationMock {
+  display: grid;
+  width: 46px;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+}
+
+.locationCrosshair {
+  position: relative;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: .86;
+}
+
+.locationCrosshair::before,
+.locationCrosshair::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+
+.locationCrosshair::before {
+  top: -4px;
+  bottom: -4px;
+  left: 7px;
+  width: 1px;
+}
+
+.locationCrosshair::after {
+  top: 7px;
+  right: -4px;
+  left: -4px;
+  height: 1px;
+}
+
+.poi {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, .7);
+  border-radius: 50%;
+  background: rgba(5, 5, 5, .93);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, .36);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.poiEvent { color: #e32c49; }
+.poiTrack { color: #f5f5f7; }
+.poiRoute { color: #ff8a3d; }
+.poiPlace { color: #70d6ff; }
+
+.poiEventIcon,
+.poiTrackIcon,
+.poiRouteIcon,
+.poiPlaceIcon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.poiEventIcon {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.poiEventIcon::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.poiTrackIcon::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 2px;
+  height: 16px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.poiTrackIcon::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 10px;
+  height: 7px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 28%, 0 100%);
+}
+
+.poiRouteIcon::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-radius: 50%;
+  transform: rotate(28deg);
+}
+
+.poiPlaceIcon {
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+
+.poiPlaceIcon::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.poiOne { top: 29%; left: 53%; }
+.poiTwo { top: 16%; left: 48%; }
+.poiThree { top: 62%; left: 66%; }
+.poiFour { top: 48%; left: 76%; }
+
+.mapLegend {
+  position: absolute;
+  z-index: 5;
+  bottom: 24px;
+  left: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mapLegend span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 999px;
+  background: rgba(9, 10, 12, .78);
+  padding: 0 11px;
+  color: rgba(245, 245, 247, .8);
+  backdrop-filter: blur(12px);
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.mapLegend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.eventDot { background: #e32c49; }
+.trackDot { background: #f5f5f7; }
+.routeDot { background: #ff8a3d; }
+.placeDot { background: #70d6ff; }
+
+.mapCta {
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  bottom: 24px;
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 14px;
+  border-radius: 999px;
+  background: #c8102e;
+  padding: 0 18px;
+  box-shadow: 0 16px 36px rgba(200, 16, 46, .24);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .section {
+    padding: 72px 0 78px;
+  }
+
+  .shell {
+    width: min(100% - 24px, 1220px);
+  }
+
+  .heading {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .heading h2 {
+    max-width: 10ch;
+    font-size: clamp(38px, 12vw, 58px);
+  }
+
+  .headingAside p {
+    max-width: 48ch;
+    font-size: 14px;
+  }
+
+  .mapFrame {
+    height: 61svh;
+    min-height: 500px;
+    max-height: 620px;
+    border-radius: 22px;
+  }
+
+  .mapTopbar {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .mapBrand {
+    display: none;
+  }
+
+  .poi {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .poiOne { top: 32%; left: 45%; }
+  .poiTwo { top: 20%; left: 34%; }
+  .poiThree { top: 62%; left: 57%; }
+  .poiFour { top: 48%; left: 72%; }
+
+  .mapLegend {
+    right: 14px;
+    bottom: 76px;
+    left: 14px;
+    gap: 6px;
+  }
+
+  .mapLegend span {
+    min-height: 31px;
+    padding: 0 9px;
+    font-size: 9px;
+  }
+
+  .mapCta {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    justify-content: space-between;
+    border-radius: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapArtwork {
+    transition: none;
+  }
+}
