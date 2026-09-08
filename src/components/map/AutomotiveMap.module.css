@@ -75,7 +75,7 @@
 }
 
 @media (max-width: 900px) {
-  .main { height: calc(100dvh - 64px); min-height: 520px; margin-top: 64px; }
+  .main { height: calc(100dvh - var(--header-row-height) - env(safe-area-inset-top)); min-height: 520px; margin-top: calc(var(--header-row-height) + env(safe-area-inset-top)); }
   .topPanel { top: 9px; left: 9px; width: calc(100% - 18px); }
   .searchRow { grid-template-columns: minmax(0,1fr) 46px; }
   .searchBox, .locateButton { min-height: 46px; border-radius: 15px; }
