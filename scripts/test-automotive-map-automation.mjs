@@ -74,7 +74,6 @@ for (const required of [
   "const OVERPASS_URLS = [",
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
-  "const GREECE_BBOX = \"34.4,18.2,42.6,30.4\"",
   "const VERIFY_THRESHOLD = 0.98",
   "const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000",
   "validCronSecret",
@@ -97,7 +96,8 @@ for (const required of [
   "OSM discovery unavailable",
   "tags.highway === \"raceway\"",
   "tags[\"contact:url\"]",
-  "nwr[\"highway\"=\"raceway\"](${GREECE_BBOX})",
+  "area[\"ISO3166-1\"=\"GR\"][admin_level=2]->.gr",
+  "nwr(area.gr)[\"highway\"=\"raceway\"]",
   "Promise.allSettled",
   "for (const url of OVERPASS_URLS)",
   "AbortSignal.timeout(16_000)",
@@ -107,6 +107,14 @@ for (const required of [
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
 
+assert.ok(
+  !collector.includes("GREECE_BBOX"),
+  "Greece discovery must use the exact OSM country area rather than a rectangle that includes neighbouring countries",
+);
+assert.ok(
+  collector.match(/area\["ISO3166-1"="GR"\]\[admin_level=2\]->\.gr/g)?.length === 2,
+  "each split Overpass query must independently constrain discovery to the Greece country area",
+);
 assert.ok(
   collector.includes("hint: hintFromElement(element)"),
   "OSM coordinates may be used only as a discovery cross-check hint",
