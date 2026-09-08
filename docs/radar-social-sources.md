@@ -17,7 +17,13 @@ Every discovered item keeps the original social URL and is written to `radar_can
 
 ## Expected Meta limitations
 
-Meta can return login redirects, HTTP 429, or other restrictions for server-side public HTML requests. Those cases are treated as a source-level failure and must not break website/RSS collectors.
+Meta can return login redirects, HTTP 401/403/429, or other restrictions for server-side public HTML requests. These restrictions are expected source limitations, not Radar infrastructure failures:
+
+- HTTP `429` / rate limiting → `radar_source_checks.status = rate_limited`;
+- login-required / HTTP `401` / `403` → `radar_source_checks.status = unsupported`;
+- unexpected network/parser/database errors → `radar_source_checks.status = failed`.
+
+Expected Meta access restrictions must not make the whole social collector run `failed` and must never trigger bypass behavior.
 
 The stable long-term path is an official Meta API connection for organizer accounts/content that the API is allowed to expose. The public HTML collector remains a best-effort fallback, not a dependency for the rest of Radar.
 
