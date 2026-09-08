@@ -2,7 +2,11 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+const OVERPASS_URLS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+] as const;
+const GREECE_BBOX = "34.4,18.2,42.6,30.4";
 const MAX_SOURCE_BYTES = 900_000;
 const MAX_DISCOVERED_HOSTS = 48;
 const VERIFY_THRESHOLD = 0.98;
@@ -658,30 +662,55 @@ async function collectRegistrySources(sources: MapSource[], candidates: Candidat
   return results;
 }
 
+async function fetchOverpass(query: string) {
+  let lastError: Error | null = null;
+  for (const url of OVERPASS_URLS) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "NOXA-Map-Collector/1.2 (+https://noxastreetapp.com/map)",
+        },
+        body: new URLSearchParams({ data: query }),
+        signal: AbortSignal.timeout(16_000),
+      });
+      if (!response.ok) {
+        lastError = new Error(`Overpass discovery failed (${response.status}).`);
+        continue;
+      }
+      const payload = await response.json() as { elements?: OverpassElement[] };
+      return payload.elements ?? [];
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Overpass discovery unavailable");
+    }
+  }
+  throw lastError ?? new Error("Overpass discovery unavailable");
+}
+
 async function loadOverpassElements() {
-  // P1.1 intentionally excludes scenic-road discovery. Routes need a dedicated
-  // collector that can verify authoritative line geometry and access separately.
-  const query = `[out:json][timeout:22];
-area["ISO3166-1"="GR"][admin_level=2]->.gr;
-(
-  nwr(area.gr)["leisure"="track"]["sport"~"kart|karting|motor|motorsport|motorcycle|motocross",i];
-  nwr(area.gr)["sport"~"kart|karting|motor|motorsport|motorcycle|motocross",i];
-  nwr(area.gr)["highway"="raceway"];
-  nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i];
-);
-out center tags qt;`;
-  const response = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "NOXA-Map-Collector/1.1 (+https://noxastreetapp.com/map)",
-    },
-    body: new URLSearchParams({ data: query }),
-    signal: AbortSignal.timeout(28_000),
-  });
-  if (!response.ok) throw new Error(`Overpass discovery failed (${response.status}).`);
-  const payload = await response.json() as { elements?: OverpassElement[] };
-  return payload.elements ?? [];
+  // Venue discovery is split into small bbox queries so one heavy category or
+  // public Overpass instance cannot consume the collector's entire runtime budget.
+  const queries = [
+    `[out:json][timeout:12];(
+      nwr["sport"~"kart|karting|motorsport|motocross|motorcycle|motor racing",i](${GREECE_BBOX});
+      nwr["highway"="raceway"](${GREECE_BBOX});
+    );out center tags qt;`,
+    `[out:json][timeout:12];
+      nwr["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i](${GREECE_BBOX});
+      out center tags qt;`,
+  ];
+  const settled = await Promise.allSettled(queries.map((query) => fetchOverpass(query)));
+  const fulfilled = settled.filter((result): result is PromiseFulfilledResult<OverpassElement[]> => result.status === "fulfilled");
+  if (fulfilled.length === 0) {
+    const firstFailure = settled.find((result): result is PromiseRejectedResult => result.status === "rejected");
+    throw firstFailure?.reason instanceof Error ? firstFailure.reason : new Error("Overpass discovery unavailable");
+  }
+  const unique = new Map<string, OverpassElement>();
+  for (const result of fulfilled) {
+    for (const element of result.value) unique.set(`${element.type}:${element.id}`, element);
+  }
+  return [...unique.values()];
 }
 
 async function collectOsmDiscoveries(sources: MapSource[], candidates: Candidate[]) {
