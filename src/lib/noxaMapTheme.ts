@@ -2,93 +2,18 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 
 export const NOXA_BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
-const WATER = "#080a0d";
+// Keep the basemap intentionally simple: use the stock OpenFreeMap dark style
+// without repainting its roads, land, borders or labels. NOXA styling is limited
+// to our own POIs rendered above the basemap.
 const LAND = "#181b20";
-const LAND_SECONDARY = "#1d2126";
-const LAND_GREEN = "#1b211f";
-const BUILDING = "#24282e";
 const ROAD_MAJOR = "#a7abb2";
-const ROAD_MEDIUM = "#747981";
-const ROAD_MINOR = "#50555d";
-const BOUNDARY = "#3d424a";
-const LABEL = "#8f949d";
-const LABEL_SECONDARY = "#686e78";
-const LABEL_HALO = "#0b0d10";
 
-function safeSetPaint(map: MapLibreMap, layerId: string, property: string, value: unknown) {
-  try {
-    map.setPaintProperty(layerId, property, value);
-  } catch {
-    // OpenFreeMap can rename or specialize layers over time. Theme only known-compatible layers.
-  }
-}
-
-function layerName(layer: { id: string; "source-layer"?: string }) {
-  return `${layer.id} ${layer["source-layer"] ?? ""}`.toLowerCase();
-}
-
-export function applyNoxaBasemapTheme(map: MapLibreMap) {
-  const style = map.getStyle();
-  for (const layer of style.layers ?? []) {
-    const name = layerName(layer as { id: string; "source-layer"?: string });
-
-    if (layer.type === "background") {
-      safeSetPaint(map, layer.id, "background-color", WATER);
-      continue;
-    }
-
-    if (layer.type === "fill") {
-      if (/water|ocean|sea|lake|river/.test(name)) {
-        safeSetPaint(map, layer.id, "fill-color", WATER);
-        safeSetPaint(map, layer.id, "fill-opacity", 1);
-      } else if (/building/.test(name)) {
-        safeSetPaint(map, layer.id, "fill-color", BUILDING);
-        safeSetPaint(map, layer.id, "fill-opacity", 0.72);
-      } else if (/park|forest|wood|grass|green|landcover|landuse|natural/.test(name)) {
-        safeSetPaint(map, layer.id, "fill-color", LAND_GREEN);
-        safeSetPaint(map, layer.id, "fill-opacity", 0.84);
-      } else if (/land|earth|place|urban|residential|background-land|landmass/.test(name)) {
-        safeSetPaint(map, layer.id, "fill-color", LAND_SECONDARY);
-        safeSetPaint(map, layer.id, "fill-opacity", 0.95);
-      }
-      continue;
-    }
-
-    if (layer.type === "line") {
-      if (/motorway|trunk|primary|highway/.test(name)) {
-        safeSetPaint(map, layer.id, "line-color", ROAD_MAJOR);
-        safeSetPaint(map, layer.id, "line-opacity", 0.82);
-      } else if (/secondary|tertiary|road|street/.test(name)) {
-        safeSetPaint(map, layer.id, "line-color", ROAD_MEDIUM);
-        safeSetPaint(map, layer.id, "line-opacity", 0.7);
-      } else if (/path|track|service|minor/.test(name)) {
-        safeSetPaint(map, layer.id, "line-color", ROAD_MINOR);
-        safeSetPaint(map, layer.id, "line-opacity", 0.56);
-      } else if (/admin|boundary|border/.test(name)) {
-        safeSetPaint(map, layer.id, "line-color", BOUNDARY);
-        safeSetPaint(map, layer.id, "line-opacity", 0.68);
-      } else if (/water|river|stream/.test(name)) {
-        safeSetPaint(map, layer.id, "line-color", "#1a1e24");
-      }
-      continue;
-    }
-
-    if (layer.type === "symbol") {
-      if (/country|state|city|town|place|settlement/.test(name)) {
-        safeSetPaint(map, layer.id, "text-color", LABEL);
-        safeSetPaint(map, layer.id, "text-halo-color", LABEL_HALO);
-        safeSetPaint(map, layer.id, "text-halo-width", 1.15);
-      } else if (/road|street|poi|label/.test(name)) {
-        safeSetPaint(map, layer.id, "text-color", LABEL_SECONDARY);
-        safeSetPaint(map, layer.id, "text-halo-color", LABEL_HALO);
-        safeSetPaint(map, layer.id, "text-halo-width", 1);
-      }
-    }
-  }
-
-  // Keep the fallback conservative: never recolor an arbitrary first fill layer.
-  // LAND is intentionally retained as the canonical base-land token for future style adapters.
+export function applyNoxaBasemapTheme(_map: MapLibreMap) {
+  // Intentionally no-op. The previous runtime recoloring made administrative
+  // boundaries and road layers visually noisy on mobile. Stock dark is clearer.
+  void _map;
   void LAND;
+  void ROAD_MAJOR;
 }
 
 export type NoxaPoiLayer = "events" | "tracks" | "routes" | "places";
