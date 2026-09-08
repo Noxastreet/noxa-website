@@ -8,10 +8,11 @@ export const NOXA_BASEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/dark
 const LAND = "#181b20";
 const ROAD_MAJOR = "#a7abb2";
 
-export function applyNoxaBasemapTheme(_map: MapLibreMap) {
-  // Intentionally no-op. The previous runtime recoloring made administrative
-  // boundaries and road layers visually noisy on mobile. Stock dark is clearer.
-  void _map;
+export function applyNoxaBasemapTheme(map: MapLibreMap) {
+  // Greece stays the initial product focus, but the interactive map itself is
+  // global. AutomotiveMap still starts over Greece; once the style is ready we
+  // remove the old Greece-only navigation bounds so users can pan worldwide.
+  map.setMaxBounds(null);
   void LAND;
   void ROAD_MAJOR;
 }
