@@ -237,7 +237,6 @@ function extractCoordinates(html: string) {
     for (const match of decoded.matchAll(pattern)) add(Number(match[1]), Number(match[2]));
   }
 
-  // Google Maps embeds commonly encode longitude first (!2d) and latitude second (!3d).
   const reversedPatterns = [
     /!2d(-?\d{2}\.\d+)!3d(-?\d{2}\.\d+)/g,
     /%212d(-?\d{2}\.\d+)%213d(-?\d{2}\.\d+)/gi,
@@ -611,19 +610,34 @@ async function collectRegistrySources(sources: MapSource[], candidates: Candidat
     candidates.filter((candidate) => candidate.source_id).map((candidate) => [candidate.source_id as string, candidate]),
   );
   const eligible = sources.filter((source) =>
-    source.active && source.trust_level === "high" && source.source_type === "official_venue" && !candidatesBySource.has(source.id)
+    source.active && source.trust_level === "high" && source.source_type === "official_venue"
   );
   const results: ProcessResult[] = [];
 
   for (const source of eligible.slice(0, 12)) {
+    const existing = candidatesBySource.get(source.id);
+    const externalKey = existing?.external_key ?? `auto-${slug(canonicalHost(source.base_url))}`.slice(0, 119);
+    if (existing && !shouldRetry(existing)) {
+      results.push({ outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` });
+      continue;
+    }
+
     const page = await fetchOfficialPage(source.base_url);
     const feature = page ? classifyOfficialVenue(source.name, page.text) : classifyOfficialVenue(source.name, source.name);
-    const externalKey = `auto-${slug(canonicalHost(source.base_url))}`.slice(0, 119);
     if (!feature) {
       results.push({ outcome: "skipped", key: externalKey, reason: "source_not_classifiable" });
       continue;
     }
-    results.push(await buildCandidate({ externalKey, origin: "source_registry", source, title: source.name, feature, page, hint: null }));
+    results.push(await buildCandidate({
+      externalKey,
+      origin: "source_registry",
+      source,
+      title: source.name,
+      feature,
+      page,
+      hint: null,
+      existing,
+    }));
   }
   return results;
 }
