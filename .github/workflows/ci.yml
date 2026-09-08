@@ -56,6 +56,8 @@ jobs:
         run: npm run test:radar-enrichment
       - name: Radar media/location fixtures
         run: npm run test:radar-media
+      - name: Radar auto-publish safety fixtures
+        run: npm run test:radar-auto-publish
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
