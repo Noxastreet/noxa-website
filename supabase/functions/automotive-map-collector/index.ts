@@ -40,7 +40,6 @@ type ClassifiedFeature = {
 type Coordinate = { latitude: number; longitude: number };
 type PageEvidence = {
   url: string;
-  html: string;
   text: string;
   description: string | null;
   coordinates: Coordinate[];
@@ -137,7 +136,7 @@ function safePublicUrl(raw: string) {
   try {
     const input = /^[a-z][a-z0-9+.-]*:/i.test(raw.trim()) ? raw.trim() : `https://${raw.trim()}`;
     const url = new URL(input);
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return null;
     const host = url.hostname.toLowerCase();
     if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) return null;
     if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host) || host.includes(":")) return null;
@@ -223,19 +222,17 @@ function extractCoordinates(html: string) {
   };
 
   for (const object of jsonLdObjects(html)) {
-    const latitude = numeric(object.latitude);
-    const longitude = numeric(object.longitude);
-    if (latitude != null && longitude != null) add(latitude, longitude);
+    add(numeric(object.latitude), numeric(object.longitude));
   }
 
   const decoded = decodeHtml(html);
-  const pairPatterns = [
+  const patterns = [
     /["'](?:lat|latitude)["']\s*:\s*["']?(-?\d{2}\.\d+)["']?[\s\S]{0,180}?["'](?:lng|lon|longitude)["']\s*:\s*["']?(-?\d{2}\.\d+)["']?/gi,
     /@(-?\d{2}\.\d+),(-?\d{2}\.\d+)/g,
     /!3d(-?\d{2}\.\d+)!4d(-?\d{2}\.\d+)/g,
     /(?:[?&](?:q|query|center|ll)=)(-?\d{2}\.\d+)(?:%2C|,)(-?\d{2}\.\d+)/gi,
   ];
-  for (const pattern of pairPatterns) {
+  for (const pattern of patterns) {
     for (const match of decoded.matchAll(pattern)) add(Number(match[1]), Number(match[2]));
   }
 
@@ -308,8 +305,11 @@ async function fetchOfficialPage(rawUrl: string): Promise<PageEvidence | null> {
       const html = (await response.text()).slice(0, MAX_SOURCE_BYTES);
       const location = extractLocation(html);
       return {
-        url: current.toString(), html, text: pageText(html), description: metaDescription(html),
-        coordinates: extractCoordinates(html), ...location,
+        url: current.toString(),
+        text: pageText(html),
+        description: metaDescription(html),
+        coordinates: extractCoordinates(html),
+        ...location,
       };
     } catch {
       return null;
@@ -358,13 +358,14 @@ function classifyFromTags(name: string, tags: Record<string, string>): Classifie
   if (tags.tourism === "museum" && /motor|automotive|automobile|car|αυτοκ|μοτο/.test(combined)) {
     return { featureType: "automotive_place", featureSubtype: "automotive_museum" };
   }
-  if (tags.route === "road" || tags.scenic === "yes") {
-    return { featureType: "route", featureSubtype: "scenic_route" };
-  }
+  // Track identity wins over generic scenic metadata. A circuit must never become a scenic road.
   if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined)) {
     if (/kart/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
     if (/motocross/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
     return { featureType: "track", featureSubtype: "race_circuit" };
+  }
+  if (tags.route === "road" || (tags.scenic === "yes" && Boolean(tags.highway))) {
+    return { featureType: "route", featureSubtype: "scenic_route" };
   }
   return null;
 }
@@ -496,15 +497,23 @@ async function buildCandidate(input: {
   page: PageEvidence | null;
   hint: Coordinate | null;
   existing?: Candidate;
-}) : Promise<ProcessResult> {
+}): Promise<ProcessResult> {
   const { externalKey, origin, source, title, feature, page, hint, existing } = input;
   if (existing && !shouldRetry(existing)) return { outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` };
 
   if (feature.featureType === "route") {
     const candidate = await upsertCandidateBase({
-      external_key: externalKey, automation_origin: origin, feature_type: "route", feature_subtype: feature.featureSubtype,
-      title, country_code: "GR", source_id: source.id, source_url: source.base_url,
-      public_access_status: "unknown", driving_access_status: "unknown", tags: ["auto-map", `discovery:${origin}`],
+      external_key: externalKey,
+      automation_origin: origin,
+      feature_type: "route",
+      feature_subtype: feature.featureSubtype,
+      title,
+      country_code: "GR",
+      source_id: source.id,
+      source_url: source.base_url,
+      public_access_status: "unknown",
+      driving_access_status: "unknown",
+      tags: ["auto-map", `discovery:${origin}`],
     }, existing);
     const reason = "Automated route discovery is allowed, but publication is blocked until an authoritative route geometry and driving-access source are available.";
     await markBlocked(candidate.id, reason, 0.65);
@@ -513,9 +522,17 @@ async function buildCandidate(input: {
 
   if (!page) {
     const candidate = await upsertCandidateBase({
-      external_key: externalKey, automation_origin: origin, feature_type: feature.featureType, feature_subtype: feature.featureSubtype,
-      title, country_code: "GR", source_id: source.id, source_url: source.base_url,
-      public_access_status: "unknown", driving_access_status: "unknown", tags: ["auto-map", `discovery:${origin}`],
+      external_key: externalKey,
+      automation_origin: origin,
+      feature_type: feature.featureType,
+      feature_subtype: feature.featureSubtype,
+      title,
+      country_code: "GR",
+      source_id: source.id,
+      source_url: source.base_url,
+      public_access_status: "unknown",
+      driving_access_status: "unknown",
+      tags: ["auto-map", `discovery:${origin}`],
     }, existing);
     const reason = "Official source page could not be verified safely.";
     await markBlocked(candidate.id, reason, 0.45);
@@ -559,7 +576,11 @@ async function buildCandidate(input: {
   }, existing);
 
   if (!nameMatch || !officialCoordinate || !access || confidence < VERIFY_THRESHOLD) {
-    const failures = [!nameMatch ? "identity_not_confirmed" : null, !officialCoordinate ? "official_exact_coordinates_missing" : null, !access ? "public_access_not_confirmed" : null].filter(Boolean);
+    const failures = [
+      !nameMatch ? "identity_not_confirmed" : null,
+      !officialCoordinate ? "official_exact_coordinates_missing" : null,
+      !access ? "public_access_not_confirmed" : null,
+    ].filter(Boolean);
     const reason = `Automatic verification blocked: ${failures.join(",") || "confidence_below_threshold"}.`;
     await markBlocked(candidate.id, reason, confidence);
     return { outcome: "blocked", key: externalKey, reason };
@@ -577,18 +598,22 @@ async function buildCandidate(input: {
 }
 
 async function collectRegistrySources(sources: MapSource[], candidates: Candidate[]) {
-  const candidatesBySource = new Map(candidates.filter((candidate) => candidate.source_id).map((candidate) => [candidate.source_id as string, candidate]));
-  const eligible = sources.filter((source) => source.active && source.trust_level === "high" && source.source_type === "official_venue" && !candidatesBySource.has(source.id));
+  const candidatesBySource = new Map(
+    candidates.filter((candidate) => candidate.source_id).map((candidate) => [candidate.source_id as string, candidate]),
+  );
+  const eligible = sources.filter((source) =>
+    source.active && source.trust_level === "high" && source.source_type === "official_venue" && !candidatesBySource.has(source.id)
+  );
   const results: ProcessResult[] = [];
 
   for (const source of eligible.slice(0, 12)) {
     const page = await fetchOfficialPage(source.base_url);
     const feature = page ? classifyOfficialVenue(source.name, page.text) : classifyOfficialVenue(source.name, source.name);
+    const externalKey = `auto-${slug(canonicalHost(source.base_url))}`.slice(0, 119);
     if (!feature) {
-      results.push({ outcome: "skipped", key: `auto-${slug(canonicalHost(source.base_url))}`, reason: "source_not_classifiable" });
+      results.push({ outcome: "skipped", key: externalKey, reason: "source_not_classifiable" });
       continue;
     }
-    const externalKey = `auto-${slug(canonicalHost(source.base_url))}`.slice(0, 119);
     results.push(await buildCandidate({ externalKey, origin: "source_registry", source, title: source.name, feature, page, hint: null }));
   }
   return results;
@@ -606,7 +631,10 @@ area["ISO3166-1"="GR"][admin_level=2]->.gr;
 out center tags;`;
   const response = await fetch(OVERPASS_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "NOXA-Map-Collector/1.0 (+https://noxastreetapp.com/map)" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent": "NOXA-Map-Collector/1.0 (+https://noxastreetapp.com/map)",
+    },
     body: new URLSearchParams({ data: query }),
     signal: AbortSignal.timeout(40_000),
   });
@@ -617,15 +645,17 @@ out center tags;`;
 
 async function collectOsmDiscoveries(sources: MapSource[], candidates: Candidate[]) {
   const elements = await loadOverpassElements();
-  const sourceByHost = new Map(sources.map((source) => [canonicalHost(source.base_url), source]).filter(([host]) => Boolean(host)));
+  const sourceByHost = new Map(
+    sources.map((source) => [canonicalHost(source.base_url), source] as const).filter(([host]) => Boolean(host)),
+  );
   const candidateByKey = new Map(candidates.map((candidate) => [candidate.external_key, candidate]));
+  const candidateSourceIds = new Set(candidates.map((candidate) => candidate.source_id).filter((id): id is string => Boolean(id)));
 
   const discoveries = new Map<string, { element: OverpassElement; name: string; website: string; feature: ClassifiedFeature }>();
   for (const element of elements) {
     const tags = element.tags ?? {};
     const name = tags.name?.trim();
-    const websiteRaw = websiteFromTags(tags);
-    const website = safePublicUrl(websiteRaw)?.toString();
+    const website = safePublicUrl(websiteFromTags(tags))?.toString();
     const feature = name ? classifyFromTags(name, tags) : null;
     if (!name || !website || !feature) continue;
     const host = canonicalHost(website);
@@ -640,20 +670,33 @@ async function collectOsmDiscoveries(sources: MapSource[], candidates: Candidate
     const batch = items.slice(offset, offset + 4);
     const batchResults = await Promise.all(batch.map(async ({ element, name, website, feature }) => {
       const host = canonicalHost(website);
+      const externalKey = `auto-osm-${element.type}-${element.id}`.slice(0, 119);
       let source = sourceByHost.get(host);
       try {
         if (!source) {
           source = await createMediumSource(name, website, feature.featureType === "route" ? "organizer" : "official_venue");
           sourceByHost.set(host, source);
         }
-        if (source.trust_level === "low" || !source.active) return { outcome: "blocked", key: `auto-osm-${element.type}-${element.id}`, reason: "source_not_trusted" } as ProcessResult;
-        const externalKey = `auto-osm-${element.type}-${element.id}`.slice(0, 119);
+        if (source.trust_level === "low" || !source.active) {
+          return { outcome: "blocked", key: externalKey, reason: "source_not_trusted" } as ProcessResult;
+        }
+
+        // One official venue source represents one canonical physical venue candidate.
+        // If registry/manual work already tracks that venue, OSM must not create a second candidate.
+        if (source.source_type === "official_venue" && candidateSourceIds.has(source.id)) {
+          return { outcome: "skipped", key: externalKey, reason: "official_venue_source_already_tracked" } as ProcessResult;
+        }
+
         const existing = candidateByKey.get(externalKey);
-        if (existing && !shouldRetry(existing)) return { outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` } as ProcessResult;
+        if (existing && !shouldRetry(existing)) {
+          return { outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` } as ProcessResult;
+        }
         const page = feature.featureType === "route" ? null : await fetchOfficialPage(website);
-        return await buildCandidate({ externalKey, origin: "osm_discovery", source, title: name, feature, page, hint: hintFromElement(element), existing });
+        const result = await buildCandidate({ externalKey, origin: "osm_discovery", source, title: name, feature, page, hint: hintFromElement(element), existing });
+        if (source.source_type === "official_venue" && result.outcome !== "failed") candidateSourceIds.add(source.id);
+        return result;
       } catch (error) {
-        return { outcome: "failed", key: `auto-osm-${element.type}-${element.id}`, reason: error instanceof Error ? error.message : "discovery_failed" } as ProcessResult;
+        return { outcome: "failed", key: externalKey, reason: error instanceof Error ? error.message : "discovery_failed" } as ProcessResult;
       }
     }));
     results.push(...batchResults);
