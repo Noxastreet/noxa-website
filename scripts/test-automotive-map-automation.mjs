@@ -89,6 +89,9 @@ for (const required of [
   "add(Number(match[2]), Number(match[1]))",
   "const existing = candidatesBySource.get(source.id)",
   "existing?.external_key",
+  "let osmResults: ProcessResult[] = []",
+  "key: \"osm-discovery\"",
+  "OSM discovery unavailable",
 ]) {
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
@@ -117,6 +120,10 @@ assert.ok(
   collector.includes("existing,\n    }));"),
   "registry retry must pass the existing candidate into the update path instead of creating a duplicate",
 );
+
+const registryCall = collector.indexOf("const registryResults = await collectRegistrySources(sources, candidates)");
+const osmIsolation = collector.indexOf("let osmResults: ProcessResult[] = []");
+assert.ok(registryCall >= 0 && osmIsolation > registryCall, "official source processing must complete before optional OSM discovery is isolated");
 
 const trackBranch = collector.indexOf('if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined))');
 const routeBranch = collector.indexOf('if (tags.route === "road" || (tags.scenic === "yes" && Boolean(tags.highway)))');
