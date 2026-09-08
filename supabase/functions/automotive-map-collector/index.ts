@@ -6,7 +6,6 @@ const OVERPASS_URLS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ] as const;
-const GREECE_BBOX = "34.4,18.2,42.6,30.4";
 const MAX_SOURCE_BYTES = 900_000;
 const MAX_DISCOVERED_HOSTS = 48;
 const VERIFY_THRESHOLD = 0.98;
@@ -689,15 +688,19 @@ async function fetchOverpass(query: string) {
 }
 
 async function loadOverpassElements() {
-  // Venue discovery is split into small bbox queries so one heavy category or
-  // public Overpass instance cannot consume the collector's entire runtime budget.
+  // Venue discovery is split into small exact-country queries so one heavy category
+  // or public Overpass instance cannot consume the collector's entire runtime budget.
   const queries = [
-    `[out:json][timeout:12];(
-      nwr["sport"~"kart|karting|motorsport|motocross|motorcycle|motor racing",i](${GREECE_BBOX});
-      nwr["highway"="raceway"](${GREECE_BBOX});
-    );out center tags qt;`,
     `[out:json][timeout:12];
-      nwr["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i](${GREECE_BBOX});
+      area["ISO3166-1"="GR"][admin_level=2]->.gr;
+      (
+        nwr(area.gr)["sport"~"kart|karting|motorsport|motocross|motorcycle|motor racing",i];
+        nwr(area.gr)["highway"="raceway"];
+      );
+      out center tags qt;`,
+    `[out:json][timeout:12];
+      area["ISO3166-1"="GR"][admin_level=2]->.gr;
+      nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i];
       out center tags qt;`,
   ];
   const settled = await Promise.allSettled(queries.map((query) => fetchOverpass(query)));
