@@ -60,6 +60,8 @@ for (const required of [
   "Automated route discovery is allowed, but publication is blocked until an authoritative route geometry",
   "source.trust_level === \"low\"",
   "MAX_DISCOVERED_HOSTS = 24",
+  "official_venue_source_already_tracked",
+  "candidateSourceIds.has(source.id)",
 ]) {
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
@@ -80,5 +82,9 @@ assert.ok(
   collector.includes("feature.featureType === \"route\"") && collector.includes("markBlocked(candidate.id, reason, 0.65)"),
   "route discovery must fail closed when authoritative geometry is unavailable",
 );
+
+const trackBranch = collector.indexOf('if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined))');
+const routeBranch = collector.indexOf('if (tags.route === "road" || (tags.scenic === "yes" && Boolean(tags.highway)))');
+assert.ok(trackBranch >= 0 && routeBranch >= 0 && trackBranch < routeBranch, "track classification must take precedence over scenic-route metadata");
 
 console.log("Automotive map automation safety fixtures: PASS");
