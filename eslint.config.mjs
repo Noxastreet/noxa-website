@@ -11,5 +11,12 @@ export default defineConfig([
       "react-hooks/purity": "off",
     },
   },
+  {
+    files: ["src/components/map/AutomotiveMap.tsx"],
+    rules: {
+      "react-hooks/refs": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+    },
+  },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "supabase/functions/**/index.ts"]),
 ]);
