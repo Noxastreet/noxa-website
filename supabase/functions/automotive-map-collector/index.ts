@@ -6,6 +6,7 @@ const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const MAX_SOURCE_BYTES = 900_000;
 const MAX_DISCOVERED_HOSTS = 24;
 const VERIFY_THRESHOLD = 0.98;
+const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000;
 
 type Actor = { kind: "admin" | "scheduler"; label: string };
 type MapSource = {
@@ -226,14 +227,23 @@ function extractCoordinates(html: string) {
   }
 
   const decoded = decodeHtml(html);
-  const patterns = [
+  const directPatterns = [
     /["'](?:lat|latitude)["']\s*:\s*["']?(-?\d{2}\.\d+)["']?[\s\S]{0,180}?["'](?:lng|lon|longitude)["']\s*:\s*["']?(-?\d{2}\.\d+)["']?/gi,
     /@(-?\d{2}\.\d+),(-?\d{2}\.\d+)/g,
     /!3d(-?\d{2}\.\d+)!4d(-?\d{2}\.\d+)/g,
     /(?:[?&](?:q|query|center|ll)=)(-?\d{2}\.\d+)(?:%2C|,)(-?\d{2}\.\d+)/gi,
   ];
-  for (const pattern of patterns) {
+  for (const pattern of directPatterns) {
     for (const match of decoded.matchAll(pattern)) add(Number(match[1]), Number(match[2]));
+  }
+
+  // Google Maps embeds commonly encode longitude first (!2d) and latitude second (!3d).
+  const reversedPatterns = [
+    /!2d(-?\d{2}\.\d+)!3d(-?\d{2}\.\d+)/g,
+    /%212d(-?\d{2}\.\d+)%213d(-?\d{2}\.\d+)/gi,
+  ];
+  for (const pattern of reversedPatterns) {
+    for (const match of decoded.matchAll(pattern)) add(Number(match[2]), Number(match[1]));
   }
 
   const unique = new Map<string, Coordinate>();
@@ -358,7 +368,6 @@ function classifyFromTags(name: string, tags: Record<string, string>): Classifie
   if (tags.tourism === "museum" && /motor|automotive|automobile|car|αυτοκ|μοτο/.test(combined)) {
     return { featureType: "automotive_place", featureSubtype: "automotive_museum" };
   }
-  // Track identity wins over generic scenic metadata. A circuit must never become a scenic road.
   if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined)) {
     if (/kart/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
     if (/motocross/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
@@ -426,7 +435,7 @@ function shouldRetry(candidate: Candidate) {
   if (candidate.status === "new") return true;
   if (candidate.status !== "blocked" || !candidate.automation_origin || candidate.automation_origin === "manual") return false;
   const attempted = candidate.verification_attempted_at ? new Date(candidate.verification_attempted_at).getTime() : 0;
-  return attempted > 0 && Date.now() - attempted >= 14 * 24 * 60 * 60 * 1000;
+  return attempted > 0 && Date.now() - attempted >= BLOCKED_RETRY_MS;
 }
 
 async function upsertCandidateBase(payload: Record<string, unknown>, existing: Candidate | undefined) {
@@ -680,13 +689,9 @@ async function collectOsmDiscoveries(sources: MapSource[], candidates: Candidate
         if (source.trust_level === "low" || !source.active) {
           return { outcome: "blocked", key: externalKey, reason: "source_not_trusted" } as ProcessResult;
         }
-
-        // One official venue source represents one canonical physical venue candidate.
-        // If registry/manual work already tracks that venue, OSM must not create a second candidate.
         if (source.source_type === "official_venue" && candidateSourceIds.has(source.id)) {
           return { outcome: "skipped", key: externalKey, reason: "official_venue_source_already_tracked" } as ProcessResult;
         }
-
         const existing = candidateByKey.get(externalKey);
         if (existing && !shouldRetry(existing)) {
           return { outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` } as ProcessResult;
