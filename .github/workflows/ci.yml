@@ -44,10 +44,11 @@ jobs:
         run: npm list --depth=0
       - name: Typecheck
         run: npm run typecheck
-      - name: Radar Edge Function syntax
+      - name: Radar and map Edge Function syntax
         run: |
           node --experimental-strip-types --check supabase/functions/radar-submit-event/index.ts
           node --experimental-strip-types --check supabase/functions/radar-social-collector/index.ts
+          node --experimental-strip-types --check supabase/functions/automotive-map-collector/index.ts
       - name: Radar community adapter fixtures
         run: npm run test:radar-adapters
       - name: Radar publication quality gate fixtures
@@ -64,6 +65,8 @@ jobs:
         run: npm run test:map-ui
       - name: Automotive map content verification fixtures
         run: npm run test:map-content
+      - name: Automotive map automation safety fixtures
+        run: npm run test:map-automation
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
