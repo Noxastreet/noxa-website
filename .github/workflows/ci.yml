@@ -58,6 +58,8 @@ jobs:
         run: npm run test:radar-media
       - name: Radar auto-publish safety fixtures
         run: npm run test:radar-auto-publish
+      - name: Automotive map foundation fixtures
+        run: npm run test:map-foundation
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency

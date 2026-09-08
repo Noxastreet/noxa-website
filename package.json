@@ -16,6 +16,7 @@
     "test:radar-enrichment": "node --experimental-strip-types scripts/test-radar-enrichment.mjs",
     "test:radar-media": "node --experimental-strip-types scripts/test-radar-media-location.mjs",
     "test:radar-auto-publish": "node scripts/test-radar-auto-publish.mjs",
+    "test:map-foundation": "node --experimental-strip-types scripts/test-automotive-map-foundation.mjs",
     "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
