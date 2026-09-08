@@ -15,7 +15,7 @@ export function WebsiteHeader({ locale, path = "", action = "app" }: Props) {
     languageCopy={copy.language}
     navigationCopy={{ ...copy.navigation,
       join: action === "submit" ? (locale === "el" ? "Πρόσθεσε Event" : "Add Event") : "NOXA App",
-      items: [["Meets", `${base}/meets`], [locale === "el" ? "Κοινότητες" : "Communities", `${base}/communities`], ["Organizers", `${base}/organizers`]],
+      items: [["Meets", `${base}/meets`], [locale === "el" ? "Κοινότητες" : "Communities", `${base}/communities`]],
     }}
   />;
 }
