@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [packageText, mapUi, mapCss, mapTheme, homepageMap, homepageMapCss, landing, nextConfig, websiteHeader, mapPage, greekMapPage] = await Promise.all([
+const [packageText, mapUi, mapCss, mapTheme, homepageMap, homepageMapCss, landing, nextConfig, websiteHeader, mapPage, greekMapPage, workerCopy] = await Promise.all([
   readFile("package.json", "utf8"),
   readFile("src/components/map/AutomotiveMap.tsx", "utf8"),
   readFile("src/components/map/AutomotiveMap.module.css", "utf8"),
@@ -13,10 +13,18 @@ const [packageText, mapUi, mapCss, mapTheme, homepageMap, homepageMapCss, landin
   readFile("src/components/navigation/WebsiteHeader.tsx", "utf8"),
   readFile("src/app/map/page.tsx", "utf8"),
   readFile("src/app/el/map/page.tsx", "utf8"),
+  readFile("scripts/copy-maplibre-worker.mjs", "utf8"),
 ]);
 
 const packageJson = JSON.parse(packageText);
-assert.equal(packageJson.dependencies["maplibre-gl"], "5.24.0", "MapLibre must stay pinned for predictable production builds");
+assert.equal(packageJson.dependencies["maplibre-gl"], "6.8.0", "MapLibre must stay pinned to the patched v6 release");
+assert.equal(packageJson.scripts.prebuild, "node scripts/copy-maplibre-worker.mjs", "production build must self-host the MapLibre worker");
+assert.equal(packageJson.scripts.predev, "node scripts/copy-maplibre-worker.mjs", "development must self-host the same MapLibre worker");
+assert.ok(mapUi.includes('maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs")'), "MapLibre v6 must use the self-hosted ESM worker");
+assert.ok(!mapUi.includes("module.default"), "MapLibre v6 must not rely on the removed default export");
+assert.ok(!mapUi.includes("maplibreModule.default"), "MapLibre Marker must use the v6 ESM export");
+assert.ok(workerCopy.includes('"maplibre-gl-worker.mjs"') && workerCopy.includes('"maplibre-gl-shared.mjs"'), "worker and shared ESM modules must be copied side-by-side");
+assert.ok(workerCopy.includes('"public", "maplibre"'), "MapLibre worker must be served from NOXA public assets");
 
 for (const required of [
   "/api/map/features?bbox=",
