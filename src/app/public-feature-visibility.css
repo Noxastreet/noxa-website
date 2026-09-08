@@ -1,0 +1,18 @@
+/* Temporary public feature flags.
+   Organizer platform data and internal tooling remain intact; only public UI is hidden. */
+
+/* Meets cards: hide organizer attribution until the organizer product is ready. */
+[class*="MeetsDirectory-module"][class*="__organizer"] {
+  display: none !important;
+}
+
+[class*="MeetsDirectory-module"][class*="__featuredFooter"] > span:first-child {
+  display: none !important;
+}
+
+/* The current search still supports existing indexed event data internally,
+   but do not advertise organizer search as a public feature yet. */
+[class*="MeetsDirectoryGrowth-module"][class*="__searchControl"] input::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
+}
