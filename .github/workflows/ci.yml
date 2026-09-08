@@ -62,6 +62,8 @@ jobs:
         run: npm run test:map-foundation
       - name: Automotive map UI fixtures
         run: npm run test:map-ui
+      - name: Automotive map content verification fixtures
+        run: npm run test:map-content
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
