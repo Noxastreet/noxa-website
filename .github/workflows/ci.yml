@@ -44,6 +44,10 @@ jobs:
         run: npm list --depth=0
       - name: Typecheck
         run: npm run typecheck
+      - name: Radar Edge Function syntax
+        run: |
+          node --experimental-strip-types --check supabase/functions/radar-submit-event/index.ts
+          node --experimental-strip-types --check supabase/functions/radar-social-collector/index.ts
       - name: Radar community adapter fixtures
         run: npm run test:radar-adapters
       - name: Radar publication quality gate fixtures
