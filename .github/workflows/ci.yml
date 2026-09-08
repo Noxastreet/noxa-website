@@ -52,6 +52,8 @@ jobs:
         run: npm run test:radar-adapters
       - name: Radar publication quality gate fixtures
         run: npm run test:radar-quality
+      - name: Radar enrichment fixtures
+        run: npm run test:radar-enrichment
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
