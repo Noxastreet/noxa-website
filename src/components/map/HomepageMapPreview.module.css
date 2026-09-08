@@ -74,7 +74,6 @@
   background: #080a0d;
   box-shadow: 0 40px 120px rgba(0, 0, 0, .45);
   color: #fff;
-  text-decoration: none;
   isolation: isolate;
 }
 
@@ -85,203 +84,84 @@
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(5, 5, 5, .25), transparent 22%, transparent 70%, rgba(5, 5, 5, .32)),
-    radial-gradient(circle at 50% 48%, transparent 42%, rgba(5, 5, 5, .3) 100%);
+    linear-gradient(180deg, rgba(5, 5, 5, .17), transparent 22%, transparent 68%, rgba(5, 5, 5, .36)),
+    radial-gradient(circle at 50% 48%, transparent 52%, rgba(5, 5, 5, .2) 100%);
 }
 
-.mapArtwork {
+.realMap {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #080a0d;
+}
+
+.realMap :global(.maplibregl-canvas-container),
+.realMap :global(.maplibregl-canvas) {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 900ms cubic-bezier(.2, .7, .2, 1);
 }
 
-.mapFrame:hover .mapArtwork {
-  transform: scale(1.025);
+.realMap :global(.maplibregl-canvas) {
+  position: absolute;
+  inset: 0;
 }
 
-.mapTopbar {
+.cityBadge {
   position: absolute;
   z-index: 5;
   top: 22px;
   left: 22px;
-  display: flex;
-  width: min(560px, calc(100% - 44px));
+  display: inline-flex;
+  min-height: 42px;
   align-items: center;
-  gap: 10px;
-}
-
-.mapBrand,
-.searchMock,
-.locationMock {
-  min-height: 46px;
+  gap: 9px;
   border: 1px solid rgba(255, 255, 255, .14);
-  background: rgba(9, 10, 12, .86);
+  border-radius: 999px;
+  background: rgba(9, 10, 12, .82);
+  padding: 0 14px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
   backdrop-filter: blur(14px);
-}
-
-.mapBrand {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 14px;
-  padding: 0 14px;
-  color: #e32c49;
+  color: rgba(245, 245, 247, .9);
   font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .16em;
+  font-weight: 850;
+  letter-spacing: .14em;
 }
 
-.searchMock {
+.cityBadge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e32c49;
+  box-shadow: 0 0 0 4px rgba(227, 44, 73, .14);
+}
+
+.mapAttribution {
+  position: absolute;
+  z-index: 6;
+  top: 25px;
+  right: 22px;
   display: flex;
-  min-width: 0;
-  flex: 1;
   align-items: center;
-  border-radius: 14px;
-  padding: 0 16px;
-  color: rgba(245, 245, 247, .52);
-  font-size: 13px;
-  font-weight: 650;
+  gap: 5px;
+  border-radius: 999px;
+  background: rgba(5, 5, 5, .68);
+  padding: 6px 9px;
+  color: rgba(245, 245, 247, .55);
+  backdrop-filter: blur(8px);
+  font-size: 9px;
+  line-height: 1;
 }
 
-.locationMock {
-  display: grid;
-  width: 46px;
-  place-items: center;
-  border-radius: 14px;
+.mapAttribution a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mapAttribution a:hover,
+.mapAttribution a:focus-visible {
   color: #fff;
 }
-
-.locationCrosshair {
-  position: relative;
-  width: 17px;
-  height: 17px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  opacity: .86;
-}
-
-.locationCrosshair::before,
-.locationCrosshair::after {
-  content: "";
-  position: absolute;
-  background: currentColor;
-}
-
-.locationCrosshair::before {
-  top: -4px;
-  bottom: -4px;
-  left: 7px;
-  width: 1px;
-}
-
-.locationCrosshair::after {
-  top: 7px;
-  right: -4px;
-  left: -4px;
-  height: 1px;
-}
-
-.poi {
-  position: absolute;
-  z-index: 4;
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 2px solid rgba(255, 255, 255, .7);
-  border-radius: 50%;
-  background: rgba(5, 5, 5, .93);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, .36);
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.poiEvent { color: #e32c49; }
-.poiTrack { color: #f5f5f7; }
-.poiRoute { color: #ff8a3d; }
-.poiPlace { color: #70d6ff; }
-
-.poiEventIcon,
-.poiTrackIcon,
-.poiRouteIcon,
-.poiPlaceIcon {
-  position: relative;
-  display: block;
-  width: 18px;
-  height: 18px;
-}
-
-.poiEventIcon {
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-
-.poiEventIcon::after {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.poiTrackIcon::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 2px;
-  height: 16px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.poiTrackIcon::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 6px;
-  width: 10px;
-  height: 7px;
-  background: currentColor;
-  clip-path: polygon(0 0, 100% 28%, 0 100%);
-}
-
-.poiRouteIcon::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-left-color: transparent;
-  border-radius: 50%;
-  transform: rotate(28deg);
-}
-
-.poiPlaceIcon {
-  width: 15px;
-  height: 15px;
-  border: 2px solid currentColor;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-}
-
-.poiPlaceIcon::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.poiOne { top: 29%; left: 53%; }
-.poiTwo { top: 16%; left: 48%; }
-.poiThree { top: 62%; left: 66%; }
-.poiFour { top: 48%; left: 76%; }
 
 .mapLegend {
   position: absolute;
@@ -321,7 +201,7 @@
 
 .mapCta {
   position: absolute;
-  z-index: 5;
+  z-index: 6;
   right: 24px;
   bottom: 24px;
   display: inline-flex;
@@ -332,7 +212,14 @@
   background: #c8102e;
   padding: 0 18px;
   box-shadow: 0 16px 36px rgba(200, 16, 46, .24);
+  color: #fff;
   font-size: 12px;
+  text-decoration: none;
+}
+
+.mapCta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
 }
 
 @media (max-width: 760px) {
@@ -367,27 +254,21 @@
     border-radius: 22px;
   }
 
-  .mapTopbar {
-    top: 12px;
-    right: 12px;
-    left: 12px;
-    width: auto;
+  .cityBadge {
+    top: 14px;
+    left: 14px;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 9px;
   }
 
-  .mapBrand {
-    display: none;
+  .mapAttribution {
+    top: 16px;
+    right: 14px;
+    max-width: 48%;
+    padding: 5px 8px;
+    font-size: 8px;
   }
-
-  .poi {
-    width: 38px;
-    height: 38px;
-    font-size: 15px;
-  }
-
-  .poiOne { top: 32%; left: 45%; }
-  .poiTwo { top: 20%; left: 34%; }
-  .poiThree { top: 62%; left: 57%; }
-  .poiFour { top: 48%; left: 72%; }
 
   .mapLegend {
     right: 14px;
@@ -408,11 +289,5 @@
     left: 14px;
     justify-content: space-between;
     border-radius: 15px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mapArtwork {
-    transition: none;
   }
 }
