@@ -14,6 +14,7 @@
     "test:radar-adapters": "node --experimental-strip-types scripts/test-radar-community-adapters.mjs",
     "test:radar-quality": "node --experimental-strip-types scripts/test-radar-quality-gate.mjs",
     "test:radar-enrichment": "node --experimental-strip-types scripts/test-radar-enrichment.mjs",
+    "test:radar-media": "node --experimental-strip-types scripts/test-radar-media-location.mjs",
     "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
