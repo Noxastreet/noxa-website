@@ -19,6 +19,7 @@ const copy = {
     places: "Places",
     city: "THESSALONIKI",
     label: "Real NOXA map preview centered on Thessaloniki",
+    credits: "Map credits",
   },
   el: {
     eyebrow: "ΕΞΕΡΕΥΝΗΣΕ ΤΗΝ ΕΛΛΑΔΑ",
@@ -31,6 +32,7 @@ const copy = {
     places: "Μέρη",
     city: "ΘΕΣΣΑΛΟΝΙΚΗ",
     label: "Πραγματική προεπισκόπηση του NOXA Map με κέντρο τη Θεσσαλονίκη",
+    credits: "Στοιχεία χάρτη",
   },
 } as const;
 
@@ -60,11 +62,14 @@ export function HomepageMapPreview({ locale }: Props) {
             <span>{t.city}</span>
           </div>
 
-          <div className={styles.mapAttribution}>
-            <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a>
-            <span>·</span>
-            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>
-          </div>
+          <details className={styles.mapCredits}>
+            <summary aria-label={t.credits} title={t.credits}>©</summary>
+            <div className={styles.mapCreditsPanel}>
+              <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a>
+              <span>·</span>
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>
+            </div>
+          </details>
 
           <div className={styles.mapLegend} aria-hidden="true">
             <span><i className={styles.eventDot} />{t.events}</span>
