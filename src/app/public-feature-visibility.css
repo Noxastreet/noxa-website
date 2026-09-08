@@ -1,6 +1,23 @@
 /* Temporary public feature flags.
    Organizer platform data and internal tooling remain intact; only public UI is hidden. */
 
+/* Hide every public organizer entry point while the product is being refined. */
+a[href="/organizer"],
+a[href^="/organizer/"],
+a[href="/organizers"],
+a[href^="/organizers/"],
+a[href="/el/organizer"],
+a[href^="/el/organizer/"],
+a[href="/el/organizers"],
+a[href^="/el/organizers/"] {
+  display: none !important;
+}
+
+/* Keep the remaining homepage path card balanced after the organizer card is hidden. */
+[class*="CultureLandingV2-module"][class*="__pathsGrid"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
 /* Meets cards: hide organizer attribution until the organizer product is ready. */
 [class*="MeetsDirectory-module"][class*="__organizer"] {
   display: none !important;
@@ -15,4 +32,14 @@
 [class*="MeetsDirectoryGrowth-module"][class*="__searchControl"] input::placeholder {
   color: transparent !important;
   opacity: 0 !important;
+}
+
+/* Community applications must not advertise the unfinished organizer product. */
+[class*="CommunityApplicationForm-module"][class*="__notice"] {
+  display: none !important;
+}
+
+[class*="CommunityApplicationForm-module"][class*="__form"] >
+[class*="CommunityApplicationForm-module"][class*="__reviewNote"]:last-of-type {
+  display: none !important;
 }
