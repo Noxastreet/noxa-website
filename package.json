@@ -17,12 +17,14 @@
     "test:radar-media": "node --experimental-strip-types scripts/test-radar-media-location.mjs",
     "test:radar-auto-publish": "node scripts/test-radar-auto-publish.mjs",
     "test:map-foundation": "node --experimental-strip-types scripts/test-automotive-map-foundation.mjs",
+    "test:map-ui": "node scripts/test-automotive-map-ui.mjs",
     "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },
   "dependencies": {
+    "maplibre-gl": "5.24.0",
     "motion": "12.43.0",
     "next": "16.3.4",
     "react": "19.2.8",

@@ -60,6 +60,8 @@ jobs:
         run: npm run test:radar-auto-publish
       - name: Automotive map foundation fixtures
         run: npm run test:map-foundation
+      - name: Automotive map UI fixtures
+        run: npm run test:map-ui
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
@@ -81,6 +83,8 @@ jobs:
             sleep 1
           done
           if [ "$READY" -ne 1 ]; then cat /tmp/noxa-next.log; exit 1; fi
+          curl --fail --silent http://127.0.0.1:3000/map | grep -q "NOXA MAP"
+          curl --fail --silent http://127.0.0.1:3000/el/map | grep -q "NOXA MAP"
           PRODUCTION_URL=http://127.0.0.1:3000 npm run smoke:production
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
