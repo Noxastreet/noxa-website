@@ -70,6 +70,8 @@ for (const required of [
   "candidateSourceIds.has(source.id)",
   "!2d(-?\\d{2}\\.\\d+)!3d(-?\\d{2}\\.\\d+)",
   "add(Number(match[2]), Number(match[1]))",
+  "const existing = candidatesBySource.get(source.id)",
+  "existing?.external_key",
 ]) {
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
@@ -89,6 +91,14 @@ assert.ok(
 assert.ok(
   collector.includes("feature.featureType === \"route\"") && collector.includes("markBlocked(candidate.id, reason, 0.65)"),
   "route discovery must fail closed when authoritative geometry is unavailable",
+);
+assert.ok(
+  !collector.includes('source.source_type === "official_venue" && !candidatesBySource.has(source.id)'),
+  "source-registry discovery must not permanently exclude blocked candidates from retry",
+);
+assert.ok(
+  collector.includes("existing,\n    }));"),
+  "registry retry must pass the existing candidate into the update path instead of creating a duplicate",
 );
 
 const trackBranch = collector.indexOf('if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined))');
