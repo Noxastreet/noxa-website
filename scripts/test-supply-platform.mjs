@@ -46,7 +46,13 @@ for (const path of [
   "src/app/el/organizers/[slug]/claim/page.tsx",
 ]) {
   const page = read(path);
-  includesAll(page, ["loadOrganizerBySlug", "OrganizerApplicationForm", "claimTarget", 'organizer.organizer_type === "community"'], path);
+  includesAll(page, [
+    "loadOrganizerBySlug",
+    "OrganizerApplicationForm",
+    "claimTarget",
+    'organizer.organizer_type === "community"',
+    "robots: { index: false, follow: false }",
+  ], path);
 }
 
 const review = read("src/components/organizers/OrganizerApplicationReview.tsx");
@@ -56,6 +62,28 @@ includesAll(review, [
   'Approve claim & create access',
   'p_slug: slug',
 ], "Organizer admin review");
+
+const proxy = read("src/proxy.ts");
+assert.equal(proxy.includes("isPublicOrganizerPath"), false, "Supply Platform organizer routes must not be redirected away");
+assert.equal(proxy.includes('new URL(locale === "el" ? "/el/meets" : "/meets"'), false, "Proxy must not hide organizer platform routes");
+
+const robots = read("src/app/robots.ts");
+includesAll(robots, [
+  '"/organizer"',
+  '"/el/organizer"',
+  '"/organizers/*/claim"',
+  '"/el/organizers/*/claim"',
+], "Organizer robots boundary");
+assert.equal(robots.includes('"/organizers",'), false, "Public organizer directory must not be disallowed in robots");
+
+const sitemap = read("src/app/sitemap.ts");
+includesAll(sitemap, [
+  'page("/organizers", .9, "daily")',
+  'page("/el/organizers", .86, "daily")',
+  'page("/organizers/apply", .72, "monthly")',
+  'loadOrganizerSlugs',
+], "Organizer sitemap surfaces");
+assert.equal(sitemap.includes("/claim`"), false, "Organizer claim pages must not enter sitemap");
 
 const eventEdge = read("supabase/functions/radar-submit-event/index.ts");
 includesAll(eventEdge, [
