@@ -1,5 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+import {
+  classifyTourismPlace,
+  tourismPlaceAccessEvidence,
+  type TourismPlaceSubtype,
+} from "./place-evidence.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const OVERPASS_URLS = [
@@ -11,6 +17,37 @@ const MAX_SOURCE_BYTES = 900_000;
 const MAX_DISCOVERED_HOSTS = 48;
 const VERIFY_THRESHOLD = 0.98;
 const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000;
+
+const OFFICIAL_TOURISM_PLACE_DISCOVERY = [
+  {
+    externalKey: "visitgreece-lycabettus-hill-viewpoint",
+    sourceBaseUrl: "https://www.visitgreece.gr/",
+    pageUrl: "https://www.visitgreece.gr/inspirations/breathtaking-views-over-athens/",
+    title: "Lycabettus Hill",
+    preferredSubtype: "viewpoint" as const,
+  },
+  {
+    externalKey: "visitgreece-stavros-valia-calda-viewpoint",
+    sourceBaseUrl: "https://www.visitgreece.gr/",
+    pageUrl: "https://www.visitgreece.gr/en/experiences/nature/mountains/trekking-in-valia-calda",
+    title: "Stavros viewpoint",
+    preferredSubtype: "viewpoint" as const,
+  },
+  {
+    externalKey: "visitgreece-katafyki-gorge-photo-spot",
+    sourceBaseUrl: "https://www.visitgreece.gr/",
+    pageUrl: "https://www.visitgreece.gr/en/experiences/nature/volcanoes/outdoor-activities-in-ermioni",
+    title: "Katafyki Gorge",
+    preferredSubtype: "photo_spot" as const,
+  },
+  {
+    externalKey: "visitgreece-imerovigli-photo-spot",
+    sourceBaseUrl: "https://www.visitgreece.gr/",
+    pageUrl: "https://www.visitgreece.gr/en/blog/travel-tips/santorinis-top-8-enchanting-destinations-a-visual-delight",
+    title: "Imerovigli",
+    preferredSubtype: "photo_spot" as const,
+  },
+] as const;
 
 type Actor = { kind: "admin" | "scheduler"; label: string };
 type MapSource = {
@@ -298,7 +335,7 @@ async function fetchOfficialPageCandidate(initial: URL, allowedHost: string): Pr
       const response = await fetch(current, {
         redirect: "manual",
         signal: AbortSignal.timeout(10_000),
-        headers: { "User-Agent": "NOXA-Map-Collector/1.3 (+https://noxastreetapp.com/map)" },
+        headers: { "User-Agent": "NOXA-Map-Collector/1.4 (+https://noxastreetapp.com/map)" },
       });
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
@@ -361,6 +398,10 @@ function pageMatchesName(name: string, text: string) {
 }
 
 function accessEvidence(feature: ClassifiedFeature, text: string) {
+  if (feature.featureType === "automotive_place" && (feature.featureSubtype === "viewpoint" || feature.featureSubtype === "photo_spot")) {
+    return tourismPlaceAccessEvidence(text);
+  }
+
   const normalized = normalizeText(text);
   const publicWords = /book|booking|rent|rental|opening|open daily|schedule|hours|tickets|visit|arrive and drive|reservation|κρατη|ωραριο|ανοιχτ|εισιτη|επισκεπτ/.test(normalized);
   if (!publicWords) return null;
@@ -398,6 +439,10 @@ function classifyFromTags(name: string, tags: Record<string, string>): Classifie
 
   if (tags.tourism === "museum" && /motor|automotive|automobile|car|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο/.test(combined)) {
     return { featureType: "automotive_place", featureSubtype: "automotive_museum" };
+  }
+
+  if (tags.tourism === "viewpoint") {
+    return { featureType: "automotive_place", featureSubtype: "viewpoint" };
   }
 
   const motorsportSignal = tags.highway === "raceway"
@@ -679,6 +724,110 @@ async function collectRegistrySources(sources: MapSource[], candidates: Candidat
   return results;
 }
 
+async function blockTourismPlaceDiscovery(input: {
+  source: MapSource;
+  externalKey: string;
+  title: string;
+  preferredSubtype: TourismPlaceSubtype;
+  page: PageEvidence | null;
+  existing?: Candidate;
+  reason: string;
+}) {
+  const { source, externalKey, title, preferredSubtype, page, existing, reason } = input;
+  const candidate = await upsertCandidateBase({
+    external_key: externalKey,
+    automation_origin: "source_registry",
+    feature_type: "automotive_place",
+    feature_subtype: preferredSubtype,
+    title,
+    summary: page?.description ?? null,
+    country_code: "GR",
+    city: page?.city ?? null,
+    region: page?.region ?? null,
+    location_text: page?.locationText ?? null,
+    source_id: source.id,
+    source_url: page?.url ?? source.base_url,
+    public_access_status: "unknown",
+    driving_access_status: "unknown",
+    tags: ["auto-map", "discovery:official-tourism", `subtype:${preferredSubtype}`],
+    verification_confidence: 0.5,
+    verification_reason: reason,
+    verification_attempted_at: new Date().toISOString(),
+  }, existing);
+  await markBlocked(candidate.id, reason, 0.5);
+  return { outcome: "blocked", key: externalKey, reason } as ProcessResult;
+}
+
+async function collectTourismPlaceDiscoveries(sources: MapSource[], candidates: Candidate[]) {
+  const candidateByKey = new Map(candidates.map((candidate) => [candidate.external_key, candidate]));
+  const sourceByHost = new Map(
+    sources.map((source) => [canonicalHost(source.base_url), source] as const).filter(([host]) => Boolean(host)),
+  );
+  const results: ProcessResult[] = [];
+  const pageCache = new Map<string, Promise<PageEvidence | null>>();
+
+  for (const discovery of OFFICIAL_TOURISM_PLACE_DISCOVERY) {
+    const externalKey = discovery.externalKey;
+    const existing = candidateByKey.get(externalKey);
+    if (existing && !shouldRetry(existing)) {
+      results.push({ outcome: "skipped", key: externalKey, reason: `existing_${existing.status}` });
+      continue;
+    }
+
+    const source = sourceByHost.get(canonicalHost(discovery.sourceBaseUrl));
+    if (!source || !source.active || source.trust_level !== "high" || source.source_type !== "tourism_authority") {
+      results.push({ outcome: "failed", key: externalKey, reason: "high_trust_tourism_source_not_registered" });
+      continue;
+    }
+
+    let pagePromise = pageCache.get(discovery.pageUrl);
+    if (!pagePromise) {
+      pagePromise = fetchOfficialPage(discovery.pageUrl);
+      pageCache.set(discovery.pageUrl, pagePromise);
+    }
+    const page = await pagePromise;
+    if (!page) {
+      results.push(await blockTourismPlaceDiscovery({
+        source,
+        externalKey,
+        title: discovery.title,
+        preferredSubtype: discovery.preferredSubtype,
+        page,
+        existing,
+        reason: "Automatic tourism place verification blocked: official_page_unavailable.",
+      }));
+      continue;
+    }
+
+    const classification = classifyTourismPlace(discovery.title, page.text, discovery.preferredSubtype);
+    if (!classification.subtype) {
+      results.push(await blockTourismPlaceDiscovery({
+        source,
+        externalKey,
+        title: discovery.title,
+        preferredSubtype: discovery.preferredSubtype,
+        page,
+        existing,
+        reason: `Automatic tourism place verification blocked: ${classification.reason ?? "place_evidence_not_confirmed"}.`,
+      }));
+      continue;
+    }
+
+    results.push(await buildCandidate({
+      externalKey,
+      origin: "source_registry",
+      source,
+      title: discovery.title,
+      feature: { featureType: "automotive_place", featureSubtype: classification.subtype },
+      page,
+      hint: null,
+      existing,
+    }));
+  }
+
+  return results;
+}
+
 async function fetchOverpass(query: string) {
   let lastError: Error | null = null;
   for (const url of OVERPASS_URLS) {
@@ -687,7 +836,7 @@ async function fetchOverpass(query: string) {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": "NOXA-Map-Collector/1.2 (+https://noxastreetapp.com/map)",
+          "User-Agent": "NOXA-Map-Collector/1.4 (+https://noxastreetapp.com/map)",
         },
         body: new URLSearchParams({ data: query }),
         signal: AbortSignal.timeout(16_000),
@@ -720,6 +869,15 @@ async function loadOverpassElements() {
     `[out:json][timeout:12];
       area(${GREECE_OSM_AREA_ID})->.gr;
       nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i];
+      out center tags qt;`,
+    `[out:json][timeout:12];
+      area(${GREECE_OSM_AREA_ID})->.gr;
+      (
+        nwr(area.gr)["tourism"="viewpoint"]["website"];
+        nwr(area.gr)["tourism"="viewpoint"]["contact:website"];
+        nwr(area.gr)["tourism"="viewpoint"]["url"];
+        nwr(area.gr)["tourism"="viewpoint"]["contact:url"];
+      );
       out center tags qt;`,
   ];
   const settled = await Promise.allSettled(queries.map((query) => fetchOverpass(query)));
@@ -801,6 +959,16 @@ Deno.serve(async (req: Request) => {
   try {
     const [sources, candidates] = await Promise.all([loadSources(), loadCandidates()]);
     const registryResults = await collectRegistrySources(sources, candidates);
+    let tourismResults: ProcessResult[] = [];
+    try {
+      tourismResults = await collectTourismPlaceDiscoveries(sources, candidates);
+    } catch (error) {
+      tourismResults = [{
+        outcome: "failed",
+        key: "tourism-place-discovery",
+        reason: error instanceof Error ? error.message : "Official tourism place discovery unavailable",
+      }];
+    }
     let osmResults: ProcessResult[] = [];
     try {
       osmResults = await collectOsmDiscoveries(sources, candidates);
@@ -811,7 +979,7 @@ Deno.serve(async (req: Request) => {
         reason: error instanceof Error ? error.message : "OSM discovery unavailable",
       }];
     }
-    const results = [...registryResults, ...osmResults];
+    const results = [...registryResults, ...tourismResults, ...osmResults];
     const count = (outcome: ProcessResult["outcome"]) => results.filter((result) => result.outcome === outcome).length;
     return json({
       ok: true,
@@ -821,7 +989,7 @@ Deno.serve(async (req: Request) => {
       blocked: count("blocked"),
       skipped: count("skipped"),
       failed: count("failed"),
-      results: results.slice(0, 40),
+      results: results.slice(0, 60),
     });
   } catch (error) {
     return json({ error: "MAP_COLLECTOR_FAILED", detail: error instanceof Error ? error.message : "Unknown error" }, 500);
