@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 
 import { isMotoOnlyRadarEvent, radarCandidateQualityIssues } from "../src/lib/radarQuality.ts";
 
@@ -59,5 +60,19 @@ assert.equal(isMotoOnlyRadarEvent({
   organizer_name: "MX-5 Club",
   original_url: "https://example.com/mx5",
 }), false);
+
+const scopeMigration = fs.readFileSync(
+  "supabase/migrations/20260909090000_radar_greece_automotive_scope_gate.sql",
+  "utf8",
+);
+for (const expected of [
+  "outside_greece",
+  "moto_only_event",
+  "private.radar_is_moto_only_event",
+  "country_code is distinct from 'GR'",
+  "set status = 'unpublished'",
+]) {
+  assert.ok(scopeMigration.includes(expected), `Scope Gate migration missing: ${expected}`);
+}
 
 console.log("Radar quality gate fixtures passed.");
