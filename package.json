@@ -26,6 +26,7 @@
     "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
     "test:reliability-gate": "node scripts/test-reliability-gate.mjs",
+    "test:supply-platform": "node scripts/test-supply-platform.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },
