@@ -50,6 +50,7 @@ jobs:
           node --experimental-strip-types --check supabase/functions/radar-social-collector/index.ts
           node --experimental-strip-types --check supabase/functions/automotive-map-collector/index.ts
           node --experimental-strip-types --check supabase/functions/automotive-route-collector/index.ts
+          node --experimental-strip-types --check supabase/functions/meet-public/index.ts
       - name: Radar community adapter fixtures
         run: npm run test:radar-adapters
       - name: Radar publication quality gate fixtures
@@ -74,6 +75,8 @@ jobs:
         run: npm run test:meets-growth
       - name: Platform flow consistency
         run: npm run test:platform-flows
+      - name: Reliability Gate security fixtures
+        run: npm run test:reliability-gate
       - name: Lint
         run: npm run lint
       - name: Production build
