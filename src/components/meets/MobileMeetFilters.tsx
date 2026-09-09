@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import styles from "./MeetsDirectoryGrowth.module.css";
 
-type Filter = "all" | "car" | "moto" | "motorsport";
+type Filter = "all" | "car" | "motorsport";
 
 type MobileMeetFiltersProps = {
   locale: "en" | "el";
@@ -76,7 +76,6 @@ export function MobileMeetFilters({
     noCities: "Δεν υπάρχουν πόλεις",
     all: "Όλα",
     car: "Cars",
-    moto: "Moto",
     motorsport: "Motorsport",
     reset: "Καθαρισμός",
     events: "events",
@@ -92,13 +91,12 @@ export function MobileMeetFilters({
     noCities: "No cities yet",
     all: "All",
     car: "Cars",
-    moto: "Moto",
     motorsport: "Motorsport",
     reset: "Reset",
     events: "events",
   };
 
-  const typeLabel = filter === "car" ? t.car : filter === "moto" ? t.moto : filter === "motorsport" ? t.motorsport : t.all;
+  const typeLabel = filter === "car" ? t.car : filter === "motorsport" ? t.motorsport : t.all;
   const cityLabel = city === "all" ? t.allCities : city;
 
   return (
@@ -162,7 +160,7 @@ export function MobileMeetFilters({
               <div className={styles.sheetTypeGroup}>
                 <span>{t.type}</span>
                 <div className={styles.sheetTypeGrid}>
-                  {([["all", t.all], ["car", t.car], ["moto", t.moto], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
+                  {([["all", t.all], ["car", t.car], ["motorsport", t.motorsport]] as const).map(([value, label]) => (
                     <button
                       key={value}
                       type="button"
