@@ -33,5 +33,9 @@ assert.match(migration, /short_summary/);
 assert.match(migration, /map_location_not_exact/);
 assert.match(migration, /map_coordinates_missing/);
 assert.match(migration, /outside_greece/);
+assert.match(migration, /create trigger radar_organizer_event_quality_gate/i);
+assert.match(migration, /before update of[\s\S]*title[\s\S]*summary[\s\S]*source_url/i);
+assert.match(migration, /new\.publication_source = 'organizer' and new\.status = 'published'/i);
+assert.match(migration, /execute function private\.enforce_radar_event_quality_on_publish\(\)/i);
 
 console.log("Supply Platform P2 organizer dashboard fixtures passed.");
