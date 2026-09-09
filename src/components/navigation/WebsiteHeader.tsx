@@ -6,7 +6,7 @@ type Props = { locale: Locale; path?: string; action?: "app" | "submit" };
 export function WebsiteHeader({ locale, path = "", action = "app" }: Props) {
   const base = locale === "el" ? "/el" : "";
   const copy = landingCopy[locale];
-  const activeRoot = ["/meets", "/map", "/communities"].find(
+  const activeRoot = ["/meets", "/map", "/communities", "/organizers"].find(
     (root) => path === root || path.startsWith(`${root}/`),
   );
 
@@ -23,6 +23,7 @@ export function WebsiteHeader({ locale, path = "", action = "app" }: Props) {
         ["Meets", `${base}/meets`],
         ["Map", `${base}/map`],
         [locale === "el" ? "Κοινότητες" : "Communities", `${base}/communities`],
+        ["Organizers", `${base}/organizers`],
       ],
     }}
   />;
