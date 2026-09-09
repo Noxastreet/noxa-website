@@ -40,6 +40,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/meets/report",
+        destination: "https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/meet-public?action=report",
+      },
+      {
+        source: "/api/meets/follow",
+        destination: "https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/meet-public?action=follow",
+      },
+    ];
+  },
   async redirects() {
     return [
       {
