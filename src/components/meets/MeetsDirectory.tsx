@@ -390,7 +390,7 @@ export function MeetsDirectory({
   const mapBase = locale === "el" ? "/el/map" : "/map";
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${discovery.discoveryPage}`}>
       <DocumentLanguage locale={locale} />
       <a className="skip-link" href="#main-content">{locale === "el" ? "Μετάβαση στο περιεχόμενο" : "Skip to content"}</a>
       <WebsiteHeader locale={locale} path="/meets" action="submit" />
