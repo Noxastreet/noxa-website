@@ -2,9 +2,13 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+const OVERPASS_URLS = [
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
+] as const;
+const GREECE_OSM_AREA_ID = 3600192307;
 const MAX_SOURCE_BYTES = 900_000;
-const MAX_DISCOVERED_HOSTS = 24;
+const MAX_DISCOVERED_HOSTS = 48;
 const VERIFY_THRESHOLD = 0.98;
 const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000;
 
@@ -363,15 +367,31 @@ function accessEvidence(feature: ClassifiedFeature, text: string) {
 }
 
 function classifyFromTags(name: string, tags: Record<string, string>): ClassifiedFeature | null {
-  const combined = normalizeText(`${name} ${tags.sport ?? ""} ${tags.leisure ?? ""} ${tags.tourism ?? ""}`);
-  if (tags.tourism === "museum" && /motor|automotive|automobile|car|αυτοκ|μοτο/.test(combined)) {
+  const combined = normalizeText([
+    name,
+    tags.sport ?? "",
+    tags.leisure ?? "",
+    tags.tourism ?? "",
+    tags.highway ?? "",
+    tags.description ?? "",
+    tags.operator ?? "",
+    tags["name:en"] ?? "",
+    tags["name:el"] ?? "",
+  ].join(" "));
+
+  if (tags.tourism === "museum" && /motor|automotive|automobile|car|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο/.test(combined)) {
     return { featureType: "automotive_place", featureSubtype: "automotive_museum" };
   }
-  if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined)) {
-    if (/kart/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
-    if (/motocross/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
+
+  const motorsportSignal = tags.highway === "raceway"
+    || tags.leisure === "track"
+    || /kart|karting|motorsport|motocross|motorcycle|motor racing|raceway|circuit|καρτ|μοτοκρος|πιστα/.test(combined);
+  if (motorsportSignal) {
+    if (/kart|karting|καρτ/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
+    if (/motocross|μοτοκρος/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
     return { featureType: "track", featureSubtype: "race_circuit" };
   }
+
   if (tags.route === "road" || (tags.scenic === "yes" && Boolean(tags.highway))) {
     return { featureType: "route", featureSubtype: "scenic_route" };
   }
@@ -380,12 +400,12 @@ function classifyFromTags(name: string, tags: Record<string, string>): Classifie
 
 function classifyOfficialVenue(name: string, text: string): ClassifiedFeature | null {
   const combined = normalizeText(`${name} ${text.slice(0, 6000)}`);
-  if (/museum/.test(combined) && /motor|automotive|automobile|car/.test(combined)) {
+  if (/museum|μουσει/.test(combined) && /motor|automotive|automobile|car|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο/.test(combined)) {
     return { featureType: "automotive_place", featureSubtype: "automotive_museum" };
   }
-  if (/kart/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
-  if (/motocross/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
-  if (/circuit|race track|racing circuit|motorsport/.test(combined)) return { featureType: "track", featureSubtype: "race_circuit" };
+  if (/kart|καρτ/.test(combined)) return { featureType: "track", featureSubtype: "kart_track" };
+  if (/motocross|μοτοκρος/.test(combined)) return { featureType: "track", featureSubtype: "motocross_track" };
+  if (/circuit|race track|racing circuit|motorsport|raceway|πιστα/.test(combined)) return { featureType: "track", featureSubtype: "race_circuit" };
   return null;
 }
 
@@ -396,7 +416,7 @@ function hintFromElement(element: OverpassElement): Coordinate | null {
 }
 
 function websiteFromTags(tags: Record<string, string>) {
-  return tags.website ?? tags["contact:website"] ?? "";
+  return tags.website ?? tags["contact:website"] ?? tags.url ?? tags["contact:url"] ?? "";
 }
 
 async function loadSources() {
@@ -642,28 +662,60 @@ async function collectRegistrySources(sources: MapSource[], candidates: Candidat
   return results;
 }
 
+async function fetchOverpass(query: string) {
+  let lastError: Error | null = null;
+  for (const url of OVERPASS_URLS) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "NOXA-Map-Collector/1.2 (+https://noxastreetapp.com/map)",
+        },
+        body: new URLSearchParams({ data: query }),
+        signal: AbortSignal.timeout(16_000),
+      });
+      if (!response.ok) {
+        lastError = new Error(`Overpass discovery failed (${response.status}).`);
+        continue;
+      }
+      const payload = await response.json() as { elements?: OverpassElement[] };
+      return payload.elements ?? [];
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Overpass discovery unavailable");
+    }
+  }
+  throw lastError ?? new Error("Overpass discovery unavailable");
+}
+
 async function loadOverpassElements() {
-  const query = `[out:json][timeout:30];
-area["ISO3166-1"="GR"][admin_level=2]->.gr;
-(
-  nwr(area.gr)["leisure"="track"]["sport"~"kart|motor|motorsport|motorcycle|motocross",i];
-  nwr(area.gr)["sport"~"karting|motorsport|motocross",i];
-  nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|αυτοκ|μοτο",i];
-  wr(area.gr)["route"="road"]["scenic"="yes"];
-);
-out center tags;`;
-  const response = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "NOXA-Map-Collector/1.0 (+https://noxastreetapp.com/map)",
-    },
-    body: new URLSearchParams({ data: query }),
-    signal: AbortSignal.timeout(40_000),
-  });
-  if (!response.ok) throw new Error(`Overpass discovery failed (${response.status}).`);
-  const payload = await response.json() as { elements?: OverpassElement[] };
-  return payload.elements ?? [];
+  // Greece relation 192307 maps to Overpass area 3600192307. Using the stable
+  // area id preserves the exact country boundary without repeating an expensive
+  // ISO relation lookup in every split query.
+  const queries = [
+    `[out:json][timeout:12];
+      area(${GREECE_OSM_AREA_ID})->.gr;
+      (
+        nwr(area.gr)["sport"~"kart|karting|motorsport|motocross|motorcycle|motor racing",i];
+        nwr(area.gr)["highway"="raceway"];
+      );
+      out center tags qt;`,
+    `[out:json][timeout:12];
+      area(${GREECE_OSM_AREA_ID})->.gr;
+      nwr(area.gr)["tourism"="museum"]["name"~"motor|car|auto|automobile|vehicle|αυτοκ|αυτοκιν|οχημ|μοτο",i];
+      out center tags qt;`,
+  ];
+  const settled = await Promise.allSettled(queries.map((query) => fetchOverpass(query)));
+  const fulfilled = settled.filter((result): result is PromiseFulfilledResult<OverpassElement[]> => result.status === "fulfilled");
+  if (fulfilled.length === 0) {
+    const firstFailure = settled.find((result): result is PromiseRejectedResult => result.status === "rejected");
+    throw firstFailure?.reason instanceof Error ? firstFailure.reason : new Error("Overpass discovery unavailable");
+  }
+  const unique = new Map<string, OverpassElement>();
+  for (const result of fulfilled) {
+    for (const element of result.value) unique.set(`${element.type}:${element.id}`, element);
+  }
+  return [...unique.values()];
 }
 
 async function collectOsmDiscoveries(sources: MapSource[], candidates: Candidate[]) {

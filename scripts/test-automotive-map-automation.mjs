@@ -71,7 +71,10 @@ assert.ok(
 );
 
 for (const required of [
-  "const OVERPASS_URL = \"https://overpass-api.de/api/interpreter\"",
+  "const OVERPASS_URLS = [",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
+  "const GREECE_OSM_AREA_ID = 3600192307",
   "const VERIFY_THRESHOLD = 0.98",
   "const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000",
   "validCronSecret",
@@ -82,7 +85,7 @@ for (const required of [
   "geometry_source_url: officialCoordinate ? page.url : null",
   "Automated route discovery is allowed, but publication is blocked until an authoritative route geometry",
   "source.trust_level === \"low\"",
-  "MAX_DISCOVERED_HOSTS = 24",
+  "MAX_DISCOVERED_HOSTS = 48",
   "official_venue_source_already_tracked",
   "candidateSourceIds.has(source.id)",
   "!2d(-?\\d{2}\\.\\d+)!3d(-?\\d{2}\\.\\d+)",
@@ -92,10 +95,36 @@ for (const required of [
   "let osmResults: ProcessResult[] = []",
   "key: \"osm-discovery\"",
   "OSM discovery unavailable",
+  "tags.highway === \"raceway\"",
+  "tags[\"contact:url\"]",
+  "area(${GREECE_OSM_AREA_ID})->.gr",
+  "nwr(area.gr)[\"highway\"=\"raceway\"]",
+  "Promise.allSettled",
+  "for (const url of OVERPASS_URLS)",
+  "AbortSignal.timeout(16_000)",
+  "out center tags qt",
+  "NOXA-Map-Collector/1.2",
 ]) {
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
 
+assert.ok(
+  collector.indexOf("https://maps.mail.ru/osm/tools/overpass/api/interpreter") < collector.indexOf("https://overpass-api.de/api/interpreter"),
+  "the production-network verified Overpass endpoint must remain primary",
+);
+assert.ok(
+  !collector.includes("GREECE_BBOX"),
+  "Greece discovery must never fall back to a rectangle that includes neighbouring countries",
+);
+assert.ok(
+  !collector.includes('area["ISO3166-1"="GR"]'),
+  "split queries must use the direct Greece area id rather than repeatedly resolving the country relation",
+);
+assert.equal(
+  collector.match(/area\(\$\{GREECE_OSM_AREA_ID\}\)->\.gr/g)?.length,
+  2,
+  "each split Overpass query must independently use the exact Greece area",
+);
 assert.ok(
   collector.includes("hint: hintFromElement(element)"),
   "OSM coordinates may be used only as a discovery cross-check hint",
@@ -120,12 +149,20 @@ assert.ok(
   collector.includes("existing,\n    }));"),
   "registry retry must pass the existing candidate into the update path instead of creating a duplicate",
 );
+assert.ok(
+  !collector.includes('["route"="road"]["scenic"="yes"]'),
+  "general venue collector must not spend its runtime budget on scenic-route discovery",
+);
+assert.ok(
+  collector.includes('/kart|karting|motorsport|motocross|motorcycle|motor racing|raceway|circuit|καρτ|μοτοκρος|πιστα/'),
+  "venue classification must cover English and Greek motorsport signals",
+);
 
 const registryCall = collector.indexOf("const registryResults = await collectRegistrySources(sources, candidates)");
 const osmIsolation = collector.indexOf("let osmResults: ProcessResult[] = []");
 assert.ok(registryCall >= 0 && osmIsolation > registryCall, "official source processing must complete before optional OSM discovery is isolated");
 
-const trackBranch = collector.indexOf('if (tags.leisure === "track" || /kart|motorsport|motocross|motor/.test(combined))');
+const trackBranch = collector.indexOf('const motorsportSignal = tags.highway === "raceway"');
 const routeBranch = collector.indexOf('if (tags.route === "road" || (tags.scenic === "yes" && Boolean(tags.highway)))');
 assert.ok(trackBranch >= 0 && routeBranch >= 0 && trackBranch < routeBranch, "track classification must take precedence over scenic-route metadata");
 

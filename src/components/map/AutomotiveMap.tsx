@@ -237,7 +237,8 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
     let disposed = false;
     void import("maplibre-gl").then((module) => {
       if (disposed || !mapContainerRef.current) return;
-      const maplibregl = module.default;
+      const maplibregl = module;
+      maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
       const map = new maplibregl.Map({
         container: mapContainerRef.current, style: DARK_STYLE_URL, center: GREECE_CENTER, zoom: 5.35,
         minZoom: 4.6, maxZoom: 18, maxBounds: GREECE_BOUNDS, attributionControl: false,
@@ -334,7 +335,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
       const map = mapRef.current; if (!map) return;
       const maplibreModule = await import("maplibre-gl"); locationMarkerRef.current?.remove();
       const markerElement = document.createElement("div"); markerElement.className = styles.locationMarker;
-      locationMarkerRef.current = new maplibreModule.default.Marker({ element: markerElement }).setLngLat(center).addTo(map);
+      locationMarkerRef.current = new maplibreModule.Marker({ element: markerElement }).setLngLat(center).addTo(map);
       map.flyTo({ center, zoom: Math.max(map.getZoom(), 11.5), duration: 850 }); setLocating(false);
     }, () => { setLocating(false); setError(t.locationError); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 });
   }
