@@ -21,7 +21,7 @@
     "test:map-foundation": "node --experimental-strip-types scripts/test-automotive-map-foundation.mjs",
     "test:map-ui": "node scripts/test-automotive-map-ui.mjs",
     "test:map-content": "node --experimental-strip-types scripts/test-automotive-map-content.mjs",
-    "test:map-automation": "node scripts/test-automotive-map-automation.mjs",
+    "test:map-automation": "node --experimental-strip-types scripts/test-automotive-map-automation.mjs",
     "test:route-automation": "node scripts/test-automotive-route-automation.mjs",
     "test:meets-growth": "node --experimental-strip-types scripts/test-meets-growth.mjs",
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
