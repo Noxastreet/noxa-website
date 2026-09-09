@@ -18,6 +18,18 @@ const ROUTES = [
   },
 ] as const;
 
+const OFFROAD_DISCOVERY = [
+  {
+    externalKey: "visitgreece-grevena-jeep-safari",
+    sourceBaseUrl: "https://www.visitgreece.gr/",
+    pageUrl: "https://www.visitgreece.gr/el/inspirations/jeep-safari-in-grevena",
+    title: "Jeep safari in Grevena",
+    city: "Grevena",
+    locationText: "Grevena / Vasilitsa area",
+    featureSubtype: "offroad_route",
+  },
+] as const;
+
 type Source = {
   id: string;
   name: string;
@@ -108,7 +120,7 @@ async function fetchBounded(rawUrl: string, allowedHost: string, maxBytes: numbe
         redirect: "manual",
         signal: AbortSignal.timeout(15_000),
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; NOXA-Route-Collector/1.0; +https://noxastreetapp.com/map)",
+          "User-Agent": "Mozilla/5.0 (compatible; NOXA-Route-Collector/1.1; +https://noxastreetapp.com/map)",
           Accept: "text/html,application/xml,text/xml;q=0.9,*/*;q=0.5",
         },
       });
@@ -162,6 +174,24 @@ function routePageEvidence(html: string, expectedTitle: string) {
   const kmlUrl = normalized.match(/https:\/\/cdn\.visitgreece\.gr\/[^"'\\\s<>]+\.kml/i)?.[0] ?? null;
   const routeLength = normalized.match(/["']route_length["']\s*:\s*["']([^"']+)["']/i)?.[1]?.trim() ?? null;
   return { titleOk, roadOk, kmlUrl, routeLength, description: metaDescription(normalized) };
+}
+
+function offroadPageEvidence(html: string) {
+  const normalized = normalizeEmbedded(html);
+  const lower = normalized.toLowerCase();
+  const titleOk = lower.includes("jeep safari") && (lower.includes("grevena") || lower.includes("γρεβεν"));
+  const offroadOk = lower.includes("off road") || lower.includes("off-road");
+  const fourByFourOk = lower.includes("4x4") || lower.includes("4×4") || lower.includes("τετρακίν");
+  const dirtRoadOk = lower.includes("χωματόδρο") || lower.includes("dirt road") || lower.includes("forest road");
+  const authoritativeGeometryUrl = normalized.match(/https:\/\/[^"'\\\s<>]+\.(?:kml|gpx)(?:\?[^"'\\\s<>]*)?/i)?.[0] ?? null;
+  return {
+    titleOk,
+    offroadOk,
+    fourByFourOk,
+    dirtRoadOk,
+    authoritativeGeometryUrl,
+    description: metaDescription(normalized),
+  };
 }
 
 function validGreekCoordinate(latitude: number, longitude: number) {
@@ -358,6 +388,54 @@ async function processRoute(route: typeof ROUTES[number]): Promise<Result> {
   }
 }
 
+async function processOffroadDiscovery(route: typeof OFFROAD_DISCOVERY[number]): Promise<Result> {
+  const existing = await loadCandidate(route.externalKey);
+  if (existing?.status === "published" || existing?.status === "verified") {
+    return { outcome: "skipped", key: route.externalKey, reason: `existing_${existing.status}` };
+  }
+
+  const source = await loadSource(route.sourceBaseUrl);
+  if (!source || !source.active || source.country_code !== "GR" || source.trust_level !== "high" || !source.verified_at) {
+    return { outcome: "failed", key: route.externalKey, reason: "high_trust_tourism_source_not_registered" };
+  }
+
+  const pageHost = canonicalHost(route.pageUrl);
+  const page = await fetchBounded(route.pageUrl, pageHost, MAX_PAGE_BYTES);
+  const evidence = page ? offroadPageEvidence(page.text) : null;
+  const evidenceConfirmed = Boolean(evidence?.titleOk && evidence.offroadOk && evidence.fourByFourOk);
+
+  const candidate = await upsertCandidate(existing, {
+    external_key: route.externalKey,
+    automation_origin: "source_registry",
+    feature_type: "route",
+    feature_subtype: route.featureSubtype,
+    title: route.title,
+    country_code: "GR",
+    city: route.city,
+    location_text: route.locationText,
+    summary: evidence?.description ?? null,
+    source_id: source.id,
+    source_url: page?.url ?? route.pageUrl,
+    public_access_status: "unknown",
+    driving_access_status: "unknown",
+    tags: ["auto-map", "route:official-tourism", "route:offroad", "4x4"],
+  });
+
+  const failures = [
+    !page ? "official_page_unavailable" : null,
+    page && !evidenceConfirmed ? "offroad_identity_not_confirmed" : null,
+    evidenceConfirmed && !evidence?.authoritativeGeometryUrl ? "authoritative_geometry_missing" : null,
+    evidenceConfirmed && evidence?.authoritativeGeometryUrl ? "offroad_geometry_adapter_not_verified" : null,
+    "current_public_driving_access_not_verified",
+  ].filter(Boolean).join(",");
+
+  const reason = evidenceConfirmed
+    ? `Automatic off-road route verification blocked: ${failures}. Official tourism authority confirms 4x4/off-road use, but NOXA will not synthesize route geometry or assume current access.`
+    : `Automatic off-road route verification blocked: ${failures}.`;
+  await markBlocked(candidate.id, reason, evidenceConfirmed ? 0.9 : 0.5);
+  return { outcome: "blocked", key: route.externalKey, reason };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return json({ error: "SERVER_CONFIGURATION_ERROR" }, 500);
@@ -372,6 +450,14 @@ Deno.serve(async (req: Request) => {
       results.push({ outcome: "failed", key: route.externalKey, reason: error instanceof Error ? error.message : "route_processing_failed" });
     }
   }
+  for (const route of OFFROAD_DISCOVERY) {
+    try {
+      results.push(await processOffroadDiscovery(route));
+    } catch (error) {
+      results.push({ outcome: "failed", key: route.externalKey, reason: error instanceof Error ? error.message : "offroad_discovery_failed" });
+    }
+  }
+
   const count = (outcome: Result["outcome"]) => results.filter((result) => result.outcome === outcome).length;
   return json({
     ok: true,
