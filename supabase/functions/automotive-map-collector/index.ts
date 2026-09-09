@@ -291,18 +291,14 @@ function chooseOfficialCoordinate(coordinates: Coordinate[], hint: Coordinate | 
   return distanceKm(sorted[0], hint) <= 5 ? sorted[0] : null;
 }
 
-async function fetchOfficialPage(rawUrl: string): Promise<PageEvidence | null> {
-  const initial = safePublicUrl(rawUrl);
-  if (!initial) return null;
-  const allowedHost = canonicalHost(initial.toString());
+async function fetchOfficialPageCandidate(initial: URL, allowedHost: string): Promise<PageEvidence | null> {
   let current = initial;
-
   for (let redirect = 0; redirect <= 2; redirect += 1) {
     try {
       const response = await fetch(current, {
         redirect: "manual",
         signal: AbortSignal.timeout(10_000),
-        headers: { "User-Agent": "NOXA-Map-Collector/1.0 (+https://noxastreetapp.com/map)" },
+        headers: { "User-Agent": "NOXA-Map-Collector/1.3 (+https://noxastreetapp.com/map)" },
       });
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
@@ -327,6 +323,27 @@ async function fetchOfficialPage(rawUrl: string): Promise<PageEvidence | null> {
     } catch {
       return null;
     }
+  }
+  return null;
+}
+
+async function fetchOfficialPage(rawUrl: string): Promise<PageEvidence | null> {
+  const initial = safePublicUrl(rawUrl);
+  if (!initial) return null;
+  const allowedHost = canonicalHost(initial.toString());
+  const direct = await fetchOfficialPageCandidate(initial, allowedHost);
+  if (direct) return direct;
+
+  const fallbacks = ["/el/", "/en/"]
+    .map((path) => safePublicUrl(new URL(path, initial.origin).toString()))
+    .filter((url): url is URL => Boolean(url) && canonicalHost(url.toString()) === allowedHost)
+    .filter((url, index, all) => all.findIndex((candidate) => candidate.toString() === url.toString()) === index)
+    .filter((url) => url.toString() !== initial.toString());
+  if (fallbacks.length === 0) return null;
+
+  const settled = await Promise.allSettled(fallbacks.map((url) => fetchOfficialPageCandidate(url, allowedHost)));
+  for (const result of settled) {
+    if (result.status === "fulfilled" && result.value) return result.value;
   }
   return null;
 }
