@@ -11,6 +11,7 @@ import styles from "./EventDetailPage.module.css";
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
 const NOXA_EVENT_FALLBACK = "radial-gradient(circle at 78% 24%, rgba(200,16,46,.28), transparent 32%), linear-gradient(135deg,#111114 0%,#08080a 46%,#050505 100%)";
+const NOXA_STORY_FALLBACK = "/media/noxa-story-fallback.jpg";
 
 const CATEGORY_LABELS: Record<"en" | "el", Record<string, string>> = {
   en: {
@@ -202,7 +203,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                     endsAt={event.ends_at}
                     timezone={event.timezone}
                     location={place}
-                    coverImageUrl={event.cover_image_url}
+                    coverImageUrl={event.cover_image_url || NOXA_STORY_FALLBACK}
                     latitude={event.latitude}
                     longitude={event.longitude}
                     locationPrecision={event.location_precision}
