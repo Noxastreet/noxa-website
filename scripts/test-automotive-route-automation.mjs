@@ -63,6 +63,34 @@ assert.ok(
 );
 
 for (const required of [
+  'externalKey: "visitgreece-grevena-jeep-safari"',
+  'pageUrl: "https://www.visitgreece.gr/el/inspirations/jeep-safari-in-grevena"',
+  'featureSubtype: "offroad_route"',
+  'tags: ["auto-map", "route:official-tourism", "route:offroad", "4x4"]',
+  'public_access_status: "unknown"',
+  'driving_access_status: "unknown"',
+  'offroadPageEvidence',
+  'authoritative_geometry_missing',
+  'current_public_driving_access_not_verified',
+  'NOXA will not synthesize route geometry or assume current access',
+  'processOffroadDiscovery',
+]) {
+  assert.ok(collector.includes(required), `off-road discovery must include ${required}`);
+}
+assert.ok(
+  collector.includes('const evidenceConfirmed = Boolean(evidence?.titleOk && evidence.offroadOk && evidence.fourByFourOk)'),
+  "off-road discovery must require explicit official 4x4/off-road evidence",
+);
+assert.ok(
+  collector.includes('await markBlocked(candidate.id, reason, evidenceConfirmed ? 0.9 : 0.5)'),
+  "off-road discovery must remain blocked even when identity confidence is high",
+);
+assert.ok(
+  !collector.includes('featureSubtype: "offroad_route"') || !collector.includes('geometry_source_url: evidence.authoritativeGeometryUrl'),
+  "off-road discovery must not wire unverified geometry into publication",
+);
+
+for (const required of [
   "'Visit Greece (GNTO)'",
   "'tourism_authority'",
   "'https://www.visitgreece.gr/'",
