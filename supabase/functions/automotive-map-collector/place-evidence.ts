@@ -139,8 +139,8 @@ export function tourismPlaceAccessEvidence(text: string): TourismPlaceAccess | n
 
   for (const match of drivingMatches) {
     const position = match.index ?? 0;
-    const start = Math.max(0, position - 650);
-    const end = Math.min(normalized.length, position + match[0].length + 900);
+    const start = Math.max(0, position - 450);
+    const end = Math.min(normalized.length, position + match[0].length + 520);
     const window = normalized.slice(start, end);
 
     const walkingOnly = WALKING_ONLY_PATTERN.test(window);
