@@ -107,6 +107,7 @@ export function tourismPlaceContextFromHtml(name: string, html: string) {
 const SCENIC_PATTERN = /\bviewpoint\b|\blookout\b|\bvantage point\b|\bpanoramic view\b|\bpanoramic views\b|\b360 view\b|\b360 degree view\b|\boverlooking\b|\bbreathtaking view\b|\bstunning view\b|\bscenic view\b|θεα πανοραμ|πανοραμικ|σημειο θεας/;
 const PHOTO_PATTERN = /\bphoto spot\b|\bphotography location\b|\bphotograph\b|\bphotographer\b|\bphotogenic\b|\bpostcard perfect\b|\bvisual delight\b|\bphoto viewpoint\b|\bsunset viewpoint\b|ιδανικ.{0,20}φωτογραφ|φωτογραφ/;
 const DRIVING_PATTERN = /\bby car\b|\bdrive up\b|\bdrive to\b|\broad to drive\b|\baccessible by road\b|\broad access\b|\bprivate car\b|\b4x4 vehicle\b|\bshort drive\b|\breach.{0,50}by car\b|\broad leads\b|οδικ.{0,30}προσβα|με αυτοκινητ/;
+const DIRECT_DRIVE_TO_SCENIC_PATTERN = /\bdrive up\b|\broad to drive up\b|\bdrive to (?:the )?(?:viewpoint|lookout|top)\b|\baccessible by road\b|\broad access\b|οδικ.{0,30}προσβα/;
 const PUBLIC_PATTERN = /\bhow to get there\b|\bvisit\b|\bvisitors\b|\baccessible\b|\breach\b|\bopen\b|\bpublic\b|\bdrive\b|επισκεπτ|προσβα/;
 const WALKING_ONLY_PATTERN = /only reach.{0,80}on foot|only reachable.{0,50}on foot|access.{0,40}only.{0,30}on foot|can only.{0,40}walk|only access.{0,50}hiking|προσβαση.{0,50}μονο.{0,30}πεζ/;
 const TRAILHEAD_PATTERN = /starting point.{0,180}(?:by car|drive|private car)|parking area.{0,120}(?:trail|path|hike|walk)/;
@@ -143,10 +144,13 @@ export function tourismPlaceAccessEvidence(text: string): TourismPlaceAccess | n
     const end = Math.min(normalized.length, position + match[0].length + 520);
     const window = normalized.slice(start, end);
 
-    const walkingOnly = WALKING_ONLY_PATTERN.test(window);
     const trailheadOnly = TRAILHEAD_PATTERN.test(window)
       && /\bhiking\b|\btrail\b|\bpath begins\b|\bwalk\b/.test(window);
-    if (walkingOnly || trailheadOnly) continue;
+    if (trailheadOnly) continue;
+
+    const walkingOnly = WALKING_ONLY_PATTERN.test(window);
+    const directDriveToScenic = DIRECT_DRIVE_TO_SCENIC_PATTERN.test(window);
+    if (walkingOnly && !directDriveToScenic) continue;
 
     if (!SCENIC_PATTERN.test(window) || !PUBLIC_PATTERN.test(window)) continue;
 
