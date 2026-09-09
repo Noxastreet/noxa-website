@@ -131,6 +131,16 @@ const driveUp = "Lycabettus Hill offers stunning panoramic views. There is also 
 assert.equal(classifyTourismPlace("Lycabettus Hill", driveUp, "viewpoint").subtype, "viewpoint", "explicit drive-up panoramic viewpoint must classify as viewpoint");
 assert.ok(tourismPlaceAccessEvidence(driveUp), "drive-up viewpoint must have conditional driving/public access evidence");
 
+const mixedAthensArticle = [
+  "Lycabettus Hill",
+  "Near Kolonaki is the famous Lycabettus Hill. There is also a road to drive up.",
+  "Whichever your preference, you will be rewarded with a 360 degree view of the city. The panoramic view from the top sweeps you away.",
+  "Filopappou Hill",
+  "Filopappou Hill is located southwest of the Acropolis. You can only reach the top on foot. Enjoy a panoramic view of the city.",
+].join(" ");
+assert.equal(classifyTourismPlace("Lycabettus Hill", mixedAthensArticle, "viewpoint").subtype, "viewpoint", "neighboring walking-only sections must not erase Lycabettus scenic evidence");
+assert.ok(tourismPlaceAccessEvidence(mixedAthensArticle), "neighboring Filopappou walking-only text must not veto a separate Lycabettus drive-up evidence window");
+
 const genericScenic = "A beautiful scenic mountain area with forests and villages. By car from Athens.";
 assert.equal(classifyTourismPlace("Mountain Area", genericScenic, "photo_spot").subtype, null, "generic scenic prose must not become a photo spot");
 
