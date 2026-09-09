@@ -1,1 +1,22 @@
-import type {Metadata} from "next";import {DocumentLanguage} from "@/components/i18n/DocumentLanguage";import {OrganizerDashboardFlow} from "@/components/organizers/OrganizerDashboardFlow";import {OrganizerInsightsShortcut} from "@/components/organizers/OrganizerInsightsShortcut";export const metadata:Metadata={title:"Organizer Dashboard — NOXA",description:"Διαχείριση approved NOXA organizer events.",robots:{index:false,follow:false},alternates:{canonical:"https://noxastreetapp.com/el/organizer",languages:{en:"https://noxastreetapp.com/organizer",el:"https://noxastreetapp.com/el/organizer"}}};export default function OrganizerPageEl(){return <><DocumentLanguage locale="el"/><OrganizerDashboardFlow locale="el"/><OrganizerInsightsShortcut locale="el"/></>}
+import type { Metadata } from "next";
+
+import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
+import { OrganizerDashboardP2 } from "@/components/organizers/OrganizerDashboardP2";
+import { OrganizerInsightsShortcut } from "@/components/organizers/OrganizerInsightsShortcut";
+
+export const metadata: Metadata = {
+  title: "Organizer Dashboard — NOXA",
+  description: "Διαχείριση approved NOXA organizer events.",
+  robots: { index: false, follow: false },
+  alternates: {
+    canonical: "https://noxastreetapp.com/el/organizer",
+    languages: {
+      en: "https://noxastreetapp.com/organizer",
+      el: "https://noxastreetapp.com/el/organizer",
+    },
+  },
+};
+
+export default function OrganizerPageEl() {
+  return <><DocumentLanguage locale="el" /><OrganizerDashboardP2 locale="el" /><OrganizerInsightsShortcut locale="el" /></>;
+}
