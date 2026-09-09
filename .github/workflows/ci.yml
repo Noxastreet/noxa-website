@@ -49,6 +49,7 @@ jobs:
           node --experimental-strip-types --check supabase/functions/radar-submit-event/index.ts
           node --experimental-strip-types --check supabase/functions/radar-social-collector/index.ts
           node --experimental-strip-types --check supabase/functions/automotive-map-collector/index.ts
+          node --experimental-strip-types --check supabase/functions/automotive-route-collector/index.ts
       - name: Radar community adapter fixtures
         run: npm run test:radar-adapters
       - name: Radar publication quality gate fixtures
@@ -67,6 +68,8 @@ jobs:
         run: npm run test:map-content
       - name: Automotive map automation safety fixtures
         run: npm run test:map-automation
+      - name: Automotive route automation safety fixtures
+        run: npm run test:route-automation
       - name: Meets growth fixtures
         run: npm run test:meets-growth
       - name: Platform flow consistency
