@@ -1,11 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { isMotoOnlyRadarEvent, radarCandidateQualityIssues } from "../src/lib/radarQuality.ts";
+import { radarCandidateQualityIssues } from "../src/lib/radarQuality.ts";
 
 const valid = {
   title: "Thessaloniki Night Meet 2026",
-  event_type: "car_meet",
   country_code: "GR",
   starts_at: "2026-09-20T18:00:00+03:00",
   ends_at: "2026-09-20T22:00:00+03:00",
@@ -27,52 +26,30 @@ assert.ok(radarCandidateQualityIssues({ ...valid, original_url: "not-a-url" }).i
 assert.ok(radarCandidateQualityIssues({ ...valid, timezone: null }).includes("missing_timezone"));
 
 assert.ok(radarCandidateQualityIssues({ ...valid, country_code: "DE" }).includes("outside_greece"));
-assert.ok(radarCandidateQualityIssues({ ...valid, event_type: "moto_meet" }).includes("moto_only_event"));
-assert.ok(radarCandidateQualityIssues({
-  ...valid,
-  event_type: "track_day",
-  title: "Extreme Track Days — Megara",
-  summary: "Motorcycle track-day weekend at Athens Megara Circuit with rider groups and instructors.",
-}).includes("moto_only_event"));
-assert.ok(radarCandidateQualityIssues({
-  ...valid,
-  event_type: "rally",
-  title: "HELLAS RALLY 24h",
-  original_url: "https://www.amotoe.org/hellas-rally-24h",
-}).includes("moto_only_event"));
-assert.ok(radarCandidateQualityIssues({
-  ...valid,
-  title: "12ο Aegean Ride",
-  organizer_name: "Vespa Club Lesvos",
-}).includes("moto_only_event"));
+assert.ok(radarCandidateQualityIssues({ ...valid, country_code: "CY" }).includes("outside_greece"));
 
-assert.equal(isMotoOnlyRadarEvent({
-  event_type: "show",
-  title: "Athens Motor Show 2026",
-  summary: "Automotive exhibition for passenger and performance cars.",
-  organizer_name: "Example Motor Club",
-  original_url: "https://automotopatras.gr/athens-motor-show",
-}), false);
-assert.equal(isMotoOnlyRadarEvent({
-  event_type: "car_meet",
-  title: "Mazda MX-5 Meet",
-  summary: "Roadster owners meet for a static automotive gathering.",
-  organizer_name: "MX-5 Club",
-  original_url: "https://example.com/mx5",
-}), false);
+const greekMoto = {
+  ...valid,
+  title: "12ο Aegean Ride — Lesvos 2026",
+  organizer_name: "Vespa Club Lesvos",
+  summary: "Motorcycle gathering in Lesvos with an announced ride program and community meeting.",
+  original_url: "https://example.com/moto-event",
+};
+assert.deepEqual(radarCandidateQualityIssues(greekMoto), []);
 
 const scopeMigration = fs.readFileSync(
-  "supabase/migrations/20260909090000_radar_greece_automotive_scope_gate.sql",
+  "supabase/migrations/20260909090000_radar_greece_scope_gate.sql",
   "utf8",
 );
 for (const expected of [
   "outside_greece",
-  "moto_only_event",
-  "private.radar_is_moto_only_event",
   "country_code is distinct from 'GR'",
   "set status = 'unpublished'",
+  "Scope Gate: outside_greece",
 ]) {
   assert.ok(scopeMigration.includes(expected), `Scope Gate migration missing: ${expected}`);
 }
+assert.equal(scopeMigration.includes("moto_only_event"), false);
+assert.equal(scopeMigration.includes("radar_is_moto_only_event"), false);
 
 console.log("Radar quality gate fixtures passed.");
