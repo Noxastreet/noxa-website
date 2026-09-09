@@ -217,7 +217,7 @@ export function OrganizerApplicationForm({ locale, claimTarget }: { locale: Loca
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href={base || "/"} aria-label="NOXA home"><NoxaLogo /></Link>
-        <Link className={styles.backLink} href={claimTarget ? `${base}/organizers/${claimTarget.id}` : `${base}/organizers`}>{t.back}</Link>
+        <Link className={styles.backLink} href={`${base}/organizers`}>{t.back}</Link>
       </header>
       <main className={styles.main}>
         <section className={styles.intro}>
