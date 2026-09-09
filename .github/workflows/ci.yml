@@ -44,10 +44,11 @@ jobs:
         run: npm list --depth=0
       - name: Typecheck
         run: npm run typecheck
-      - name: Radar and map Edge Function syntax
+      - name: Radar, organizer and map Edge Function syntax
         run: |
           node --experimental-strip-types --check supabase/functions/radar-submit-event/index.ts
           node --experimental-strip-types --check supabase/functions/radar-social-collector/index.ts
+          node --experimental-strip-types --check supabase/functions/organizer-submit-application/index.ts
           node --experimental-strip-types --check supabase/functions/automotive-map-collector/index.ts
           node --experimental-strip-types --check supabase/functions/automotive-route-collector/index.ts
           node --experimental-strip-types --check supabase/functions/meet-public/index.ts
@@ -77,6 +78,8 @@ jobs:
         run: npm run test:platform-flows
       - name: Reliability Gate security fixtures
         run: npm run test:reliability-gate
+      - name: Supply Platform P1 fixtures
+        run: npm run test:supply-platform
       - name: Lint
         run: npm run lint
       - name: Production build
