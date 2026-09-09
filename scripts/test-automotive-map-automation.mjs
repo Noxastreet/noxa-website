@@ -72,8 +72,8 @@ assert.ok(
 
 for (const required of [
   "const OVERPASS_URLS = [",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
   "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
   "const GREECE_OSM_AREA_ID = 3600192307",
   "const VERIFY_THRESHOLD = 0.98",
   "const BLOCKED_RETRY_MS = 20 * 60 * 60 * 1000",
@@ -108,6 +108,10 @@ for (const required of [
   assert.ok(collector.includes(required), `collector safety fixture must include ${required}`);
 }
 
+assert.ok(
+  collector.indexOf("https://maps.mail.ru/osm/tools/overpass/api/interpreter") < collector.indexOf("https://overpass-api.de/api/interpreter"),
+  "the production-network verified Overpass endpoint must remain primary",
+);
 assert.ok(
   !collector.includes("GREECE_BBOX"),
   "Greece discovery must never fall back to a rectangle that includes neighbouring countries",
