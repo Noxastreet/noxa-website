@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 
+import { loadPublicOrganizers } from "@/components/organizers/organizer-data";
 import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
 
 import { MeetsDirectory, type MeetsDirectoryEvent } from "./MeetsDirectory";
@@ -23,12 +24,16 @@ type Row = {
   city: string | null;
   region: string | null;
   organizer_name: string | null;
+  organizer_profile_id: string | null;
   source_name: string;
   featured: boolean;
   partner_badge: string | null;
   cover_image_url: string | null;
   cover_image_alt: string | null;
   cover_image_alt_el: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_precision: string | null;
 };
 
 function fallbackCountry(value: string | null) {
@@ -42,9 +47,9 @@ function savedCountry(value: string | undefined) {
   return code && /^[A-Z]{2}$/.test(code) ? code : null;
 }
 
-async function loadEvents(locale: "en" | "el"): Promise<MeetsDirectoryEvent[]> {
+async function loadEventRows(): Promise<Row[]> {
   const query = new URLSearchParams({
-    select: "id,public_slug,country_code,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,organizer_name,source_name,featured,partner_badge,cover_image_url,cover_image_alt,cover_image_alt_el",
+    select: "id,public_slug,country_code,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,organizer_name,organizer_profile_id,source_name,featured,partner_badge,cover_image_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "500",
@@ -55,40 +60,61 @@ async function loadEvents(locale: "en" | "el"): Promise<MeetsDirectoryEvent[]> {
       next: { revalidate: 60 },
     });
     if (!response.ok) return [];
-    const rows = await response.json() as Row[];
-    return rows
-      .filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at))
-      .map((row) => {
-        const localizedTitle = locale === "el" ? row.title_el?.trim() || row.title : row.title;
-        const localizedLocation = locale === "el" ? row.location_text_el?.trim() || row.location_text : row.location_text;
-        const localizedCoverAlt = locale === "el" ? row.cover_image_alt_el?.trim() || row.cover_image_alt : row.cover_image_alt;
-
-        return {
-          id: row.id,
-          slug: row.public_slug,
-          countryCode: row.country_code,
-          title: localizedTitle,
-          eventType: row.event_type,
-          startsAt: row.starts_at,
-          endsAt: row.ends_at,
-          timezone: row.timezone,
-          location: localizedLocation ?? row.city ?? row.region ?? row.country_code,
-          city: row.city ?? "",
-          region: row.region ?? "",
-          organizer: row.organizer_name ?? row.source_name,
-          featured: row.featured,
-          partnerBadge: row.partner_badge,
-          coverImageUrl: row.cover_image_url,
-          coverImageAlt: localizedCoverAlt,
-        };
-      });
+    return await response.json() as Row[];
   } catch {
     return [];
   }
 }
 
+function localizeEvents(
+  rows: Row[],
+  locale: "en" | "el",
+  organizerSlugs: Map<string, string>,
+): MeetsDirectoryEvent[] {
+  return rows
+    .filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at))
+    .map((row) => {
+      const localizedTitle = locale === "el" ? row.title_el?.trim() || row.title : row.title;
+      const localizedLocation = locale === "el" ? row.location_text_el?.trim() || row.location_text : row.location_text;
+      const localizedCoverAlt = locale === "el" ? row.cover_image_alt_el?.trim() || row.cover_image_alt : row.cover_image_alt;
+
+      return {
+        id: row.id,
+        slug: row.public_slug,
+        countryCode: row.country_code,
+        title: localizedTitle,
+        eventType: row.event_type,
+        startsAt: row.starts_at,
+        endsAt: row.ends_at,
+        timezone: row.timezone,
+        location: localizedLocation ?? row.city ?? row.region ?? row.country_code,
+        city: row.city ?? "",
+        region: row.region ?? "",
+        organizer: row.organizer_name ?? row.source_name,
+        organizerProfileId: row.organizer_profile_id,
+        organizerSlug: row.organizer_profile_id ? organizerSlugs.get(row.organizer_profile_id) ?? null : null,
+        featured: row.featured,
+        partnerBadge: row.partner_badge,
+        coverImageUrl: row.cover_image_url,
+        coverImageAlt: localizedCoverAlt,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        locationPrecision: row.location_precision,
+      };
+    });
+}
+
 export async function MeetsDirectoryPage({ locale, initialFilters = {} }: { locale: "en" | "el"; initialFilters?: InitialFilters }) {
-  const [requestHeaders, cookieStore, events] = await Promise.all([headers(), cookies(), loadEvents(locale)]);
-  const detectedCountryCode = savedCountry(cookieStore.get("noxa_country")?.value) ?? requestHeaders.get("x-vercel-ip-country") ?? fallbackCountry(requestHeaders.get("accept-language"));
+  const [requestHeaders, cookieStore, rows, organizers] = await Promise.all([
+    headers(),
+    cookies(),
+    loadEventRows(),
+    loadPublicOrganizers(),
+  ]);
+  const organizerSlugs = new Map(organizers.map((organizer) => [organizer.id, organizer.slug]));
+  const events = localizeEvents(rows, locale, organizerSlugs);
+  const detectedCountryCode = savedCountry(cookieStore.get("noxa_country")?.value)
+    ?? requestHeaders.get("x-vercel-ip-country")
+    ?? fallbackCountry(requestHeaders.get("accept-language"));
   return <MeetsDirectory detectedCountryCode={detectedCountryCode} events={events} initialFilters={initialFilters} locale={locale} />;
 }
