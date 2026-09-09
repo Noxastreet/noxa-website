@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
@@ -145,19 +145,17 @@ function geometryBounds(geometry: MapGeometry): [[number, number], [number, numb
 }
 
 function deepLinkTarget() {
-  if (typeof window === "undefined") return { center: GREECE_CENTER, zoom: 5.35, eventId: null as string | null, query: "" };
+  if (typeof window === "undefined") return { center: GREECE_CENTER, zoom: 5.35, eventId: null as string | null };
   const params = new URLSearchParams(window.location.search);
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
   const validPoint = Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
     && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
   const eventId = params.get("event")?.trim() || null;
-  const query = eventId ? "" : params.get("q")?.trim() || "";
   return {
     center: validPoint ? [longitude, latitude] as [number, number] : GREECE_CENTER,
     zoom: validPoint ? 12.4 : 5.35,
     eventId,
-    query,
   };
 }
 
@@ -200,9 +198,9 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   };
 
   const layerLabels: Record<MapLayer, string> = { events: t.events, tracks: t.tracks, routes: t.routes, places: t.places };
-  const searchResults = useMemo(() => query.trim()
+  const searchResults = query.trim()
     ? allFeaturesRef.current.filter((feature) => matchesSearch(feature, query, locale)).slice(0, 6)
-    : [], [query, locale, visibleCount]);
+    : [];
 
   const updateMapSources = useCallback((features: MapApiFeature[]) => {
     const map = mapRef.current;
@@ -266,10 +264,6 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
     let disposed = false;
     const target = deepLinkTarget();
     initialEventIdRef.current = target.eventId;
-    if (target.query) {
-      queryRef.current = target.query;
-      setQuery(target.query);
-    }
 
     void import("maplibre-gl").then((module) => {
       if (disposed || !mapContainerRef.current) return;
@@ -349,7 +343,12 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
 
   function toggleLayer(layer: MapLayer) {
     setSelected(null); setSheetExpanded(false);
-    setActiveLayers((current) => { const next = new Set(current); next.has(layer) ? next.delete(layer) : next.add(layer); return next; });
+    setActiveLayers((current) => {
+      const next = new Set(current);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
   }
 
   function focusFeature(feature: MapApiFeature) {
