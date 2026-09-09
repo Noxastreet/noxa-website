@@ -36,7 +36,7 @@ for (const expected of [
   expectIncludes(edge, expected, "meet-public Edge Function");
 }
 
-const migration = read("supabase/migrations/20260909080500_lock_down_public_meet_writes.sql");
+const migration = read("supabase/migrations/20260909080500_lock_down_public_meet_writes.sql").toLowerCase();
 for (const expected of [
   'drop policy if exists "public can create follow subscriptions"',
   'drop policy if exists "public can submit event corrections"',
