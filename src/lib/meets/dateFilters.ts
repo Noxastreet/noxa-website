@@ -103,6 +103,7 @@ export function eventDiscoveryState(
 export type DiscoveryQuery = { country: string; city: string; type: string; date: string; q: string };
 export type DiscoveryEvent = { title: string; organizer: string; city: string; eventType: string; startsAt: string; endsAt?: string | null; timezone: string | null };
 const DISCOVERY_MOTORSPORT = new Set(["track_day", "drag", "drift", "rally", "karting", "dexterity"]);
+const DISCOVERY_MOTO = new Set(["moto_meet"]);
 
 export function buildDiscoveryQuery(state: DiscoveryQuery) {
   const params = new URLSearchParams();
@@ -115,10 +116,10 @@ export function buildDiscoveryQuery(state: DiscoveryQuery) {
 }
 
 function matchesDiscoveryType(eventType: string, type: string) {
-  if (eventType === "moto_meet") return false;
   if (type === "all") return true;
+  if (type === "moto") return DISCOVERY_MOTO.has(eventType);
   if (type === "motorsport") return DISCOVERY_MOTORSPORT.has(eventType);
-  return !DISCOVERY_MOTORSPORT.has(eventType);
+  return !DISCOVERY_MOTO.has(eventType) && !DISCOVERY_MOTORSPORT.has(eventType);
 }
 
 export function matchesDiscoveryEvent(event: DiscoveryEvent, state: DiscoveryQuery, locale: "en" | "el", now = new Date()) {
