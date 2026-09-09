@@ -27,6 +27,7 @@
     "test:platform-flows": "node scripts/test-platform-flows.mjs",
     "test:reliability-gate": "node scripts/test-reliability-gate.mjs",
     "test:supply-platform": "node scripts/test-supply-platform.mjs",
+    "test:supply-platform-p2": "node scripts/test-supply-platform-p2.mjs",
     "lighthouse:summary": "node scripts/summarize-lighthouse.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },
