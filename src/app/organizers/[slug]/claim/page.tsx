@@ -13,6 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Claim ${organizer.name} — NOXA Organizer`,
     description: `Request reviewed owner access to the ${organizer.name} organizer profile on NOXA.`,
+    robots: { index: false, follow: false },
     alternates: {
       canonical: `https://noxastreetapp.com/organizers/${organizer.slug}/claim`,
       languages: {
