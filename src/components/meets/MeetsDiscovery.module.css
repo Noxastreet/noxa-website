@@ -1,3 +1,7 @@
+.discoveryPage {
+  position: relative;
+}
+
 .quickSection {
   margin: 0 0 24px;
 }
@@ -38,6 +42,7 @@
   color: #f5f5f7;
   padding: 16px;
   text-align: left;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -200,6 +205,15 @@
   min-width: 0;
 }
 
+.cardShell {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardShell > a:first-child {
+  flex: 1;
+}
+
 .cardActions,
 .featuredActions {
   display: flex;
@@ -312,6 +326,10 @@
 }
 
 @media (max-width: 900px) {
+  .discoveryPage {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
   .quickRail,
   .recommendationRail {
     display: flex;
@@ -374,6 +392,7 @@
     border: 1px solid rgba(255,255,255,.12);
     border-radius: 18px;
     background: rgba(12,12,15,.9);
+    -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
     box-shadow: 0 18px 50px rgba(0,0,0,.48);
   }
@@ -414,6 +433,11 @@
   }
 
   .cardActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .featuredActions {
     align-items: stretch;
     flex-direction: column;
   }
