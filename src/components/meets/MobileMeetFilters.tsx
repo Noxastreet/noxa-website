@@ -50,25 +50,31 @@ export function MobileMeetFilters({
   onFilterChange,
   onReset,
 }: MobileMeetFiltersProps) {
-  const [open, setOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [dismissedSignal, setDismissedSignal] = useState(0);
+  const open = manualOpen || openSignal > dismissedSignal;
 
-  useEffect(() => {
-    if (openSignal > 0) setOpen(true);
-  }, [openSignal]);
+  function closeSheet() {
+    setManualOpen(false);
+    setDismissedSignal(openSignal);
+  }
 
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setManualOpen(false);
+        setDismissedSignal(openSignal);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [open, openSignal]);
 
   const t = locale === "el" ? {
     filters: "Φίλτρα",
@@ -118,7 +124,7 @@ export function MobileMeetFilters({
           <span className={styles.mobileDot} aria-hidden="true">·</span>
           <span className={styles.mobileSummaryText}>{typeLabel}</span>
         </div>
-        <button className={styles.mobileFilterButton} type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-expanded={open}>
+        <button className={styles.mobileFilterButton} type="button" onClick={() => setManualOpen(true)} aria-haspopup="dialog" aria-expanded={open}>
           {t.filters}<span aria-hidden="true">↗</span>
         </button>
       </div>
@@ -129,14 +135,14 @@ export function MobileMeetFilters({
 
       {open ? (
         <div className={styles.filterSheetLayer} role="presentation">
-          <button className={styles.filterSheetBackdrop} type="button" aria-label={t.close} onClick={() => setOpen(false)} />
+          <button className={styles.filterSheetBackdrop} type="button" aria-label={t.close} onClick={closeSheet} />
           <section className={styles.filterSheet} role="dialog" aria-modal="true" aria-labelledby="mobile-meet-filters-title">
             <div className={styles.filterSheetHeader}>
               <div>
                 <span>NOXA MEETS</span>
                 <h2 id="mobile-meet-filters-title">{t.title}</h2>
               </div>
-              <button className={styles.filterSheetClose} type="button" aria-label={t.close} onClick={() => setOpen(false)}>×</button>
+              <button className={styles.filterSheetClose} type="button" aria-label={t.close} onClick={closeSheet}>×</button>
             </div>
 
             <div className={styles.filterSheetFields}>
@@ -185,7 +191,7 @@ export function MobileMeetFilters({
 
             <div className={styles.filterSheetActions}>
               <button className={styles.sheetReset} type="button" onClick={onReset}>{t.reset}</button>
-              <button className={styles.sheetDone} type="button" onClick={() => setOpen(false)}>{t.done} · {eventCount}</button>
+              <button className={styles.sheetDone} type="button" onClick={closeSheet}>{t.done} · {eventCount}</button>
             </div>
           </section>
         </div>
