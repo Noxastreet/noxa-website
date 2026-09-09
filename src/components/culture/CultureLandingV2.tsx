@@ -22,7 +22,7 @@ const copy = {
     nav: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · GREECE",
-      title: "Find car events across Greece.",
+      title: "Find car & moto meets across Greece.",
       body: "Events, communities and automotive culture — all in one place.",
       primary: "Explore Meets",
       app: "NOXA App · Coming soon",
@@ -54,7 +54,7 @@ const copy = {
     nav: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · ΕΛΛΑΔΑ",
-      title: "Βρες εκδηλώσεις αυτοκινήτου σε όλη την Ελλάδα.",
+      title: "Βρες car & moto meets σε όλη την Ελλάδα.",
       body: "Events, κοινότητες και automotive culture — όλα σε ένα μέρος.",
       primary: "Βρες Meets",
       app: "NOXA App · Σύντομα",
