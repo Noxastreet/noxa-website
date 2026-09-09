@@ -1,6 +1,222 @@
 "use client";
-import Link from "next/link";import {type FormEvent,useMemo,useRef,useState} from "react";import {NoxaLogo} from "@/components/brand/NoxaLogo";import type {Locale} from "@/i18n/landing-copy";import styles from "./RadarSubmitForm.module.css";
-const SUBMIT_ENDPOINT="https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/radar-submit-event";const EVENT_TYPES=[["car_meet","Car meet"],["cars_and_coffee","Cars & Coffee"],["group_drive","Group drive"],["moto_meet","Moto meet"],["show","Auto show"],["festival","Festival"],["track_day","Track day"],["drag","Drag racing"],["drift","Drift"],["rally","Rally"],["other","Other"]] as const;const COUNTRY_CODES="AL AT BA BE BG CH CY CZ DE DK EE ES FI FR GB GE GR HR HU IE IS IT LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS SE SI SK TR UA".split(" ");type SubmitResponse={ok?:boolean;submitted?:boolean;duplicate?:boolean;message?:string;error?:string};
-const copy={en:{back:"← NOXA Meets",eyebrow:"EVENT SUGGESTION",title:"Suggest an event.",intro:"Know about a public car meet, moto gathering or motorsport event? Send the source and details. NOXA reviews every public suggestion before it appears in Meets.",noticeTitle:"Public suggestion — review required.",noticeBody:"This form never publishes directly. Verified organizers manage and publish their own events from the Organizer Dashboard.",organizerCta:"Organizer access",eventName:"Event name",type:"Type",date:"Date & time",country:"Country",city:"City",location:"Location",organizer:"Organizer name",source:"Original public source",sourceHelp:"Instagram, Facebook, organizer website or another public event page.",details:"Extra details",optional:"optional",detailsPlaceholder:"Entry rules, meetup time, parking details, vehicle theme…",review:"NOXA checks the public source before publication. Suggesting an event does not mean NOXA organizes or endorses it; final details remain the organizer’s responsibility.",submit:"Send suggestion for review",submitting:"Submitting…",successEyebrow:"SENT FOR REVIEW",successTitle:"Event suggestion received.",success:"NOXA will review the source and details before anything appears publicly.",duplicate:"This event is already in the NOXA review queue.",backMeets:"Back to NOXA Meets",another:"Suggest another",invalidDate:"Choose a valid date and time.",generic:"Could not submit this event for review."},el:{back:"← NOXA Meets",eyebrow:"ΠΡΟΤΑΣΗ EVENT",title:"Πρότεινε ένα event.",intro:"Γνωρίζεις κάποιο δημόσιο car meet, moto gathering ή motorsport event; Στείλε την πηγή και τα στοιχεία. Το NOXA ελέγχει κάθε δημόσια πρόταση πριν εμφανιστεί στα Meets.",noticeTitle:"Δημόσια πρόταση — απαιτείται review.",noticeBody:"Αυτή η φόρμα δεν δημοσιεύει event απευθείας. Οι verified organizers διαχειρίζονται και δημοσιεύουν τα δικά τους events από το Organizer Dashboard.",organizerCta:"Organizer access",eventName:"Όνομα event",type:"Τύπος",date:"Ημερομηνία & ώρα",country:"Χώρα",city:"Πόλη",location:"Τοποθεσία",organizer:"Όνομα organizer",source:"Αρχική δημόσια πηγή",sourceHelp:"Instagram, Facebook, website organizer ή άλλη δημόσια σελίδα του event.",details:"Επιπλέον στοιχεία",optional:"προαιρετικό",detailsPlaceholder:"Κανόνες εισόδου, ώρα συνάντησης, parking, vehicle theme…",review:"Το NOXA ελέγχει τη δημόσια πηγή πριν τη δημοσίευση. Η πρόταση event δεν σημαίνει ότι το NOXA το διοργανώνει ή το υποστηρίζει· οι τελικές πληροφορίες παραμένουν ευθύνη του organizer.",submit:"Στείλε για review",submitting:"Αποστολή…",successEyebrow:"ΣΤΑΛΘΗΚΕ ΓΙΑ REVIEW",successTitle:"Η πρόταση event ελήφθη.",success:"Το NOXA θα ελέγξει την πηγή και τα στοιχεία πριν εμφανιστεί οτιδήποτε δημόσια.",duplicate:"Αυτό το event βρίσκεται ήδη στη λίστα review του NOXA.",backMeets:"Πίσω στα NOXA Meets",another:"Πρότεινε άλλο",invalidDate:"Διάλεξε έγκυρη ημερομηνία και ώρα.",generic:"Δεν ήταν δυνατή η αποστολή του event για review."}} as const;
-function countryName(code:string,locale:Locale){try{return new Intl.DisplayNames([locale==="el"?"el-GR":"en-GB"],{type:"region"}).of(code)??code}catch{return code}}
-export function RadarSubmitForm({locale="en"}:{locale?:Locale}){const t=copy[locale],base=locale==="el"?"/el":"";const formStartedAt=useRef(0);const[busy,setBusy]=useState(false),[done,setDone]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState(""),[countryCode,setCountryCode]=useState("GR");const countries=useMemo(()=>COUNTRY_CODES.map(code=>({code,name:countryName(code,locale)})).sort((a,b)=>a.name.localeCompare(b.name)),[locale]);function markStarted(){if(!formStartedAt.current)formStartedAt.current=Date.now()}async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();if(busy)return;setBusy(true);setError("");setMessage("");try{const form=new FormData(event.currentTarget),localDate=String(form.get("startsAt")??""),parsedDate=new Date(localDate);if(!localDate||Number.isNaN(parsedDate.getTime()))throw new Error(t.invalidDate);const response=await fetch(SUBMIT_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:form.get("title"),eventType:form.get("eventType"),startsAt:parsedDate.toISOString(),countryCode:form.get("countryCode"),city:form.get("city"),location:form.get("location"),organizerName:form.get("organizerName"),sourceUrl:form.get("sourceUrl"),summary:form.get("summary"),website:form.get("website"),formStartedAt:formStartedAt.current})});const payload=await response.json().catch(()=>({})) as SubmitResponse;if(!response.ok)throw new Error(payload.error??t.generic);setDone(true);setMessage(payload.duplicate?t.duplicate:t.success)}catch(cause){setError(cause instanceof Error?cause.message:t.generic)}finally{setBusy(false)}}if(done)return <main className={styles.page}><section className={styles.successCard}><span className={styles.successMark} aria-hidden="true">✓</span><p className={styles.eyebrow}>{t.successEyebrow}</p><h1>{t.successTitle}</h1><p>{message}</p><div className={styles.successActions}><Link className={styles.primaryLink} href={`${base}/meets`}>{t.backMeets}</Link><button onClick={()=>{setDone(false);setMessage("");formStartedAt.current=0}} type="button">{t.another}</button></div></section></main>;return <div className={styles.page}><header className={styles.header}><Link className={styles.brand} href={base||"/"} aria-label="NOXA home"><NoxaLogo/></Link><Link className={styles.backLink} href={`${base}/meets`}>{t.back}</Link></header><main className={styles.main}><section className={styles.intro}><p className={styles.eyebrow}>{t.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p></section><form className={styles.form} onFocusCapture={markStarted} onSubmit={submit}><div className={styles.notice}><strong>{t.noticeTitle}</strong><span>{t.noticeBody}</span><Link className="mt-1 text-sm font-semibold text-white underline underline-offset-4" href={`${base}/organizer`}>{t.organizerCta} →</Link></div><label className={styles.field}><span>{t.eventName}</span><input maxLength={160} name="title" placeholder="Thessaloniki Night Meet" required/></label><div className={styles.twoColumns}><label className={styles.field}><span>{t.type}</span><select defaultValue="car_meet" name="eventType">{EVENT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><label className={styles.field}><span>{t.date}</span><input name="startsAt" required type="datetime-local"/></label></div><div className={styles.twoColumns}><label className={styles.field}><span>{t.country}</span><select name="countryCode" value={countryCode} onChange={e=>setCountryCode(e.target.value)}>{countries.map(({code,name})=><option key={code} value={code}>{name}</option>)}</select></label><label className={styles.field}><span>{t.city}</span><input maxLength={100} name="city" placeholder="Thessaloniki" required/></label></div><label className={styles.field}><span>{t.location}</span><input maxLength={180} name="location" placeholder="Venue, parking area or meeting point" required/></label><label className={styles.field}><span>{t.organizer}</span><input maxLength={120} name="organizerName" placeholder="Organizer name" required/></label><label className={styles.field}><span>{t.source}</span><input inputMode="url" maxLength={500} name="sourceUrl" placeholder="https://instagram.com/..." required type="url"/><small>{t.sourceHelp}</small></label><label className={styles.field}><span>{t.details} <em>{t.optional}</em></span><textarea maxLength={700} name="summary" placeholder={t.detailsPlaceholder} rows={5}/></label><div className={styles.honeypot} aria-hidden="true"><label>Website<input autoComplete="off" name="website" tabIndex={-1}/></label></div><div className={styles.reviewNote}><span aria-hidden="true">●</span><p>{t.review}</p></div>{error?<p className={styles.error} role="alert">{error}</p>:null}<button className={styles.submitButton} disabled={busy} type="submit">{busy?t.submitting:t.submit}{!busy?<span aria-hidden="true">→</span>:null}</button></form></main></div>}
+
+import Link from "next/link";
+import { type FormEvent, useRef, useState } from "react";
+
+import { NoxaLogo } from "@/components/brand/NoxaLogo";
+import type { Locale } from "@/i18n/landing-copy";
+
+import styles from "./RadarSubmitForm.module.css";
+
+const SUBMIT_ENDPOINT = "https://qrouwtqsqrfeeeppyeru.supabase.co/functions/v1/radar-submit-event";
+const EVENT_TYPES = [
+  ["car_meet", "Car meet"],
+  ["cars_and_coffee", "Cars & Coffee"],
+  ["group_drive", "Group drive"],
+  ["moto_meet", "Moto meet"],
+  ["show", "Car / moto show"],
+  ["festival", "Festival"],
+  ["track_day", "Track day"],
+  ["drag", "Drag racing"],
+  ["drift", "Drift"],
+  ["rally", "Rally"],
+  ["karting", "Karting"],
+  ["dexterity", "Dexterity"],
+  ["other", "Other"],
+] as const;
+
+type SubmitResponse = { ok?: boolean; submitted?: boolean; duplicate?: boolean; message?: string; error?: string };
+
+const copy = {
+  en: {
+    back: "← NOXA Meets",
+    eyebrow: "ADD EVENT · GREECE",
+    title: "Add your event.",
+    intro: "Organizing or know about a public car or motorcycle event in Greece? Send the official source and event details. NOXA reviews the submission before it appears in Meets.",
+    noticeTitle: "Public submission — NOXA review required.",
+    noticeBody: "This form does not publish instantly. Verified organizers can manage their own events through Organizer access.",
+    organizerCta: "Apply or claim Organizer access",
+    eventName: "Event name",
+    type: "Type",
+    date: "Date & time",
+    country: "Country",
+    city: "City",
+    location: "Location",
+    organizer: "Organizer name",
+    source: "Official / public event source",
+    sourceHelp: "Organizer website, official Instagram/Facebook post or another public page for this exact event.",
+    details: "Event details",
+    optional: "optional",
+    detailsPlaceholder: "Program, entry rules, meetup time, parking, vehicle theme, spectator information…",
+    review: "NOXA checks the source before publication. Do not invent missing details. Final event information remains the organizer’s responsibility.",
+    submit: "Send event for review",
+    submitting: "Submitting…",
+    successEyebrow: "EVENT RECEIVED",
+    successTitle: "Your event is in the NOXA review queue.",
+    success: "NOXA will verify the source and details before it becomes public.",
+    duplicate: "This event is already published or waiting in the NOXA review queue.",
+    backMeets: "Back to NOXA Meets",
+    another: "Add another event",
+    invalidDate: "Choose a valid date and time.",
+    generic: "Could not submit this event for review.",
+  },
+  el: {
+    back: "← NOXA Meets",
+    eyebrow: "ΠΡΟΣΘΗΚΗ EVENT · ΕΛΛΑΔΑ",
+    title: "Πρόσθεσε το event σου.",
+    intro: "Διοργανώνεις ή γνωρίζεις ένα δημόσιο car ή moto event στην Ελλάδα; Στείλε την επίσημη πηγή και τα στοιχεία. Το NOXA ελέγχει την υποβολή πριν εμφανιστεί στα Meets.",
+    noticeTitle: "Δημόσια υποβολή — απαιτείται NOXA review.",
+    noticeBody: "Η φόρμα δεν δημοσιεύει άμεσα. Οι verified organizers μπορούν να διαχειρίζονται τα δικά τους events μέσω Organizer access.",
+    organizerCta: "Apply ή claim Organizer access",
+    eventName: "Όνομα event",
+    type: "Τύπος",
+    date: "Ημερομηνία & ώρα",
+    country: "Χώρα",
+    city: "Πόλη",
+    location: "Τοποθεσία",
+    organizer: "Όνομα organizer",
+    source: "Επίσημη / δημόσια πηγή event",
+    sourceHelp: "Website organizer, επίσημο Instagram/Facebook post ή άλλη δημόσια σελίδα για το συγκεκριμένο event.",
+    details: "Στοιχεία event",
+    optional: "προαιρετικό",
+    detailsPlaceholder: "Πρόγραμμα, κανόνες εισόδου, ώρα συνάντησης, parking, vehicle theme, spectator info…",
+    review: "Το NOXA ελέγχει την πηγή πριν τη δημοσίευση. Μην προσθέτεις στοιχεία που δεν είναι επιβεβαιωμένα. Οι τελικές πληροφορίες παραμένουν ευθύνη του organizer.",
+    submit: "Στείλε το event για review",
+    submitting: "Αποστολή…",
+    successEyebrow: "ΤΟ EVENT ΕΛΗΦΘΗ",
+    successTitle: "Το event μπήκε στο NOXA review queue.",
+    success: "Το NOXA θα επιβεβαιώσει την πηγή και τα στοιχεία πριν γίνει public.",
+    duplicate: "Αυτό το event είναι ήδη published ή βρίσκεται στο NOXA review queue.",
+    backMeets: "Πίσω στα NOXA Meets",
+    another: "Πρόσθεσε άλλο event",
+    invalidDate: "Διάλεξε έγκυρη ημερομηνία και ώρα.",
+    generic: "Δεν ήταν δυνατή η αποστολή του event για review.",
+  },
+} as const;
+
+export function RadarSubmitForm({ locale = "en" }: { locale?: Locale }) {
+  const t = copy[locale];
+  const base = locale === "el" ? "/el" : "";
+  const formStartedAt = useRef(0);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  function markStarted() {
+    if (!formStartedAt.current) formStartedAt.current = Date.now();
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const form = new FormData(event.currentTarget);
+      const localDate = String(form.get("startsAt") ?? "");
+      const parsedDate = new Date(localDate);
+      if (!localDate || Number.isNaN(parsedDate.getTime())) throw new Error(t.invalidDate);
+
+      const response = await fetch(SUBMIT_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.get("title"),
+          eventType: form.get("eventType"),
+          startsAt: parsedDate.toISOString(),
+          countryCode: "GR",
+          city: form.get("city"),
+          location: form.get("location"),
+          organizerName: form.get("organizerName"),
+          sourceUrl: form.get("sourceUrl"),
+          summary: form.get("summary"),
+          website: form.get("website"),
+          formStartedAt: formStartedAt.current,
+        }),
+      });
+      const payload = await response.json().catch(() => ({})) as SubmitResponse;
+      if (!response.ok) throw new Error(payload.error ?? t.generic);
+      setDone(true);
+      setMessage(payload.duplicate ? t.duplicate : t.success);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t.generic);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.successCard}>
+          <span className={styles.successMark} aria-hidden="true">✓</span>
+          <p className={styles.eyebrow}>{t.successEyebrow}</p>
+          <h1>{t.successTitle}</h1>
+          <p>{message}</p>
+          <div className={styles.successActions}>
+            <Link className={styles.primaryLink} href={`${base}/meets`}>{t.backMeets}</Link>
+            <button onClick={() => { setDone(false); setMessage(""); formStartedAt.current = 0; }} type="button">{t.another}</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <Link className={styles.brand} href={base || "/"} aria-label="NOXA home"><NoxaLogo /></Link>
+        <Link className={styles.backLink} href={`${base}/meets`}>{t.back}</Link>
+      </header>
+      <main className={styles.main}>
+        <section className={styles.intro}>
+          <p className={styles.eyebrow}>{t.eyebrow}</p>
+          <h1>{t.title}</h1>
+          <p>{t.intro}</p>
+        </section>
+        <form className={styles.form} onFocusCapture={markStarted} onSubmit={submit}>
+          <div className={styles.notice}>
+            <strong>{t.noticeTitle}</strong>
+            <span>{t.noticeBody}</span>
+            <Link className="mt-1 text-sm font-semibold text-white underline underline-offset-4" href={`${base}/organizers`}>{t.organizerCta} →</Link>
+          </div>
+
+          <label className={styles.field}><span>{t.eventName}</span><input maxLength={160} name="title" placeholder="Thessaloniki Night Meet" required /></label>
+          <div className={styles.twoColumns}>
+            <label className={styles.field}>
+              <span>{t.type}</span>
+              <select defaultValue="car_meet" name="eventType">{EVENT_TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            </label>
+            <label className={styles.field}><span>{t.date}</span><input name="startsAt" required type="datetime-local" /></label>
+          </div>
+
+          <div className={styles.twoColumns}>
+            <label className={styles.field}><span>{t.country}</span><input readOnly value={locale === "el" ? "Ελλάδα" : "Greece"} /></label>
+            <label className={styles.field}><span>{t.city}</span><input maxLength={100} name="city" placeholder="Thessaloniki" required /></label>
+          </div>
+
+          <label className={styles.field}><span>{t.location}</span><input maxLength={180} name="location" placeholder="Venue, track, parking area or meeting point" required /></label>
+          <label className={styles.field}><span>{t.organizer}</span><input maxLength={120} name="organizerName" placeholder="Organizer name" required /></label>
+          <label className={styles.field}>
+            <span>{t.source}</span>
+            <input inputMode="url" maxLength={500} name="sourceUrl" placeholder="https://instagram.com/..." required type="url" />
+            <small>{t.sourceHelp}</small>
+          </label>
+          <label className={styles.field}>
+            <span>{t.details} <em>{t.optional}</em></span>
+            <textarea maxLength={700} name="summary" placeholder={t.detailsPlaceholder} rows={5} />
+          </label>
+
+          <div className={styles.honeypot} aria-hidden="true"><label>Website<input autoComplete="off" name="website" tabIndex={-1} /></label></div>
+          <div className={styles.reviewNote}><span aria-hidden="true">●</span><p>{t.review}</p></div>
+          {error ? <p className={styles.error} role="alert">{error}</p> : null}
+          <button className={styles.submitButton} disabled={busy} type="submit">
+            {busy ? t.submitting : t.submit}{!busy ? <span aria-hidden="true">→</span> : null}
+          </button>
+        </form>
+      </main>
+    </div>
+  );
+}
