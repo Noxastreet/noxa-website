@@ -15,6 +15,7 @@ type MobileMeetFiltersProps = {
   cities: string[];
   filter: Filter;
   eventCount: number;
+  openSignal?: number;
   onCountryChange: (country: string) => void;
   onCityChange: (city: string) => void;
   onFilterChange: (filter: Filter) => void;
@@ -43,12 +44,17 @@ export function MobileMeetFilters({
   cities,
   filter,
   eventCount,
+  openSignal = 0,
   onCountryChange,
   onCityChange,
   onFilterChange,
   onReset,
 }: MobileMeetFiltersProps) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (openSignal > 0) setOpen(true);
+  }, [openSignal]);
 
   useEffect(() => {
     if (!open) return;
