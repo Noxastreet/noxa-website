@@ -12,7 +12,8 @@ export type RadarQualityIssueCode =
   | "short_summary"
   | "placeholder_summary"
   | "invalid_source_url"
-  | "invalid_country";
+  | "invalid_country"
+  | "outside_greece";
 
 export type RadarQualityCandidate = {
   title: string;
@@ -49,6 +50,7 @@ const ISSUE_LABELS: Record<RadarQualityIssueCode, string> = {
   placeholder_summary: "summary is a collector placeholder",
   invalid_source_url: "invalid source URL",
   invalid_country: "invalid country code",
+  outside_greece: "event is outside Greece",
 };
 
 function normalizedKey(value: string | null | undefined) {
@@ -111,6 +113,7 @@ export function radarCandidateQualityIssues(candidate: RadarQualityCandidate): R
 
   if (!isHttpUrl(candidate.original_url)) issues.push("invalid_source_url");
   if (!/^[A-Z]{2}$/.test(candidate.country_code)) issues.push("invalid_country");
+  else if (candidate.country_code !== "GR") issues.push("outside_greece");
 
   return issues;
 }
