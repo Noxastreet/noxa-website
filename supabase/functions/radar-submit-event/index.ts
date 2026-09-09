@@ -17,6 +17,8 @@ const EVENT_TYPES = new Set([
   "cars_and_coffee",
   "group_drive",
   "festival",
+  "karting",
+  "dexterity",
   "other",
 ]);
 const LIMIT = 5;
@@ -52,7 +54,7 @@ function cors(origin: string | null) {
     "Access-Control-Allow-Origin": allowedOrigin(origin) ? origin! : "https://noxastreetapp.com",
     "Access-Control-Allow-Headers": "content-type, apikey",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Vary": "Origin",
+    Vary: "Origin",
   };
 }
 
@@ -198,7 +200,7 @@ Deno.serve(async (req: Request) => {
 
   if (title.length < 3) return json({ error: "Event name is required." }, 400, origin);
   if (!EVENT_TYPES.has(eventType)) return json({ error: "Choose a valid event type." }, 400, origin);
-  if (!/^[A-Z]{2}$/.test(countryCode)) return json({ error: "Choose a valid country." }, 400, origin);
+  if (countryCode !== "GR") return json({ error: "NOXA currently accepts public event submissions in Greece only." }, 400, origin);
   if (city.length < 2) return json({ error: "City is required." }, 400, origin);
   if (location.length < 2) return json({ error: "Location is required." }, 400, origin);
   if (organizerName.length < 2) return json({ error: "Organizer name is required." }, 400, origin);
@@ -208,9 +210,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    if (await rateLimited(req)) {
-      return json({ error: "Too many submissions. Try again tomorrow." }, 429, origin);
-    }
+    if (await rateLimited(req)) return json({ error: "Too many submissions. Try again tomorrow." }, 429, origin);
 
     if (await alreadyKnown(sourceUrl)) {
       return json({ ok: true, submitted: false, duplicate: true, message: "This event is already in the NOXA review queue." }, 200, origin);
@@ -223,12 +223,12 @@ Deno.serve(async (req: Request) => {
         source_id: null,
         original_url: sourceUrl,
         original_external_id: null,
-        country_code: countryCode,
+        country_code: "GR",
         title,
         event_type: eventType,
         starts_at: startsAt.toISOString(),
         ends_at: null,
-        timezone: countryCode === "GR" ? "Europe/Athens" : "UTC",
+        timezone: "Europe/Athens",
         location_text: location,
         city,
         region: null,
@@ -236,12 +236,12 @@ Deno.serve(async (req: Request) => {
         organizer_url: sourceUrl,
         summary,
         ai_confidence: null,
-        ai_reason: "Submitted through the public NOXA Radar event form. Human review is required before publication.",
+        ai_reason: "Submitted through the public NOXA Meets event form. Human review is required before publication.",
         raw_payload: {
           provider: "public_submission",
-          submitted_via: "https://noxastreetapp.com/radar/submit"
+          submitted_via: "https://noxastreetapp.com/meets/submit",
         },
-        status: "new"
+        status: "new",
       }),
     });
 
@@ -254,10 +254,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const rows = await insert.json() as Array<{ id: string }>;
-
-    // Keep the internal rate-limit table bounded without storing raw client identifiers.
     void rest(`radar_submission_rate_limits?updated_at=lt.${encodeURIComponent(new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString())}`, { method: "DELETE" }).catch(() => undefined);
-
     return json({ ok: true, submitted: true, id: rows[0]?.id ?? null }, 201, origin);
   } catch (error) {
     console.error("Radar public submission failed", error);
