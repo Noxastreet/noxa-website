@@ -9,6 +9,7 @@ import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
 import videoStyles from "./CultureHeroVideo.module.css";
 import { HeroVideo } from "./HeroVideo";
+import { HomepageDiscoveryRail } from "./HomepageDiscoveryRail";
 import { RadarHomeSpotlight } from "./RadarHomeSpotlight";
 import styles from "./CultureLandingV2.module.css";
 import refine from "./CultureLandingV2Refine.module.css";
@@ -22,9 +23,10 @@ const copy = {
     nav: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · GREECE",
-      title: "Find car & moto meets across Greece.",
-      body: "Events, communities and automotive culture — all in one place.",
-      primary: "Explore Meets",
+      title: "Discover car & moto events across Greece.",
+      body: "See what’s happening this weekend, explore the map and find the organizers behind each event.",
+      primary: "Explore Events",
+      map: "Open NOXA Map",
       app: "NOXA App · Coming soon",
     },
     paths: {
@@ -54,9 +56,10 @@ const copy = {
     nav: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · ΕΛΛΑΔΑ",
-      title: "Βρες car & moto meets σε όλη την Ελλάδα.",
-      body: "Events, κοινότητες και automotive culture — όλα σε ένα μέρος.",
-      primary: "Βρες Meets",
+      title: "Ανακάλυψε car & moto events σε όλη την Ελλάδα.",
+      body: "Δες τι γίνεται αυτό το weekend, εξερεύνησε τον χάρτη και βρες τους organizers πίσω από κάθε event.",
+      primary: "Δες Events",
+      map: "Άνοιξε το NOXA Map",
       app: "NOXA App · Σύντομα",
     },
     paths: {
@@ -89,6 +92,7 @@ export function CultureLandingV2({ locale }: Props) {
   const t = copy[locale];
   const home = locale === "el" ? "/el" : "/";
   const meets = locale === "el" ? "/el/meets" : "/meets";
+  const map = locale === "el" ? "/el/map" : "/map";
   const communities = locale === "el" ? "/el/communities" : "/communities";
   const organizers = locale === "el" ? "/el/organizers" : "/organizers";
 
@@ -113,11 +117,14 @@ export function CultureLandingV2({ locale }: Props) {
               <p className={styles.heroBody}>{t.hero.body}</p>
               <div className={styles.heroActions}>
                 <Link className={styles.primaryButton} href={meets}>{t.hero.primary} <span aria-hidden="true">→</span></Link>
+                <Link className={styles.secondaryButton} href={map}>{t.hero.map} <span aria-hidden="true">↗</span></Link>
               </div>
               <a className={styles.appHint} href="#app">{t.hero.app} <span aria-hidden="true">↓</span></a>
             </div>
           </div>
         </section>
+
+        <HomepageDiscoveryRail locale={locale} />
 
         <div className={styles.cinematicBand}>
           <RadarHomeSpotlight locale={locale} />

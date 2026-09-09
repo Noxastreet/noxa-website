@@ -1,7 +1,7 @@
 const baseUrl = process.env.PRODUCTION_URL;
 if (!baseUrl) throw new Error("PRODUCTION_URL is required");
 
-const userAgent = "NOXA-production-smoke/3.4";
+const userAgent = "NOXA-production-smoke/3.5";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
@@ -54,15 +54,18 @@ for (const expected of [
   "aria-label=\"EN — English\"",
   "aria-label=\"EL — Greek\"",
   "href=\"/meets\"",
+  "href=\"/map\"",
   "href=\"/communities\"",
   "href=\"/organizers\"",
+  "href=\"/meets/submit\"",
   "/brand/noxa-maps-logo.png",
   "THIS WEEKEND IN GREECE",
   "/meets?country=GR&amp;date=weekend",
+  "Discover car &amp; moto events across Greece.",
+  "Open NOXA Map",
 ]) {
   if (!homeHtml.includes(expected)) throw new Error(`Home missing: ${expected}`);
 }
-if (homeHtml.includes("href=\"/meets/submit\"")) throw new Error("Home must not expose Add Event");
 
 const pages = [
   ["meets", "/meets", "Find your next meet."],

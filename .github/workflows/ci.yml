@@ -82,6 +82,8 @@ jobs:
         run: npm run test:supply-platform
       - name: Supply Platform P2 organizer dashboard fixtures
         run: npm run test:supply-platform-p2
+      - name: NOXA Discovery homepage fixtures
+        run: npm run test:discovery-home
       - name: Lint
         run: npm run lint
       - name: Production build
