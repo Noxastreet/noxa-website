@@ -67,8 +67,8 @@ export function tourismPlaceContext(name: string, text: string) {
   }
 
   if (position < 0) return text.slice(0, 1_200);
-  const start = Math.max(0, position - 320);
-  const end = Math.min(text.length, position + Math.max(exact.length, 1) + 820);
+  const start = Math.max(0, position - 220);
+  const end = Math.min(text.length, position + Math.max(exact.length, 1) + 1_500);
   return text.slice(start, end);
 }
 
@@ -104,14 +104,22 @@ export function tourismPlaceContextFromHtml(name: string, html: string) {
   return selected.join(" ").slice(0, 2_500);
 }
 
+const SCENIC_PATTERN = /\bviewpoint\b|\blookout\b|\bvantage point\b|\bpanoramic view\b|\bpanoramic views\b|\b360 view\b|\b360 degree view\b|\boverlooking\b|\bbreathtaking view\b|\bstunning view\b|\bscenic view\b|θεα πανοραμ|πανοραμικ|σημειο θεας/;
+const PHOTO_PATTERN = /\bphoto spot\b|\bphotography location\b|\bphotograph\b|\bphotographer\b|\bphotogenic\b|\bpostcard perfect\b|\bvisual delight\b|\bphoto viewpoint\b|\bsunset viewpoint\b|ιδανικ.{0,20}φωτογραφ|φωτογραφ/;
+const DRIVING_PATTERN = /\bby car\b|\bdrive up\b|\bdrive to\b|\broad to drive\b|\baccessible by road\b|\broad access\b|\bprivate car\b|\b4x4 vehicle\b|\bshort drive\b|\breach.{0,50}by car\b|\broad leads\b|οδικ.{0,30}προσβα|με αυτοκινητ/;
+const PUBLIC_PATTERN = /\bhow to get there\b|\bvisit\b|\bvisitors\b|\baccessible\b|\breach\b|\bopen\b|\bpublic\b|\bdrive\b|επισκεπτ|προσβα/;
+const WALKING_ONLY_PATTERN = /only reach.{0,80}on foot|only reachable.{0,50}on foot|access.{0,40}only.{0,30}on foot|can only.{0,40}walk|only access.{0,50}hiking|προσβαση.{0,50}μονο.{0,30}πεζ/;
+const TRAILHEAD_PATTERN = /starting point.{0,180}(?:by car|drive|private car)|parking area.{0,120}(?:trail|path|hike|walk)/;
+
 export function classifyTourismPlace(
   name: string,
   text: string,
   preferredSubtype: TourismPlaceSubtype,
 ): TourismPlaceClassification {
-  const normalized = normalize(`${name} ${text.slice(0, 20_000)}`);
-  const scenicEvidence = /\bviewpoint\b|\blookout\b|\bvantage point\b|\bpanoramic view\b|\bpanoramic views\b|\b360 view\b|\b360 degree view\b|\boverlooking\b|\bbreathtaking view\b|\bstunning view\b|\bscenic view\b|θεα πανοραμ|πανοραμικ|σημειο θεας/.test(normalized);
-  const photoEvidence = /\bphoto spot\b|\bphotography location\b|\bphotograph\b|\bphotographer\b|\bphotogenic\b|\bpostcard perfect\b|\bvisual delight\b|\bphoto viewpoint\b|\bsunset viewpoint\b|ιδανικ.{0,20}φωτογραφ|φωτογραφ/.test(normalized);
+  const context = tourismPlaceContext(name, text);
+  const normalized = normalize(`${name} ${context}`);
+  const scenicEvidence = SCENIC_PATTERN.test(normalized);
+  const photoEvidence = PHOTO_PATTERN.test(normalized);
 
   if (!scenicEvidence) {
     return { subtype: null, reason: "scenic_evidence_missing", scenicEvidence, photoEvidence };
@@ -127,18 +135,27 @@ export function classifyTourismPlace(
 
 export function tourismPlaceAccessEvidence(text: string): TourismPlaceAccess | null {
   const normalized = normalize(text.slice(0, 30_000));
-  const walkingOnly = /only reach.{0,80}on foot|only reachable.{0,50}on foot|access.{0,40}only.{0,30}on foot|can only.{0,40}walk|only access.{0,50}hiking|προσβαση.{0,50}μονο.{0,30}πεζ/.test(normalized);
-  const trailheadOnly = /starting point.{0,180}(?:by car|drive|private car)|parking area.{0,120}(?:trail|path|hike|walk)/.test(normalized)
-    && /\bhiking\b|\btrail\b|\bpath begins\b|\bwalk\b/.test(normalized);
-  if (walkingOnly || trailheadOnly) return null;
+  const drivingMatches = [...normalized.matchAll(new RegExp(DRIVING_PATTERN.source, "g"))];
 
-  const drivingEvidence = /\bby car\b|\bdrive up\b|\bdrive to\b|\broad to drive\b|\baccessible by road\b|\broad access\b|\bprivate car\b|\b4x4 vehicle\b|\bshort drive\b|\breach.{0,50}by car\b|\broad leads\b|οδικ.{0,30}προσβα|με αυτοκινητ/.test(normalized);
-  const publicEvidence = /\bhow to get there\b|\bvisit\b|\bvisitors\b|\baccessible\b|\breach\b|\bopen\b|\bpublic\b|\bdrive\b|επισκεπτ|προσβα/.test(normalized);
-  if (!drivingEvidence || !publicEvidence) return null;
+  for (const match of drivingMatches) {
+    const position = match.index ?? 0;
+    const start = Math.max(0, position - 650);
+    const end = Math.min(normalized.length, position + match[0].length + 900);
+    const window = normalized.slice(start, end);
 
-  return {
-    publicAccess: "confirmed",
-    drivingAccess: "conditional",
-    notes: "Official tourism source describes public road/car access to the scenic point; current signs, closures and local restrictions remain authoritative.",
-  };
+    const walkingOnly = WALKING_ONLY_PATTERN.test(window);
+    const trailheadOnly = TRAILHEAD_PATTERN.test(window)
+      && /\bhiking\b|\btrail\b|\bpath begins\b|\bwalk\b/.test(window);
+    if (walkingOnly || trailheadOnly) continue;
+
+    if (!SCENIC_PATTERN.test(window) || !PUBLIC_PATTERN.test(window)) continue;
+
+    return {
+      publicAccess: "confirmed",
+      drivingAccess: "conditional",
+      notes: "Official tourism source describes public road/car access to the scenic point; current signs, closures and local restrictions remain authoritative.",
+    };
+  }
+
+  return null;
 }
