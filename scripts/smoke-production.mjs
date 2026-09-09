@@ -1,7 +1,7 @@
 const baseUrl = process.env.PRODUCTION_URL;
 if (!baseUrl) throw new Error("PRODUCTION_URL is required");
 
-const userAgent = "NOXA-production-smoke/3.3";
+const userAgent = "NOXA-production-smoke/3.4";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
@@ -13,6 +13,12 @@ const checks = [
   ["greek-communities", "/el/communities", "text/html"],
   ["community-apply", "/communities/apply", "text/html"],
   ["greek-community-apply", "/el/communities/apply", "text/html"],
+  ["organizers", "/organizers", "text/html"],
+  ["greek-organizers", "/el/organizers", "text/html"],
+  ["organizer-apply", "/organizers/apply", "text/html"],
+  ["greek-organizer-apply", "/el/organizers/apply", "text/html"],
+  ["organizer-dashboard", "/organizer", "text/html"],
+  ["greek-organizer-dashboard", "/el/organizer", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
@@ -37,34 +43,6 @@ for (const [name, pathname, expectedType] of checks) {
   console.log(`✓ ${name}: ${response.status}`);
 }
 
-const organizerRedirects = [
-  ["organizers", "/organizers", "/meets"],
-  ["organizer-profile", "/organizers/example", "/meets"],
-  ["organizer-apply", "/organizers/apply", "/meets"],
-  ["organizer-dashboard", "/organizer", "/meets"],
-  ["organizer-insights", "/organizer/insights", "/meets"],
-  ["greek-organizers", "/el/organizers", "/el/meets"],
-  ["greek-organizer-profile", "/el/organizers/example", "/el/meets"],
-  ["greek-organizer-apply", "/el/organizers/apply", "/el/meets"],
-  ["greek-organizer-dashboard", "/el/organizer", "/el/meets"],
-  ["greek-organizer-insights", "/el/organizer/insights", "/el/meets"],
-];
-
-for (const [name, pathname, expectedPath] of organizerRedirects) {
-  const response = await fetch(new URL(pathname, baseUrl), {
-    redirect: "manual",
-    headers: { "User-Agent": userAgent },
-  });
-  if (![301, 302, 307, 308].includes(response.status)) {
-    throw new Error(`${name} expected redirect, got HTTP ${response.status}`);
-  }
-  const location = response.headers.get("location");
-  if (!location || new URL(location, baseUrl).pathname !== expectedPath) {
-    throw new Error(`${name} redirects to ${location}; expected ${expectedPath}`);
-  }
-  console.log(`✓ ${name}: hidden → ${expectedPath}`);
-}
-
 const health = await (await fetch(new URL("/api/health", baseUrl), { headers: { "User-Agent": userAgent } })).json();
 if (health.status !== "ok" || health.service !== "noxa-website") throw new Error("Unexpected health payload");
 
@@ -77,6 +55,7 @@ for (const expected of [
   "aria-label=\"EL — Greek\"",
   "href=\"/meets\"",
   "href=\"/communities\"",
+  "href=\"/organizers\"",
   "/brand/noxa-maps-logo.png",
   "THIS WEEKEND IN GREECE",
   "/meets?country=GR&amp;date=weekend",
@@ -90,6 +69,8 @@ const pages = [
   ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
   ["communities", "/communities", "Find your scene."],
   ["greek-communities", "/el/communities", "Βρες τη σκηνή σου."],
+  ["organizers", "/organizers", "The organizers behind the events."],
+  ["greek-organizers", "/el/organizers", "Οι organizers πίσω από τα events."],
 ];
 for (const [name, pathname, expected] of pages) {
   const html = await (await fetch(new URL(pathname, baseUrl), { headers: { "User-Agent": userAgent } })).text();
@@ -102,8 +83,13 @@ if (!meetsHtml.includes("href=\"/meets/submit\"")) throw new Error("Meets missin
 if (!meetsHtml.includes("This weekend")) throw new Error("Meets missing date filters");
 if (!meetsHtml.includes(">Search<")) throw new Error("Meets missing discovery search");
 
+const organizerHtml = await (await fetch(new URL("/organizers", baseUrl), { headers: { "User-Agent": userAgent } })).text();
+for (const expected of ["href=\"/organizers/apply\"", "I already have access", "car and motorcycle events in Greece"]) {
+  if (!organizerHtml.includes(expected)) throw new Error(`Organizer directory missing: ${expected}`);
+}
+
 const communityHtml = await (await fetch(new URL("/communities", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-for (const forbidden of ["href=\"/radar\"", "href=\"/crews\"", "href=\"/routes\"", "href=\"/organizers\""]) {
+for (const forbidden of ["href=\"/radar\"", "href=\"/crews\"", "href=\"/routes\""]) {
   if (communityHtml.includes(forbidden)) throw new Error(`Community navigation still contains ${forbidden}`);
 }
 for (const expected of ["href=\"/meets\"", "href=\"/communities\""]) {
@@ -113,17 +99,33 @@ if (communityHtml.includes("communities, organisers and local scenes")) throw ne
 if (communityHtml.includes("communities, organizers and local scenes")) throw new Error("Communities metadata still mixes organizer discovery");
 
 const greekSubmit = await (await fetch(new URL("/el/meets/submit", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-if (!greekSubmit.includes("Πρότεινε ένα event") || greekSubmit.includes("Submit an event for review.")) {
-  throw new Error("Greek event suggestion is not localized");
+if (!greekSubmit.includes("Πρόσθεσε το event σου.") || greekSubmit.includes("Submit an event for review.")) {
+  throw new Error("Greek Add Event flow is not localized");
 }
 
 const robotsText = await (await fetch(new URL("/robots.txt", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-if (!robotsText.includes("Disallow: /organizer") || !robotsText.includes("Disallow: /organizers")) {
-  throw new Error("robots.txt does not hide organizer routes");
+const robotsLines = robotsText.split(/\r?\n/).map((line) => line.trim());
+for (const expected of ["Disallow: /organizer", "Disallow: /el/organizer"]) {
+  if (!robotsLines.includes(expected)) throw new Error(`robots.txt missing private organizer rule: ${expected}`);
 }
+for (const forbidden of ["Disallow: /organizers", "Disallow: /el/organizers"]) {
+  if (robotsLines.includes(forbidden)) throw new Error(`robots.txt still hides public organizer directory: ${forbidden}`);
+}
+
 const sitemapText = await (await fetch(new URL("/sitemap.xml", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-if (sitemapText.includes("/organizer") || sitemapText.includes("/organizers")) {
-  throw new Error("Sitemap still exposes organizer routes");
+for (const expected of [
+  "https://noxastreetapp.com/organizers",
+  "https://noxastreetapp.com/el/organizers",
+  "https://noxastreetapp.com/organizers/apply",
+]) {
+  if (!sitemapText.includes(expected)) throw new Error(`Sitemap missing public organizer surface: ${expected}`);
+}
+for (const forbidden of [
+  "<loc>https://noxastreetapp.com/organizer</loc>",
+  "<loc>https://noxastreetapp.com/el/organizer</loc>",
+  "/claim</loc>",
+]) {
+  if (sitemapText.includes(forbidden)) throw new Error(`Sitemap exposes private organizer surface: ${forbidden}`);
 }
 
 const origin = new URL(baseUrl).origin;
