@@ -258,7 +258,6 @@ async function markVerified(candidateId: string, reason: string) {
     body: JSON.stringify({
       status: "verified",
       verified_at: now,
-      official_verified: true,
       verification_confidence: 1,
       verification_reason: reason,
       verification_attempted_at: now,
