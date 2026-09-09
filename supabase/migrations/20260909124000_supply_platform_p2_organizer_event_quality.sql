@@ -80,5 +80,31 @@ begin
 end;
 $$;
 
+-- The existing radar_event_quality_gate already covers INSERT and any update
+-- that changes status/coordinates. Add a narrow organizer-only update trigger so
+-- a verified organizer cannot publish a valid event and then bypass the gate by
+-- changing title/date/location/summary/source through the REST API.
+drop trigger if exists radar_organizer_event_quality_gate on public.radar_events;
+create trigger radar_organizer_event_quality_gate
+before update of
+  title,
+  event_type,
+  starts_at,
+  ends_at,
+  timezone,
+  location_text,
+  city,
+  region,
+  organizer_name,
+  summary,
+  source_url,
+  country_code,
+  organizer_profile_id,
+  publication_source
+on public.radar_events
+for each row
+when (new.publication_source = 'organizer' and new.status = 'published')
+execute function private.enforce_radar_event_quality_on_publish();
+
 comment on function private.radar_event_quality_issues(public.radar_events) is
   'Fail-closed publication quality gate for reviewed and organizer-owned NOXA events. Organizer publication requires a useful summary, exact map point, Greece scope and organizer identity.';
