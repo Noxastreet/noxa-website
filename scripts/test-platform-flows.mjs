@@ -13,28 +13,34 @@ const sitemap = read("src/app/sitemap.ts");
 const robots = read("src/app/robots.ts");
 const eventDetail = read("src/components/meets/EventDetailPage.tsx");
 
-// Public organizer product is intentionally hidden until it is ready.
-expect(!websiteHeader.includes("/organizers"), "Public header must not expose Organizers");
-expect(!communities.includes("/organizers"), "Community navigation must not expose Organizers");
-expect(proxy.includes("isPublicOrganizerPath") && proxy.includes('"/meets"'), "Proxy must redirect public organizer routes to Meets");
-expect(visibility.includes('a[href="/organizers"]') && visibility.includes('a[href="/organizer"]'), "Visibility layer must hide remaining public organizer entry points");
-expect(visibility.includes('RadarSubmitForm-module') && visibility.includes('__notice'), "Event suggestion organizer promotion must be hidden by the visibility layer");
-expect(!sitemap.includes('page("/organizers"') && !sitemap.includes('page("/organizer"'), "Sitemap must not publish organizer product routes");
-expect(robots.includes('"/organizer"') && robots.includes('"/organizers"'), "robots.txt must disallow organizer product routes");
-expect(eventDetail.includes("Official event information") && !eventDetail.includes("OrganizerProfile"), "Event detail must show source information instead of organizer product UI");
-expect(!communities.includes("organizer identities"), "Community discovery copy must not advertise organizer identities");
+// Supply Platform P1 exposes the organizer directory and profiles as public product surfaces.
+expect(websiteHeader.includes('"/organizers"'), "Public header must expose Organizers");
+expect(websiteHeader.includes('"/meets", "/map", "/communities", "/organizers"'), "Organizers must participate in active navigation state");
+expect(!proxy.includes("isPublicOrganizerPath"), "Proxy must not redirect organizer routes back to Meets");
+expect(!visibility.includes('display: none !important'), "Public visibility layer must not hide organizer product surfaces");
+expect(!visibility.includes('a[href="/organizers"]'), "Public visibility layer must not hide organizer directory links");
+expect(!visibility.includes('RadarSubmitForm-module'), "Add Event organizer guidance must remain visible");
+expect(sitemap.includes('page("/organizers"') && sitemap.includes('page("/organizers/apply"'), "Sitemap must publish organizer discovery and onboarding routes");
+expect(sitemap.includes("loadOrganizerSlugs") && sitemap.includes("/organizers/${slug}"), "Sitemap must publish verified organizer profiles");
+expect(!sitemap.includes('page("/organizer"'), "Sitemap must not publish private organizer dashboard routes");
+expect(robots.includes('"/organizer"') && !robots.includes('"/organizers"'), "robots.txt must hide dashboard but allow public organizer routes");
+expect(eventDetail.includes("Official event information") && !eventDetail.includes("OrganizerProfile"), "Event detail must keep factual source information independent from organizer profile rendering");
+expect(!communities.includes("organizer identities"), "Community discovery copy must not conflate Communities with Organizers");
 
-// Underlying organizer implementation remains preserved for later refinement.
+// Organizer product implementation is now an active public supply surface.
 const organizerDirectory = read("src/components/organizers/OrganizerDirectory.tsx");
 const organizerApply = read("src/components/organizers/OrganizerApplicationForm.tsx");
+const organizerProfile = read("src/components/organizers/OrganizerProfile.tsx");
 const dashboard = read("src/components/organizers/OrganizerDashboardFlow.tsx");
-expect(organizerDirectory.length > 0, "Organizer directory implementation must remain preserved");
-expect(organizerApply.includes("organizer-submit-application"), "Organizer application backend integration must remain preserved");
-expect(dashboard.length > 0, "Organizer dashboard implementation must remain preserved");
+expect(organizerDirectory.includes("New Organizer") && organizerDirectory.includes("I already have access"), "Organizer directory must expose onboarding and existing access paths");
+expect(organizerApply.includes("organizer-submit-application"), "Organizer application backend integration must remain active");
+expect(organizerProfile.includes("/claim"), "Organizer profile must expose reviewed claim entry point");
+expect(dashboard.length > 0, "Organizer dashboard implementation must remain available behind auth");
 
-// Community/event submissions remain functional even while organizer product UI is hidden.
+// Community and event submissions remain separate, functional supply channels.
 expect(communityApply.includes("community-submit-application"), "Community application must keep its dedicated endpoint");
-expect(meetSubmit.includes("radar-submit-event"), "Event suggestion must keep its dedicated endpoint");
-expect(meetSubmit.includes('name="organizerName"'), "Event suggestions must still capture the factual organizer name");
+expect(meetSubmit.includes("radar-submit-event"), "Add Event must keep its dedicated Radar endpoint");
+expect(meetSubmit.includes('name="organizerName"'), "Add Event must still capture the factual organizer name");
+expect(meetSubmit.includes("Apply or claim Organizer access"), "Add Event must expose organizer supply escalation");
 
 console.log("platform flow consistency: PASS");
