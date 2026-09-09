@@ -1,5 +1,34 @@
+.headerCompact :global(.site-header) {
+  border-bottom-color: rgba(255,255,255,.075) !important;
+  background: linear-gradient(180deg, rgba(3,3,4,.90), rgba(3,3,4,.68)) !important;
+  box-shadow: 0 14px 44px rgba(0,0,0,.16);
+}
+
+.headerCompact :global(.site-header)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(239,48,77,.44) 18%, rgba(255,255,255,.08) 46%, transparent 100%);
+}
+
 .headerCompact :global(.site-header-row) {
   gap: 4px;
+}
+
+.headerCompact :global(.site-header-row nav a) {
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.headerCompact :global(.site-header-brand) {
+  border-radius: 3px !important;
 }
 
 .heroRefined {
@@ -8,9 +37,9 @@
 
 .pathsRefined {
   content-visibility: auto;
-  contain-intrinsic-size: auto 760px;
-  padding-top: 56px;
-  padding-bottom: 72px;
+  contain-intrinsic-size: auto 780px;
+  padding-top: 64px;
+  padding-bottom: 78px;
 }
 
 .pathsGridRefined {
@@ -26,53 +55,66 @@
 }
 
 .pathCardRefined {
-  min-height: 440px;
+  min-height: 468px;
 }
 
 .pathCardRefined::before {
-  filter: brightness(1.3) saturate(.92) contrast(1.03);
+  filter: brightness(1.04) saturate(.74) contrast(1.13);
 }
 
 .pathShadeRefined {
-  background: linear-gradient(
-    180deg,
-    rgba(5, 5, 5, .02) 0%,
-    rgba(5, 5, 5, .14) 38%,
-    rgba(5, 5, 5, .88) 100%
-  ) !important;
+  background:
+    linear-gradient(180deg, rgba(3,3,4,.03) 0%, rgba(3,3,4,.12) 34%, rgba(3,3,4,.72) 72%, rgba(3,3,4,.98) 100%),
+    linear-gradient(90deg, rgba(3,3,4,.44), transparent 58%) !important;
 }
 
 .cultureMediaRefined {
   background-image: url("/api/media/culture-image?asset=culture") !important;
   background-position: center 50% !important;
-  filter: saturate(.78) contrast(1.08) brightness(.8) !important;
+  filter: saturate(.66) contrast(1.16) brightness(.69) !important;
 }
 
 .cultureShadeRefined {
   background:
-    linear-gradient(90deg, rgba(2,2,3,.85), rgba(2,2,3,.15)), linear-gradient(0deg,rgba(2,2,3,.65),transparent 60%) !important;
+    linear-gradient(90deg, rgba(2,2,3,.94), rgba(2,2,3,.18)),
+    linear-gradient(0deg, rgba(2,2,3,.82), transparent 58%),
+    radial-gradient(circle at 74% 40%, rgba(200,16,46,.12), transparent 24%) !important;
 }
 
 .appRefined {
   content-visibility: auto;
-  contain-intrinsic-size: auto 620px;
-  padding-top: 80px;
-  padding-bottom: 80px;
+  contain-intrinsic-size: auto 640px;
+  padding-top: 88px;
+  padding-bottom: 88px;
 }
 
 .waitlistCompact {
-  padding: 20px;
+  padding: 21px;
 }
 
 .waitlistCompact :global(.consent-row) {
   gap: 10px;
   padding: 12px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.025);
 }
 
 .waitlistCompact :global(.consent-row > span) {
-  color: rgba(255, 255, 255, .84);
+  color: rgba(255,255,255,.80);
   font-size: 13px;
   line-height: 1.55;
+}
+
+.waitlistCompact :global(input),
+.waitlistCompact :global(select),
+.waitlistCompact :global(textarea) {
+  border-radius: 3px !important;
+}
+
+.waitlistCompact :global(button[type="submit"]) {
+  border-radius: 3px !important;
+  font-weight: 850 !important;
+  letter-spacing: .045em;
 }
 
 .waitlistCompact :global(a[aria-label="Open NOXA Instagram @noxa_app"]) {
@@ -91,22 +133,22 @@
 
 @media (max-width: 820px) {
   .heroRefined h1 {
-    max-width: 15ch;
-    font-size: clamp(42px, 11.5vw, 60px);
+    max-width: 14ch;
+    font-size: clamp(44px, 11.7vw, 64px);
     text-wrap: balance;
   }
 
   .pathsRefined {
-    padding-top: 48px;
-    padding-bottom: 60px;
+    padding-top: 50px;
+    padding-bottom: 62px;
   }
 
   .pathCardRefined {
-    min-height: 340px;
+    min-height: 368px;
   }
 
   .pathCopyRefined {
-    padding: 22px;
+    padding: 23px;
   }
 
   .cultureMediaRefined {
@@ -114,8 +156,8 @@
   }
 
   .appRefined {
-    padding-top: 64px;
-    padding-bottom: 64px;
+    padding-top: 66px;
+    padding-bottom: 66px;
   }
 
   .waitlistCompact {
@@ -125,11 +167,10 @@
 
 @media (max-width: 390px) {
   .heroRefined h1 {
-    font-size: clamp(40px, 11vw, 54px);
+    font-size: clamp(40px, 11.8vw, 54px);
   }
 
   .pathCardRefined {
-    min-height: 320px;
+    min-height: 340px;
   }
 }
-
