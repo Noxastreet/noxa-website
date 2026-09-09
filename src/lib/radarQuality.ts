@@ -13,12 +13,10 @@ export type RadarQualityIssueCode =
   | "placeholder_summary"
   | "invalid_source_url"
   | "invalid_country"
-  | "outside_greece"
-  | "moto_only_event";
+  | "outside_greece";
 
 export type RadarQualityCandidate = {
   title: string;
-  event_type?: string | null;
   country_code: string;
   starts_at: string | null;
   ends_at?: string | null;
@@ -53,11 +51,7 @@ const ISSUE_LABELS: Record<RadarQualityIssueCode, string> = {
   invalid_source_url: "invalid source URL",
   invalid_country: "invalid country code",
   outside_greece: "event is outside Greece",
-  moto_only_event: "motorcycle-only event is outside the NOXA website scope",
 };
-
-const MOTO_ONLY_TEXT = /(^|[^a-z0-9α-ωάέήίόύώϊΐϋΰ])(moto(?:[\s-]?(?:meet(?:ing)?|days?|expo|rally))?|motocross|motorcycles?|motorbikes?|vespa|scooters?|enduro|supermoto|motogp|bikeit|bikers?)(?=$|[^a-z0-9α-ωάέήίόύώϊΐϋΰ])/i;
-const GREEK_MOTO_TEXT = /(μοτοσυκλ|μοτοκρ[οό]ς)/i;
 
 function normalizedKey(value: string | null | undefined) {
   return (value ?? "")
@@ -83,24 +77,6 @@ function isPlaceholderSummary(value: string) {
     normalized.startsWith("official omae event announcement") ||
     normalized.startsWith("official α.μοτ.ο.ε. announcement") ||
     normalized.startsWith("official amotoe announcement");
-}
-
-export function isMotoOnlyRadarEvent(candidate: Pick<RadarQualityCandidate, "event_type" | "title" | "summary" | "organizer_name" | "original_url">) {
-  if (candidate.event_type === "moto_meet") return true;
-
-  let hostname = "";
-  try {
-    hostname = new URL(candidate.original_url).hostname.toLowerCase().replace(/^www\./, "");
-  } catch {
-    // Invalid URLs are handled separately by the Quality Gate.
-  }
-  if (hostname === "amotoe.org" || hostname.endsWith(".amotoe.org")) return true;
-
-  const evidence = [candidate.title, candidate.summary, candidate.organizer_name, candidate.original_url]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .join(" ");
-
-  return MOTO_ONLY_TEXT.test(evidence) || GREEK_MOTO_TEXT.test(evidence);
 }
 
 export function radarCandidateQualityIssues(candidate: RadarQualityCandidate): RadarQualityIssueCode[] {
@@ -138,8 +114,6 @@ export function radarCandidateQualityIssues(candidate: RadarQualityCandidate): R
   if (!isHttpUrl(candidate.original_url)) issues.push("invalid_source_url");
   if (!/^[A-Z]{2}$/.test(candidate.country_code)) issues.push("invalid_country");
   else if (candidate.country_code !== "GR") issues.push("outside_greece");
-
-  if (isMotoOnlyRadarEvent(candidate)) issues.push("moto_only_event");
 
   return issues;
 }
