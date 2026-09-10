@@ -3,10 +3,14 @@ import { notFound } from "next/navigation";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { isPastEvent } from "@/lib/meets/eventVisibility";
+import { loadOrganizerById } from "@/components/organizers/organizer-data";
+import { buildNoxaMapHref, eventFamily } from "@/lib/meets/discoveryPersonalization";
+import { isEventCurrentlyVisible, isPastEvent } from "@/lib/meets/eventVisibility";
 
+import discovery from "./EventDiscovery.module.css";
 import { EventActions } from "./EventActions";
 import styles from "./EventDetailPage.module.css";
+import { FollowSubscriptionForm } from "./FollowSubscriptionForm";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
@@ -78,6 +82,11 @@ export type EventRow = {
   location_precision: string | null;
 };
 
+type RelatedEvent = Pick<EventRow,
+  "id" | "public_slug" | "title" | "title_el" | "event_type" | "starts_at" | "ends_at" | "timezone" |
+  "location_text" | "location_text_el" | "city" | "region" | "country_code" | "latitude" | "longitude" | "location_precision"
+>;
+
 export type LocalizedEventContent = {
   title: string;
   summary: string | null;
@@ -123,6 +132,40 @@ export async function loadPublicEvent(slug: string): Promise<EventRow | null> {
   }
 }
 
+async function loadRelatedEvents(event: EventRow): Promise<RelatedEvent[]> {
+  const query = new URLSearchParams({
+    select: "id,public_slug,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,country_code,latitude,longitude,location_precision",
+    status: "eq.published",
+    country_code: `eq.${event.country_code}`,
+    order: "starts_at.asc",
+    limit: "80",
+  });
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_events?${query}`, {
+      headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) return [];
+    const rows = await response.json() as RelatedEvent[];
+    const currentFamily = eventFamily(event.event_type);
+    return rows
+      .filter((row) => row.id !== event.id && isEventCurrentlyVisible(row.starts_at, row.ends_at))
+      .map((row) => {
+        let score = 0;
+        if (event.city && row.city === event.city) score += 5;
+        if (eventFamily(row.event_type) === currentFamily) score += 4;
+        if (event.region && row.region === event.region) score += 2;
+        return { row, score };
+      })
+      .sort((a, b) => b.score - a.score || new Date(a.row.starts_at).getTime() - new Date(b.row.starts_at).getTime())
+      .filter(({ score }) => score > 0)
+      .slice(0, 4)
+      .map(({ row }) => row);
+  } catch {
+    return [];
+  }
+}
+
 function formatDate(value: string, timezone: string | null, locale: "en" | "el") {
   return new Intl.DateTimeFormat(locale === "el" ? "el-GR" : "en-GB", {
     weekday: "short",
@@ -139,10 +182,21 @@ function categoryLabel(eventType: string, locale: "en" | "el") {
   return CATEGORY_LABELS[locale][eventType] ?? CATEGORY_LABELS[locale].other;
 }
 
+function localizedRelated(event: RelatedEvent, locale: "en" | "el") {
+  return {
+    title: locale === "el" ? event.title_el?.trim() || event.title : event.title,
+    location: locale === "el" ? event.location_text_el?.trim() || event.location_text : event.location_text,
+  };
+}
+
 export async function EventDetailPage({ slug, locale }: { slug: string; locale: "en" | "el" }) {
   const event = await loadPublicEvent(slug);
   if (!event) notFound();
 
+  const [organizer, related] = await Promise.all([
+    event.organizer_profile_id ? loadOrganizerById(event.organizer_profile_id) : Promise.resolve(null),
+    loadRelatedEvents(event),
+  ]);
   const content = localizePublicEvent(event, locale);
   const past = isPastEvent(event.starts_at, event.ends_at);
   const place = [content.locationText, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
@@ -153,6 +207,18 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const heroMediaStyle = {
     backgroundImage: event.cover_image_url ? `url(${JSON.stringify(event.cover_image_url)})` : NOXA_EVENT_FALLBACK,
   };
+  const mapHref = buildNoxaMapHref({
+    id: event.id,
+    title: content.title,
+    city: event.city ?? "",
+    eventType: event.event_type,
+    latitude: event.latitude,
+    longitude: event.longitude,
+    locationPrecision: event.location_precision,
+  }, locale);
+  const directionsHref = mapHref && event.latitude !== null && event.longitude !== null
+    ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
+    : null;
 
   return (
     <div className={styles.page}>
@@ -222,15 +288,48 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΤΟΠΟΘΕΣΙΑ" : "LOCATION"}</span>
                   <strong>{place}</strong>
+                  {mapHref ? <div className={discovery.locationActions}>
+                    <Link href={mapHref}>{locale === "el" ? "Άνοιγμα στο NOXA Map" : "Open in NOXA Map"} →</Link>
+                    {directionsHref ? <a href={directionsHref} target="_blank" rel="noreferrer">{locale === "el" ? "Οδηγίες" : "Directions"} ↗</a> : null}
+                  </div> : null}
                 </section>
               </div>
-              <aside className={styles.organizerCard}>
-                <span>{locale === "el" ? "ΠΗΓΗ" : "SOURCE"}</span>
-                <h2>{locale === "el" ? "Επίσημες πληροφορίες event" : "Official event information"}</h2>
-                <a href={event.source_url} rel="noreferrer" target="_blank">{locale === "el" ? "Άνοιγμα πηγής" : "Open source"} ↗</a>
-                <small>{locale === "el" ? "Έλεγξε την επίσημη πηγή για τις τελευταίες αλλαγές." : "Check the official source for the latest changes."}</small>
+              <aside className={discovery.sideStack}>
+                {organizer ? (
+                  <section className={discovery.organizerPanel}>
+                    <span>{locale === "el" ? "VERIFIED ORGANIZER" : "VERIFIED ORGANIZER"}</span>
+                    <h2>{organizer.name}</h2>
+                    <Link href={`${base}/organizers/${organizer.slug}`}>{locale === "el" ? "Δες organizer" : "View organizer"} →</Link>
+                    <FollowSubscriptionForm compact locale={locale} target={{ type: "organizer", organizerId: organizer.id }} title={locale === "el" ? `Ακολούθησε ${organizer.name}` : `Follow ${organizer.name}`} />
+                  </section>
+                ) : null}
+                <div className={styles.organizerCard}>
+                  <span>{locale === "el" ? "ΠΗΓΗ" : "SOURCE"}</span>
+                  <h2>{locale === "el" ? "Επίσημες πληροφορίες event" : "Official event information"}</h2>
+                  <a href={event.source_url} rel="noreferrer" target="_blank">{locale === "el" ? "Άνοιγμα πηγής" : "Open source"} ↗</a>
+                  <small>{locale === "el" ? "Έλεγξε την επίσημη πηγή για τις τελευταίες αλλαγές." : "Check the official source for the latest changes."}</small>
+                </div>
               </aside>
             </div>
+
+            {related.length ? (
+              <section className={discovery.related} aria-labelledby="related-events-title">
+                <div className={discovery.relatedHeader}>
+                  <div><span>{locale === "el" ? "ΣΥΝΕΧΙΣΕ ΤΗΝ ΑΝΑΚΑΛΥΨΗ" : "KEEP DISCOVERING"}</span><h2 id="related-events-title">{locale === "el" ? "Παρόμοια upcoming events." : "More events like this."}</h2></div>
+                  <p>{locale === "el" ? "Προτάσεις με βάση την πόλη, την περιοχή και τον τύπο του event." : "Suggestions based on this event’s city, region and event type."}</p>
+                </div>
+                <div className={discovery.relatedGrid}>
+                  {related.map((candidate) => {
+                    const localized = localizedRelated(candidate, locale);
+                    return <Link className={discovery.relatedCard} href={`${base}/meets/${candidate.public_slug}`} key={candidate.id}>
+                      <span>{categoryLabel(candidate.event_type, locale)}</span>
+                      <h3>{localized.title}</h3>
+                      <p>{localized.location || candidate.city || candidate.region || candidate.country_code}</p>
+                    </Link>;
+                  })}
+                </div>
+              </section>
+            ) : null}
           </div>
         </section>
       </main>

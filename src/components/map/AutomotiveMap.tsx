@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { GeoJSONSource, LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
@@ -144,6 +144,21 @@ function geometryBounds(geometry: MapGeometry): [[number, number], [number, numb
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+function deepLinkTarget() {
+  if (typeof window === "undefined") return { center: GREECE_CENTER, zoom: 5.35, eventId: null as string | null };
+  const params = new URLSearchParams(window.location.search);
+  const latitude = Number(params.get("lat"));
+  const longitude = Number(params.get("lng"));
+  const validPoint = Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
+    && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
+  const eventId = params.get("event")?.trim() || null;
+  return {
+    center: validPoint ? [longitude, latitude] as [number, number] : GREECE_CENTER,
+    zoom: validPoint ? 12.4 : 5.35,
+    eventId,
+  };
+}
+
 export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -152,6 +167,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   const allFeaturesRef = useRef<MapApiFeature[]>([]);
   const activeLayersRef = useRef<Set<MapLayer>>(new Set(MAP_LAYERS));
   const queryRef = useRef("");
+  const initialEventIdRef = useRef<string | null>(null);
 
   const [activeLayers, setActiveLayers] = useState<Set<MapLayer>>(new Set(MAP_LAYERS));
   const [query, setQuery] = useState("");
@@ -182,9 +198,9 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   };
 
   const layerLabels: Record<MapLayer, string> = { events: t.events, tracks: t.tracks, routes: t.routes, places: t.places };
-  const searchResults = useMemo(() => query.trim()
+  const searchResults = query.trim()
     ? allFeaturesRef.current.filter((feature) => matchesSearch(feature, query, locale)).slice(0, 6)
-    : [], [query, locale, visibleCount]);
+    : [];
 
   const updateMapSources = useCallback((features: MapApiFeature[]) => {
     const map = mapRef.current;
@@ -212,7 +228,18 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
       });
       if (!response.ok) throw new Error(`Map data request failed (${response.status})`);
       const payload = await response.json() as MapApiResponse;
-      allFeaturesRef.current = payload.features; setCapped(payload.meta.capped); updateMapSources(payload.features);
+      allFeaturesRef.current = payload.features;
+      setCapped(payload.meta.capped);
+      updateMapSources(payload.features);
+
+      if (initialEventIdRef.current) {
+        const target = payload.features.find((feature) => feature.id === initialEventIdRef.current && feature.properties.kind === "event");
+        if (target) {
+          setSelected(selectedFromFeature(target));
+          setSheetExpanded(true);
+          initialEventIdRef.current = null;
+        }
+      }
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Map data request failed");
     } finally { if (!controller.signal.aborted) setLoading(false); }
@@ -235,12 +262,15 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     let disposed = false;
+    const target = deepLinkTarget();
+    initialEventIdRef.current = target.eventId;
+
     void import("maplibre-gl").then((module) => {
       if (disposed || !mapContainerRef.current) return;
       const maplibregl = module;
       maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
       const map = new maplibregl.Map({
-        container: mapContainerRef.current, style: DARK_STYLE_URL, center: GREECE_CENTER, zoom: 5.35,
+        container: mapContainerRef.current, style: DARK_STYLE_URL, center: target.center, zoom: target.zoom,
         minZoom: 4.6, maxZoom: 18, maxBounds: GREECE_BOUNDS, attributionControl: false,
         cooperativeGestures: false,
       });
@@ -313,7 +343,12 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
 
   function toggleLayer(layer: MapLayer) {
     setSelected(null); setSheetExpanded(false);
-    setActiveLayers((current) => { const next = new Set(current); next.has(layer) ? next.delete(layer) : next.add(layer); return next; });
+    setActiveLayers((current) => {
+      const next = new Set(current);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
   }
 
   function focusFeature(feature: MapApiFeature) {

@@ -1,0 +1,454 @@
+.discoveryPage {
+  position: relative;
+}
+
+.quickSection {
+  margin: 0 0 24px;
+}
+
+.quickHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.quickHeader span,
+.recommendationHeader span {
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.quickHeader strong {
+  color: #f5f5f7;
+  font-size: 14px;
+}
+
+.quickRail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quickCard {
+  min-height: 116px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px;
+  background: rgba(255,255,255,.025);
+  color: #f5f5f7;
+  padding: 16px;
+  text-align: left;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.quickCard:hover {
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.045);
+  transform: translateY(-1px);
+}
+
+.quickCardActive {
+  border-color: rgba(227,44,73,.8);
+  background: linear-gradient(135deg, rgba(200,16,46,.18), rgba(255,255,255,.035));
+}
+
+.quickCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quickCardTop small {
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.quickCardIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.06);
+  color: #e32c49;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.quickCard strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.quickCard p {
+  margin: 5px 0 0;
+  color: rgba(255,255,255,.56);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.nearStatus {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 11px 13px;
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  background: rgba(255,255,255,.02);
+}
+
+.nearStatus strong {
+  color: #f5f5f7;
+}
+
+.nearStatus button {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff;
+  background: rgba(255,255,255,.04);
+  font: inherit;
+  font-weight: 700;
+}
+
+.recommendations {
+  margin: 28px 0 34px;
+  padding: 22px 0 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.recommendationHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.recommendationHeader h3 {
+  margin: 5px 0 0;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.02;
+}
+
+.recommendationHeader p {
+  margin: 0;
+  color: rgba(255,255,255,.55);
+  max-width: 460px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recommendationRail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.recommendationCard {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 16px;
+  padding: 15px;
+  background: rgba(255,255,255,.025);
+  color: inherit;
+  text-decoration: none;
+}
+
+.recommendationCard span {
+  color: #e32c49;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.recommendationCard strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 8px;
+  color: #f5f5f7;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.recommendationCard small {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255,255,255,.5);
+}
+
+.cardShell,
+.featuredShell {
+  position: relative;
+  min-width: 0;
+}
+
+.cardShell {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardShell > a:first-child {
+  flex: 1;
+}
+
+.cardActions,
+.featuredActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cardActions {
+  justify-content: space-between;
+}
+
+.featuredActions {
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.actionLink,
+.organizerLink {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  padding: 0 12px;
+  color: rgba(255,255,255,.76);
+  background: rgba(255,255,255,.025);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.actionLink:hover,
+.organizerLink:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,.22);
+}
+
+.organizerLink {
+  max-width: min(260px, 52vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saveButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  padding: 0 12px;
+  color: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.035);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.saveButtonActive {
+  color: #fff;
+  border-color: rgba(227,44,73,.72);
+  background: rgba(200,16,46,.16);
+}
+
+.saveButtonCompact {
+  width: 40px;
+  padding: 0;
+}
+
+.saveIcon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.saveButtonActive .saveIcon {
+  fill: currentColor;
+}
+
+.distanceBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(112,214,255,.1);
+  border: 1px solid rgba(112,214,255,.2);
+  color: rgba(220,248,255,.86);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.mobileDock {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .discoveryPage {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .quickRail,
+  .recommendationRail {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: -18px;
+    padding-inline: 18px;
+  }
+
+  .quickRail::-webkit-scrollbar,
+  .recommendationRail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .quickCard {
+    flex: 0 0 min(74vw, 270px);
+    scroll-snap-align: start;
+  }
+
+  .recommendationCard {
+    flex: 0 0 min(70vw, 250px);
+    scroll-snap-align: start;
+  }
+
+  .recommendationHeader {
+    display: block;
+  }
+
+  .recommendationHeader p {
+    margin-top: 8px;
+  }
+
+  .cardActions,
+  .featuredActions {
+    gap: 6px;
+  }
+
+  .actionLink,
+  .organizerLink,
+  .saveButton {
+    min-height: 44px;
+  }
+
+  .organizerLink {
+    max-width: 46vw;
+  }
+
+  .mobileDock {
+    position: fixed;
+    z-index: 48;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    background: rgba(12,12,15,.9);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 50px rgba(0,0,0,.48);
+  }
+
+  .mobileDock button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 13px;
+    background: transparent;
+    color: rgba(255,255,255,.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .mobileDock button strong {
+    font-size: 15px;
+    line-height: 1;
+    color: inherit;
+  }
+
+  .mobileDock .mobileDockActive {
+    background: rgba(200,16,46,.18);
+    color: #fff;
+  }
+}
+
+@media (max-width: 560px) {
+  .quickHeader {
+    align-items: start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .cardActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .featuredActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actionGroup {
+    width: 100%;
+  }
+
+  .actionLink,
+  .organizerLink {
+    flex: 1;
+    max-width: none;
+  }
+}

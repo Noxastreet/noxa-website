@@ -84,6 +84,8 @@ jobs:
         run: npm run test:supply-platform-p2
       - name: NOXA Discovery homepage fixtures
         run: npm run test:discovery-home
+      - name: NOXA Discovery complete fixtures
+        run: npm run test:discovery-complete
       - name: Lint
         run: npm run lint
       - name: Production build
