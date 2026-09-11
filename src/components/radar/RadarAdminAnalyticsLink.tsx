@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 /**
  * Keeps the existing Radar Admin layout untouched while placing the Analytics
@@ -9,24 +9,29 @@ import { createPortal } from "react-dom";
  * button styling and responsive behavior as Refresh / Exit.
  */
 export function RadarAdminAnalyticsLink() {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const refreshButton = Array.from(document.querySelectorAll("header button"))
       .find((button) => button.textContent?.trim() === "Refresh");
-    setTarget(refreshButton?.parentElement ?? null);
-  }, []);
+    const target = refreshButton?.parentElement;
+    if (!target || target.querySelector('[data-founder-analytics-link="true"]')) return;
 
-  if (!target) return null;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Аналитика";
+    button.setAttribute("aria-label", "Открыть Founder Analytics");
+    button.dataset.founderAnalyticsLink = "true";
 
-  return createPortal(
-    <button
-      aria-label="Открыть Founder Analytics"
-      onClick={() => window.location.assign("/radar/admin/analytics")}
-      type="button"
-    >
-      Аналитика
-    </button>,
-    target,
-  );
+    const openAnalytics = () => router.push("/radar/admin/analytics");
+    button.addEventListener("click", openAnalytics);
+    target.insertBefore(button, refreshButton ?? null);
+
+    return () => {
+      button.removeEventListener("click", openAnalytics);
+      button.remove();
+    };
+  }, [router]);
+
+  return null;
 }
