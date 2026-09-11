@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { FounderAnalyticsDashboard } from "@/components/radar/FounderAnalyticsDashboard";
+import { FounderAnalyticsReturnIntent } from "@/components/radar/FounderAnalyticsReturnIntent";
 
 export const metadata: Metadata = {
   title: "NOXA Founder Analytics",
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function FounderAnalyticsPage() {
-  return <FounderAnalyticsDashboard />;
+  return (
+    <>
+      <FounderAnalyticsReturnIntent />
+      <FounderAnalyticsDashboard />
+    </>
+  );
 }
