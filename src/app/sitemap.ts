@@ -64,6 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/el/organizers", .86, "daily"),
     page("/organizers/apply", .72, "monthly"),
     page("/el/organizers/apply", .7, "monthly"),
+    page("/business", .82, "weekly"),
     ...eventSlugs.flatMap((slug) => [
       page(`/meets/${slug}`, .74, "weekly"),
       page(`/el/meets/${slug}`, .7, "weekly"),
