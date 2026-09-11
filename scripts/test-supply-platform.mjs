@@ -10,6 +10,7 @@ const eventForm = read("src/components/radar/RadarSubmitForm.tsx");
 const sitemap = read("src/app/sitemap.ts");
 const proxy = read("src/proxy.ts");
 const business = read("src/components/business/BusinessPartnersPage.tsx");
+const businessRoute = read("src/app/business/page.tsx");
 
 assert.match(eventEdge, /PUBLISHER_TYPES = new Set\(\["crew", "business"\]\)/);
 assert.match(eventEdge, /publisherType\?: unknown/);
@@ -31,7 +32,9 @@ assert.equal(eventForm.includes("COUNTRY_CODES"), false);
 assert.equal(sitemap.includes('page("/organizers"'), false);
 assert.equal(sitemap.includes('page("/organizers/apply"'), false);
 assert.equal(sitemap.includes("loadOrganizerSlugs"), false);
-assert.match(sitemap, /page\("\/business", \.82, "weekly"\)/);
+assert.equal(sitemap.includes('page("/business"'), false, "Focused sitemap must not publish Business");
+assert.match(sitemap, /page\("\/meets", \.98, "daily"\)/);
+assert.match(sitemap, /page\("\/map", \.94, "daily"\)/);
 
 assert.match(proxy, /localizedPath === "\/organizers\/apply"/);
 assert.match(proxy, /localizedPath === "\/organizers"/);
@@ -40,5 +43,6 @@ assert.match(proxy, /communities\/apply/);
 
 assert.match(business, /Business &amp; Partners/);
 assert.match(business, /Join as a Partner/);
+assert.match(businessRoute, /redirect\("\/meets"\)/, "Business implementation must be hidden, not deleted");
 
 console.log("Crew and Business supply policy fixtures passed.");
