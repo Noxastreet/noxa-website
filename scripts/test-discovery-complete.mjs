@@ -78,6 +78,15 @@ for (const expected of [
 for (const expected of ["Near", "Weekend", "Saved", "Filters", "mobileDock"]) {
   assert.ok(mobileDock.includes(expected), `Mobile dock missing: ${expected}`);
 }
+for (const expected of [
+  "setPointerCapture",
+  "releasePointerCapture",
+  "event.preventDefault()",
+  'touchAction: "manipulation"',
+  'transform: "translate3d(0, 0, 0)"',
+]) {
+  assert.ok(mobileDock.includes(expected), `Mobile dock hit-test isolation missing: ${expected}`);
+}
 assert.ok(mobileFilters.includes("openSignal"), "Mobile filter sheet must be openable from Discovery dock");
 assert.ok(discoveryCss.includes("padding-bottom: calc(84px + env(safe-area-inset-bottom))"), "Mobile dock must reserve safe content space");
 assert.ok(discoveryCss.includes("scroll-snap-type: x mandatory"), "Mobile discovery rails must use scroll snap");
