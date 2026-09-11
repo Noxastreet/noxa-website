@@ -3,6 +3,9 @@ import { NextRequest } from "next/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const NOXA_VERCEL_PROJECT_ID = "prj_icPI4DsBJxFZCLS8fRnJOcrSQVKV";
+const NOXA_VERCEL_TEAM_ID = "team_wYte5DwaJLZLpToqxKPvAXfu";
+
 const RANGE_DAYS = {
   "1d": 1,
   "7d": 7,
@@ -25,13 +28,9 @@ type BreakdownItem = {
 };
 
 function json(body: unknown, init?: ResponseInit) {
-  return Response.json(body, {
-    ...init,
-    headers: {
-      "Cache-Control": "private, no-store, max-age=0",
-      ...(init?.headers ?? {}),
-    },
-  });
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "private, no-store, max-age=0");
+  return Response.json(body, { ...init, headers });
 }
 
 function getBearer(request: NextRequest) {
@@ -69,12 +68,9 @@ function rangeSince(days: number, now: Date) {
 }
 
 function vercelBaseParams() {
-  const projectId = process.env.VERCEL_PROJECT_ID;
-  const teamId = process.env.VERCEL_ORG_ID;
-  if (!projectId) throw new Error("VERCEL_PROJECT_ID is unavailable.");
-
-  const params = new URLSearchParams({ projectId });
-  if (teamId) params.set("teamId", teamId);
+  const projectId = process.env.VERCEL_PROJECT_ID ?? NOXA_VERCEL_PROJECT_ID;
+  const teamId = process.env.VERCEL_ORG_ID ?? NOXA_VERCEL_TEAM_ID;
+  const params = new URLSearchParams({ projectId, teamId });
   return params;
 }
 
