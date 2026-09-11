@@ -28,20 +28,20 @@ for (const expected of [
   "This weekend",
   "Saved",
   "NOXA Map",
-  "/organizers/${lead.organizerSlug}",
 ]) {
   assert.ok(directory.includes(expected), `Meets Discovery missing: ${expected}`);
 }
 
 for (const expected of [
-  "organizer_profile_id",
   "latitude,longitude,location_precision",
-  "loadPublicOrganizers",
-  "organizerSlug",
   "locationPrecision",
+  "organizerProfileId: null",
+  "organizerSlug: null",
 ]) {
   assert.ok(directoryPage.includes(expected), `Meets data bridge missing: ${expected}`);
 }
+assert.equal(directoryPage.includes("loadPublicOrganizers"), false, "Meets discovery must not load retired Organizer profiles");
+assert.equal(directoryPage.includes("organizer_profile_id"), false, "Meets discovery must not query Organizer profile IDs");
 
 for (const expected of [
   "distanceKm",
@@ -67,11 +67,8 @@ for (const expected of [
 }
 
 for (const expected of [
-  "loadOrganizerById",
   "loadRelatedEvents",
-  "FollowSubscriptionForm",
   "buildNoxaMapHref",
-  "VERIFIED ORGANIZER",
   "Open in NOXA Map",
   "More events like this.",
 ]) {
