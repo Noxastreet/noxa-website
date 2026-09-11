@@ -121,14 +121,15 @@ for (const forbidden of ["Disallow: /organizer", "Disallow: /el/organizer", "Dis
 }
 
 const sitemapText = await (await fetch(new URL("/sitemap.xml", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-if (!sitemapText.includes("https://noxastreetapp.com/business")) throw new Error("Sitemap missing Business surface");
+const sitemapUrls = Array.from(sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g), (match) => match[1]);
+if (!sitemapUrls.includes("https://noxastreetapp.com/business")) throw new Error("Sitemap missing Business surface");
 for (const forbidden of [
   "https://noxastreetapp.com/organizers",
   "https://noxastreetapp.com/el/organizers",
-  "<loc>https://noxastreetapp.com/organizer</loc>",
-  "<loc>https://noxastreetapp.com/el/organizer</loc>",
+  "https://noxastreetapp.com/organizer",
+  "https://noxastreetapp.com/el/organizer",
 ]) {
-  if (sitemapText.includes(forbidden)) throw new Error(`Sitemap exposes retired Organizer surface: ${forbidden}`);
+  if (sitemapUrls.includes(forbidden)) throw new Error(`Sitemap exposes retired Organizer surface: ${forbidden}`);
 }
 
 const origin = new URL(baseUrl).origin;
