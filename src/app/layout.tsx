@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
@@ -86,6 +88,8 @@ export default async function RootLayout({
       <body>
         <MotionProvider>{children}</MotionProvider>
         <SitePreferencesGate />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
