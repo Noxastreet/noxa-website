@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { CommunityDirectory } from "@/components/communities/CommunityDirectory";
 
 export const metadata: Metadata = {
-  title: "NOXA Communities — Automotive κοινότητες στην Ελλάδα",
-  description: "Ανακάλυψε πραγματικές car και moto κοινότητες, clubs και local automotive scenes σε όλη την Ελλάδα στο NOXA.",
+  title: "NOXA Crew Directory — Automotive κοινότητες στην Ελλάδα",
+  description: "Ανακάλυψε automotive crews, clubs, riding groups και local κοινότητες σε όλη την Ελλάδα στο NOXA.",
   alternates: {
     canonical: "https://noxastreetapp.com/el/communities",
     languages: {
@@ -15,10 +15,10 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ q?: string; focus?: string }>;
+  searchParams: Promise<{ q?: string; focus?: string; sort?: string }>;
 };
 
 export default async function GreekCommunitiesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  return <CommunityDirectory locale="el" query={params.q} focus={params.focus} />;
+  return <CommunityDirectory locale="el" query={params.q} focus={params.focus} sort={params.sort} />;
 }
