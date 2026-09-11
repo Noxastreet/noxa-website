@@ -1,19 +1,16 @@
 const baseUrl = process.env.PRODUCTION_URL;
 if (!baseUrl) throw new Error("PRODUCTION_URL is required");
 
-const userAgent = "NOXA-production-smoke/3.6";
+const userAgent = "NOXA-production-smoke/3.7";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
   ["meets", "/meets", "text/html"],
   ["greek-meets", "/el/meets", "text/html"],
+  ["map", "/map", "text/html"],
+  ["greek-map", "/el/map", "text/html"],
   ["meet-submit", "/meets/submit", "text/html"],
   ["greek-meet-submit", "/el/meets/submit", "text/html"],
-  ["communities", "/communities", "text/html"],
-  ["greek-communities", "/el/communities", "text/html"],
-  ["community-apply", "/communities/apply", "text/html"],
-  ["greek-community-apply", "/el/communities/apply", "text/html"],
-  ["business", "/business", "text/html"],
   ["privacy", "/privacy", "text/html"],
   ["terms", "/terms", "text/html"],
   ["health", "/api/health", "application/json"],
@@ -44,31 +41,34 @@ if (health.status !== "ok" || health.service !== "noxa-website") throw new Error
 const homeResponse = await fetch(new URL("/", baseUrl), { headers: { "User-Agent": userAgent } });
 const homeHtml = await homeResponse.text();
 for (const expected of [
-  "instagram.com/noxa_app",
   "S. KARAKETIDIS",
   "aria-label=\"EN — English\"",
   "aria-label=\"EL — Greek\"",
   "href=\"/meets\"",
   "href=\"/map\"",
-  "href=\"/communities\"",
-  "href=\"/business\"",
   "href=\"/meets/submit\"",
   "/brand/noxa-maps-logo.png",
   "THIS WEEKEND IN GREECE",
-  "/meets?country=GR&amp;date=weekend",
-  "Discover car &amp; moto events across Greece.",
+  "Car &amp; moto events across Greece.",
   "Open NOXA Map",
 ]) {
   if (!homeHtml.includes(expected)) throw new Error(`Home missing: ${expected}`);
 }
-if (homeHtml.includes('href="/organizers"')) throw new Error("Home still exposes Organizer navigation");
+for (const forbidden of [
+  'href="/communities"',
+  'href="/business"',
+  'href="/crews"',
+  'href="/routes"',
+  'href="#app"',
+  "NOXA App",
+  "instagram.com/noxa_app",
+]) {
+  if (homeHtml.includes(forbidden)) throw new Error(`Home still exposes hidden surface: ${forbidden}`);
+}
 
 const pages = [
   ["meets", "/meets", "Find your next meet."],
   ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
-  ["communities", "/communities", "Find your scene."],
-  ["greek-communities", "/el/communities", "Βρες τη σκηνή σου."],
-  ["business", "/business", "Grow your presence"],
 ];
 for (const [name, pathname, expected] of pages) {
   const html = await (await fetch(new URL(pathname, baseUrl), { headers: { "User-Agent": userAgent } })).text();
@@ -77,12 +77,17 @@ for (const [name, pathname, expected] of pages) {
 }
 
 for (const [pathname, expectedLocation] of [
-  ["/organizers", "/communities"],
-  ["/organizers/apply", "/communities/apply"],
-  ["/organizer", "/communities"],
-  ["/el/organizers", "/el/communities"],
-  ["/el/organizers/apply", "/el/communities/apply"],
-  ["/el/organizer", "/el/communities"],
+  ["/communities", "/meets"],
+  ["/communities/example", "/meets"],
+  ["/communities/apply", "/meets"],
+  ["/business", "/meets"],
+  ["/crews", "/meets"],
+  ["/routes", "/map"],
+  ["/el/communities", "/el/meets"],
+  ["/el/communities/example", "/el/meets"],
+  ["/el/communities/apply", "/el/meets"],
+  ["/el/crews", "/el/meets"],
+  ["/el/routes", "/el/map"],
 ]) {
   const response = await fetch(new URL(pathname, baseUrl), { redirect: "manual", headers: { "User-Agent": userAgent } });
   if (![307, 308].includes(response.status)) throw new Error(`${pathname} expected redirect, got ${response.status}`);
@@ -101,14 +106,6 @@ for (const expected of ["Crew / Community", "Business / Partner", "Crew / Busine
 }
 if (submitHtml.includes("Apply or claim Organizer access")) throw new Error("Add Event still exposes Organizer access");
 
-const communityHtml = await (await fetch(new URL("/communities", baseUrl), { headers: { "User-Agent": userAgent } })).text();
-for (const forbidden of ["href=\"/radar\"", "href=\"/crews\"", "href=\"/routes\""]) {
-  if (communityHtml.includes(forbidden)) throw new Error(`Community navigation still contains ${forbidden}`);
-}
-for (const expected of ["href=\"/meets\"", "href=\"/communities\"", "href=\"/business\""]) {
-  if (!communityHtml.includes(expected)) throw new Error(`Community navigation missing ${expected}`);
-}
-
 const greekSubmit = await (await fetch(new URL("/el/meets/submit", baseUrl), { headers: { "User-Agent": userAgent } })).text();
 if (!greekSubmit.includes("Πρόσθεσε το event σου.") || greekSubmit.includes("Submit an event for review.")) {
   throw new Error("Greek Add Event flow is not localized");
@@ -122,15 +119,26 @@ for (const forbidden of ["Disallow: /organizer", "Disallow: /el/organizer", "Dis
 
 const sitemapText = await (await fetch(new URL("/sitemap.xml", baseUrl), { headers: { "User-Agent": userAgent } })).text();
 const sitemapUrls = Array.from(sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g), (match) => match[1]);
-const hasBusinessUrl = sitemapUrls.some((url) => url === "https://noxastreetapp.com/business");
-if (!hasBusinessUrl) throw new Error("Sitemap missing Business surface");
-for (const forbidden of [
-  "https://noxastreetapp.com/organizers",
-  "https://noxastreetapp.com/el/organizers",
-  "https://noxastreetapp.com/organizer",
-  "https://noxastreetapp.com/el/organizer",
+for (const required of [
+  "https://noxastreetapp.com/meets",
+  "https://noxastreetapp.com/el/meets",
+  "https://noxastreetapp.com/map",
+  "https://noxastreetapp.com/el/map",
 ]) {
-  if (sitemapUrls.some((url) => url === forbidden)) throw new Error(`Sitemap exposes retired Organizer surface: ${forbidden}`);
+  if (!sitemapUrls.includes(required)) throw new Error(`Sitemap missing focused surface: ${required}`);
+}
+for (const forbidden of [
+  "https://noxastreetapp.com/communities",
+  "https://noxastreetapp.com/el/communities",
+  "https://noxastreetapp.com/communities/apply",
+  "https://noxastreetapp.com/el/communities/apply",
+  "https://noxastreetapp.com/business",
+  "https://noxastreetapp.com/crews",
+  "https://noxastreetapp.com/el/crews",
+  "https://noxastreetapp.com/routes",
+  "https://noxastreetapp.com/el/routes",
+]) {
+  if (sitemapUrls.includes(forbidden)) throw new Error(`Sitemap exposes hidden surface: ${forbidden}`);
 }
 
 const origin = new URL(baseUrl).origin;

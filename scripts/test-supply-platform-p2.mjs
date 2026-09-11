@@ -27,12 +27,14 @@ const businessPage = fs.readFileSync("src/components/business/BusinessPartnersPa
 const header = fs.readFileSync("src/components/navigation/WebsiteHeader.tsx", "utf8");
 const homepage = fs.readFileSync("src/components/culture/CultureLandingV2.tsx", "utf8");
 
-assert.match(businessRoute, /BusinessPartnersPage/);
+assert.match(businessRoute, /redirect\("\/meets"\)/);
 assert.match(businessPage, /Featured Partners/);
 assert.match(businessPage, /Business Categories/);
-assert.match(header, /\["Business", "\/business"\]/);
+assert.equal(header.includes('["Business"'), false);
 assert.equal(header.includes('["Organizers"'), false);
-assert.match(homepage, /BUSINESS & PARTNERS/);
+assert.equal(homepage.includes("BUSINESS & PARTNERS"), false);
 assert.equal(homepage.includes("Explore Organizers"), false);
+assert.match(homepage, /RadarHomeSpotlight/);
+assert.match(homepage, /HomepageMapPreview/);
 
 console.log("Retired Organizer route surface fixtures passed.");

@@ -1,1 +1,5 @@
-import type {Metadata} from "next";import {CommunityApplicationForm} from "@/components/communities/CommunityApplicationForm";export const metadata:Metadata={title:"List your community — NOXA Communities",description:"Apply for a public NOXA profile for an automotive or motorcycle club, community or established local scene.",alternates:{canonical:"https://noxastreetapp.com/communities/apply",languages:{en:"https://noxastreetapp.com/communities/apply",el:"https://noxastreetapp.com/el/communities/apply"}}};export default function CommunityApplyPage(){return <CommunityApplicationForm locale="en"/>}
+import { redirect } from "next/navigation";
+
+export default function CommunityApplyPage() {
+  redirect("/meets");
+}

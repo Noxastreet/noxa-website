@@ -1,1 +1,5 @@
-import type {Metadata} from "next";import {DocumentLanguage} from "@/components/i18n/DocumentLanguage";import {CommunityApplicationForm} from "@/components/communities/CommunityApplicationForm";export const metadata:Metadata={title:"Καταχώρισε την κοινότητά σου — NOXA Communities",description:"Κάνε αίτηση για δημόσιο NOXA profile για automotive ή moto club, κοινότητα ή οργανωμένη local scene.",alternates:{canonical:"https://noxastreetapp.com/el/communities/apply",languages:{en:"https://noxastreetapp.com/communities/apply",el:"https://noxastreetapp.com/el/communities/apply"}}};export default function CommunityApplyElPage(){return <><DocumentLanguage locale="el"/><CommunityApplicationForm locale="el"/></>}
+import { redirect } from "next/navigation";
+
+export default function CommunityApplyElPage() {
+  redirect("/el/meets");
+}

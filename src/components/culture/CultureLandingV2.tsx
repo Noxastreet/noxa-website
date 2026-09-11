@@ -4,7 +4,6 @@ import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { HomepageMapPreview } from "@/components/map/HomepageMapPreview";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
 import videoStyles from "./CultureHeroVideo.module.css";
@@ -22,66 +21,22 @@ const copy = {
   en: {
     hero: {
       eyebrow: "NOXA · GREECE",
-      title: "Discover car & moto events across Greece.",
-      body: "See what’s happening this weekend, explore the map and discover the Crews and partners shaping each event.",
+      title: "Car & moto events across Greece.",
+      body: "Find what is happening, open the event details and explore the automotive scene directly on the NOXA Map.",
       primary: "Explore Events",
       map: "Open NOXA Map",
-      app: "NOXA App · Coming soon",
     },
-    paths: {
-      communities: {
-        eyebrow: "COMMUNITY · CREWS",
-        title: "Find your community.",
-        body: "Discover car and moto Crews and communities near you.",
-        cta: "Explore Community",
-      },
-      business: {
-        eyebrow: "BUSINESS & PARTNERS",
-        title: "Connect with automotive businesses.",
-        body: "Discover trusted partners and businesses connected to Greece’s automotive culture.",
-        cta: "Explore Business",
-      },
-    },
-    culture: { line1: "Different cars.", line2: "Same passion." },
-    app: {
-      eyebrow: "NOXA APP · COMING SOON",
-      title: "The road becomes social.",
-      body: "Meets. Crews. Routes. Live Map.",
-      cta: "Join Early Access",
-    },
-    footer: { meets: "Meets", communities: "Community", business: "Business", app: "Early Access", instagram: "Instagram" },
+    footer: { meets: "Events", map: "Map" },
   },
   el: {
     hero: {
       eyebrow: "NOXA · ΕΛΛΑΔΑ",
-      title: "Ανακάλυψε car & moto events σε όλη την Ελλάδα.",
-      body: "Δες τι γίνεται αυτό το weekend, εξερεύνησε τον χάρτη και ανακάλυψε τα Crews και τους partners πίσω από τα events.",
+      title: "Car & moto events σε όλη την Ελλάδα.",
+      body: "Βρες τι γίνεται, δες τις λεπτομέρειες κάθε event και εξερεύνησε την automotive σκηνή απευθείας στο NOXA Map.",
       primary: "Δες Events",
       map: "Άνοιξε το NOXA Map",
-      app: "NOXA App · Σύντομα",
     },
-    paths: {
-      communities: {
-        eyebrow: "COMMUNITY · CREWS",
-        title: "Βρες την κοινότητά σου.",
-        body: "Ανακάλυψε car και moto Crews και communities κοντά σου.",
-        cta: "Δες Community",
-      },
-      business: {
-        eyebrow: "BUSINESS & PARTNERS",
-        title: "Συνδέσου με automotive επιχειρήσεις.",
-        body: "Ανακάλυψε trusted partners και businesses που συνδέονται με την automotive κουλτούρα της Ελλάδας.",
-        cta: "Δες Business",
-      },
-    },
-    culture: { line1: "Different cars.", line2: "Same passion." },
-    app: {
-      eyebrow: "NOXA APP · ΣΥΝΤΟΜΑ",
-      title: "The road becomes social.",
-      body: "Meets. Crews. Routes. Live Map.",
-      cta: "Μπες στο Early Access",
-    },
-    footer: { meets: "Meets", communities: "Community", business: "Business", app: "Early Access", instagram: "Instagram" },
+    footer: { meets: "Events", map: "Map" },
   },
 } as const;
 
@@ -91,8 +46,6 @@ export function CultureLandingV2({ locale }: Props) {
   const home = locale === "el" ? "/el" : "/";
   const meets = locale === "el" ? "/el/meets" : "/meets";
   const map = locale === "el" ? "/el/map" : "/map";
-  const communities = locale === "el" ? "/el/communities" : "/communities";
-  const business = "/business";
 
   return (
     <div className={styles.site}>
@@ -117,7 +70,6 @@ export function CultureLandingV2({ locale }: Props) {
                 <Link className={styles.primaryButton} href={meets}>{t.hero.primary} <span aria-hidden="true">→</span></Link>
                 <Link className={styles.secondaryButton} href={map}>{t.hero.map} <span aria-hidden="true">↗</span></Link>
               </div>
-              <a className={styles.appHint} href="#app">{t.hero.app} <span aria-hidden="true">↓</span></a>
             </div>
           </div>
         </section>
@@ -129,59 +81,6 @@ export function CultureLandingV2({ locale }: Props) {
         </div>
 
         <HomepageMapPreview locale={locale} />
-
-        <section className={`${styles.pathsSection} ${styles.revealSection} ${refine.pathsRefined}`}>
-          <div className={styles.shell}>
-            <div className={`${styles.pathsGrid} ${refine.pathsGridRefined}`}>
-              <Link className={`${styles.pathCard} ${styles.communityCard} ${refine.pathCardRefined}`} href={communities}>
-                <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
-                <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
-                  <p className={styles.eyebrow}>{t.paths.communities.eyebrow}</p>
-                  <h2>{t.paths.communities.title}</h2>
-                  <p>{t.paths.communities.body}</p>
-                  <strong>{t.paths.communities.cta} <span aria-hidden="true">→</span></strong>
-                </div>
-              </Link>
-
-              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={business}>
-                <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
-                <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
-                  <p className={styles.eyebrow}>{t.paths.business.eyebrow}</p>
-                  <h2>{t.paths.business.title}</h2>
-                  <p>{t.paths.business.body}</p>
-                  <strong>{t.paths.business.cta} <span aria-hidden="true">→</span></strong>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.cultureSection} aria-label="NOXA automotive culture">
-          <div className={`${styles.cultureMedia} ${refine.cultureMediaRefined}`} aria-hidden="true" />
-          <div className={`${styles.cultureShade} ${refine.cultureShadeRefined}`} aria-hidden="true" />
-          <div className={styles.cultureNoise} aria-hidden="true" />
-          <div className={styles.shell}>
-            <p>{t.culture.line1}</p>
-            <strong>{t.culture.line2}</strong>
-            <span>NOXA</span>
-          </div>
-        </section>
-
-        <section className={`${styles.appSection} ${styles.revealSection} ${refine.appRefined}`} id="app">
-          <div className={styles.shell}>
-            <div className={styles.appGrid}>
-              <div>
-                <p className={styles.eyebrow}>{t.app.eyebrow}</p>
-                <h2>{t.app.title}</h2>
-                <p className={styles.appBody}>{t.app.body}</p>
-              </div>
-              <div className={`${styles.waitlistWrap} ${refine.waitlistCompact}`}>
-                <p className={styles.waitlistTitle}>{t.app.cta}</p>
-                <WaitlistForm copy={base.waitlist} locale={locale} />
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className={styles.footer}>
@@ -190,10 +89,7 @@ export function CultureLandingV2({ locale }: Props) {
             <Link aria-label="NOXA home" className={styles.footerBrand} href={home}><NoxaLogo /></Link>
             <nav aria-label="Footer">
               <Link href={meets}>{t.footer.meets}</Link>
-              <Link href={communities}>{t.footer.communities}</Link>
-              <Link href={business}>{t.footer.business}</Link>
-              <a href="#app">{t.footer.app}</a>
-              <a href="https://www.instagram.com/noxa_app/" rel="noreferrer" target="_blank">{t.footer.instagram}</a>
+              <Link href={map}>{t.footer.map}</Link>
             </nav>
           </div>
           <div className={styles.footerBottom}>

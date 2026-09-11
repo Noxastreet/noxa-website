@@ -16,60 +16,36 @@ type Item = {
 
 const copy = {
   en: {
-    label: "Start exploring NOXA",
+    label: "Explore NOXA events and map",
     items: [
       {
         index: "01",
-        eyebrow: "THIS WEEKEND",
+        eyebrow: "CAR & MOTO EVENTS",
         title: "See what’s happening.",
-        body: "Car and moto events happening across Greece this weekend.",
+        body: "Verified automotive and motorcycle events happening across Greece.",
       },
       {
         index: "02",
         eyebrow: "NOXA MAP",
-        title: "Explore the road.",
-        body: "Events, tracks, routes and verified automotive places on one map.",
-      },
-      {
-        index: "03",
-        eyebrow: "COMMUNITY · CREWS",
-        title: "Find the people behind the scene.",
-        body: "Discover Crews and automotive communities active across Greece.",
-      },
-      {
-        index: "04",
-        eyebrow: "CREW OR PARTNER?",
-        title: "Add your event to NOXA.",
-        body: "Crew and Business/Partner events can be submitted to NOXA for verification and publication.",
+        title: "Explore the scene.",
+        body: "Open the map and discover events, tracks, routes and automotive places across Greece.",
       },
     ],
   },
   el: {
-    label: "Ξεκίνα να εξερευνάς το NOXA",
+    label: "Εξερεύνησε NOXA events και map",
     items: [
       {
         index: "01",
-        eyebrow: "ΑΥΤΟ ΤΟ WEEKEND",
+        eyebrow: "CAR & MOTO EVENTS",
         title: "Δες τι γίνεται.",
-        body: "Car και moto events που γίνονται αυτό το weekend σε όλη την Ελλάδα.",
+        body: "Verified automotive και motorcycle events σε όλη την Ελλάδα.",
       },
       {
         index: "02",
         eyebrow: "NOXA MAP",
-        title: "Εξερεύνησε τον δρόμο.",
-        body: "Events, πίστες, διαδρομές και verified automotive μέρη σε έναν χάρτη.",
-      },
-      {
-        index: "03",
-        eyebrow: "COMMUNITY · CREWS",
-        title: "Βρες τους ανθρώπους της σκηνής.",
-        body: "Ανακάλυψε Crews και automotive communities σε όλη την Ελλάδα.",
-      },
-      {
-        index: "04",
-        eyebrow: "CREW Ή PARTNER?",
-        title: "Πρόσθεσε το event σου στο NOXA.",
-        body: "Events από Crews και Business/Partners μπορούν να σταλούν στο NOXA για verification και δημοσίευση.",
+        title: "Εξερεύνησε τη σκηνή.",
+        body: "Άνοιξε τον χάρτη και ανακάλυψε events, πίστες, διαδρομές και automotive μέρη σε όλη την Ελλάδα.",
       },
     ],
   },
@@ -79,10 +55,8 @@ export function HomepageDiscoveryRail({ locale }: Props) {
   const base = locale === "el" ? "/el" : "";
   const t = copy[locale];
   const hrefs = [
-    `${base}/meets?country=GR&date=weekend`,
+    `${base}/meets`,
     `${base}/map`,
-    `${base}/communities`,
-    `${base}/meets/submit`,
   ];
 
   const items: Item[] = t.items.map((item, index) => ({ ...item, href: hrefs[index] }));
