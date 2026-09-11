@@ -23,7 +23,7 @@ export function WebsiteHeader({ locale, path = "", action = "app" }: Props) {
         ["Meets", `${base}/meets`],
         ["Map", `${base}/map`],
         [locale === "el" ? "Κοινότητες" : "Communities", `${base}/communities`],
-        [locale === "el" ? "Business" : "Business", locale === "el" ? "/business" : "/business"],
+        ["Business", "/business"],
       ],
     }}
   />;
