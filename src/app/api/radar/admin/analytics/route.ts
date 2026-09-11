@@ -1,5 +1,10 @@
 import { NextRequest } from "next/server";
 
+import {
+  RADAR_SUPABASE_PUBLISHABLE_KEY,
+  RADAR_SUPABASE_URL,
+} from "@/lib/radarSupabasePublic";
+
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -39,19 +44,17 @@ function getBearer(request: NextRequest) {
 }
 
 async function verifyRadarAdmin(accessToken: string) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!supabaseUrl || !publishableKey || !accessToken) return false;
+  if (!accessToken) return false;
 
   const headers = {
-    apikey: publishableKey,
+    apikey: RADAR_SUPABASE_PUBLISHABLE_KEY,
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
 
   const [userResponse, adminResponse] = await Promise.all([
-    fetch(`${supabaseUrl}/auth/v1/user`, { headers, cache: "no-store" }),
-    fetch(`${supabaseUrl}/rest/v1/rpc/radar_admin_status`, {
+    fetch(`${RADAR_SUPABASE_URL}/auth/v1/user`, { headers, cache: "no-store" }),
+    fetch(`${RADAR_SUPABASE_URL}/rest/v1/rpc/radar_admin_status`, {
       method: "POST",
       headers,
       body: "{}",
