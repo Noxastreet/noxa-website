@@ -5,6 +5,8 @@ import { InstagramIcon } from "@/components/social/InstagramIcon";
 
 import styles from "./BusinessPartnersPage.module.css";
 
+const INSTAGRAM_HREF = "https://www.instagram.com/noxa_app/";
+
 const partners = [
   {
     name: "Raceworks Performance",
@@ -213,7 +215,7 @@ export function BusinessPartnersPage() {
               <h2 id="partner-cta-title">Let’s Drive<br />What’s Next. Together.</h2>
               <p>Partner with NOXASTREET and be part of a stronger,<br className={styles.desktopBreak} /> more connected automotive culture in Greece.</p>
             </div>
-            <a className={styles.primaryButton} href="mailto:hello@noxastreetapp.com?subject=NOXA%20Partner%20Enquiry">Join as a Partner <ArrowIcon /></a>
+            <a className={styles.primaryButton} href={INSTAGRAM_HREF} target="_blank" rel="noreferrer">Join as a Partner <ArrowIcon /></a>
           </div>
         </section>
       </main>
@@ -224,8 +226,8 @@ export function BusinessPartnersPage() {
           <p>A STRONGER CAR CULTURE FOR GREECE</p>
           <nav aria-label="Footer navigation">
             <Link href="/business">Business</Link>
-            <a href="mailto:hello@noxastreetapp.com">Contact</a>
-            <a className={styles.socialLink} href="https://www.instagram.com/noxa_app/" target="_blank" rel="noreferrer" aria-label="NOXA on Instagram"><InstagramIcon /></a>
+            <a href={INSTAGRAM_HREF} target="_blank" rel="noreferrer" aria-label="Contact NOXA on Instagram">Contact</a>
+            <a className={styles.socialLink} href={INSTAGRAM_HREF} target="_blank" rel="noreferrer" aria-label="NOXA on Instagram"><InstagramIcon /></a>
           </nav>
         </div>
       </footer>
