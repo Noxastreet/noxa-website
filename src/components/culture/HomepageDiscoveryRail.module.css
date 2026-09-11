@@ -13,7 +13,7 @@
 
 .rail {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .card {
@@ -70,7 +70,7 @@
 }
 
 .card p {
-  max-width: 31ch;
+  max-width: 42ch;
   margin: 13px 0 0;
   color: #9999a0;
   font-size: 13px;
@@ -95,7 +95,7 @@
   }
 
   .rail {
-    grid-template-columns: repeat(4, minmax(260px, 76vw));
+    grid-template-columns: repeat(2, minmax(260px, 76vw));
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: x mandatory;
@@ -120,7 +120,7 @@
 
 @media (max-width: 520px) {
   .rail {
-    grid-template-columns: repeat(4, minmax(286px, 84vw));
+    grid-template-columns: repeat(2, minmax(286px, 84vw));
   }
 
   .card {
