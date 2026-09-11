@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const SESSION_KEY = "noxa-radar-admin-session-v1";
 
@@ -181,10 +180,9 @@ export function FounderAnalyticsDashboard() {
     return () => { cancelled = true; };
   }, [range]);
 
-  const updated = useMemo(() => {
-    if (!data?.generatedAt) return "";
-    return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt));
-  }, [data?.generatedAt]);
+  const updated = data?.generatedAt
+    ? new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt))
+    : "";
 
   if (state === "signed_out") {
     return (
