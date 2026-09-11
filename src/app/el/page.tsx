@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { LandingPage } from "@/components/LandingPage";
 
 export const metadata: Metadata = {
-  title: "NOXA — Ο δρόμος γίνεται κοινωνικός",
+  title: "NOXA — Car & Moto Events στην Ελλάδα",
   description:
-    "Ανακάλυψε οδηγούς, συναντήσεις, ομάδες, διαδρομές και αυτοκινητιστικές εκδηλώσεις κοντά σου με το NOXA.",
+    "Ανακάλυψε car και moto events σε όλη την Ελλάδα και εξερεύνησέ τα στο NOXA automotive map.",
   alternates: {
     canonical: "/el",
     languages: {
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   openGraph: {
     url: "https://noxastreetapp.com/el",
     locale: "el_GR",
-    title: "NOXA — Ο δρόμος γίνεται κοινωνικός",
+    title: "NOXA — Car & Moto Events στην Ελλάδα",
     description:
-      "Ανακάλυψε οδηγούς, συναντήσεις, ομάδες, διαδρομές και αυτοκινητιστικές εκδηλώσεις κοντά σου με το NOXA.",
+      "Ανακάλυψε car και moto events σε όλη την Ελλάδα και εξερεύνησέ τα στο NOXA automotive map.",
   },
 };
 
