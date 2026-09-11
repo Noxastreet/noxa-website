@@ -12,12 +12,33 @@ const proxy = read("src/proxy.ts");
 const sitemap = read("src/app/sitemap.ts");
 const robots = read("src/app/robots.ts");
 const businessPage = read("src/components/business/BusinessPartnersPage.tsx");
+const businessCss = read("src/components/business/BusinessPartnersPage.module.css");
 
 // Public product navigation is now Events + Map + Community/Crews + Business/Partners.
 expect(websiteHeader.includes('"/business"'), "Public header must expose Business");
 expect(!websiteHeader.includes('"/organizers"'), "Public header must not expose Organizers");
 expect(websiteHeader.includes('"/meets", "/map", "/communities", "/business"'), "Business must participate in active navigation state");
-expect(businessPage.includes("Business &amp; Partners"), "Business & Partners page must exist");
+
+// Business & Partners must preserve the approved reference structure without fake metrics.
+for (const expected of [
+  "Business &amp; Partners",
+  "Grow your presence",
+  "Join as a Partner",
+  "Featured Partners",
+  "Business Categories",
+  "Let’s Drive",
+  "Raceworks Performance",
+  "ClearRide Detailing",
+  "Fuel Café",
+]) {
+  expect(businessPage.includes(expected), `Business page missing approved reference content: ${expected}`);
+}
+for (const forbidden of ["900K", "30K", "150 events", "testimonials", "rating"]) {
+  expect(!businessPage.toLowerCase().includes(forbidden.toLowerCase()), `Business page must not reintroduce fake metric/content: ${forbidden}`);
+}
+expect(businessCss.includes("scroll-snap-type: x mandatory"), "Mobile Featured Partners must remain horizontally swipeable");
+expect(businessCss.includes("grid-template-columns: repeat(3, minmax(0, 1fr))"), "Mobile Business Categories must preserve 3-column grid");
+expect(businessCss.includes("@media (prefers-reduced-motion: reduce)"), "Business page must respect reduced motion");
 
 // Organizer product pages are retired and old URLs are redirected to Community.
 for (const path of [
