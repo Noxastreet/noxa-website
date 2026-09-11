@@ -2,18 +2,12 @@
 
 import { useEffect } from "react";
 
-import {
-  consumeRadarAdminReturnIntent,
-  RADAR_ADMIN_ANALYTICS_PATH,
-  resolveRadarAdminSession,
-} from "@/lib/radarAdminSession";
-
 /**
  * Supabase may fall back to the configured Site URL when a requested magic-link
  * redirect is not allow-listed. In that case the auth session lands on `/` in
  * the URL fragment. Only consume that callback when auth tokens are present.
- * The shared Radar Admin session resolver validates `radar_admin_status` before
- * persisting anything and removes the tokens from the address bar.
+ * The admin helper is lazy-loaded so normal public homepage visits do not pay
+ * for private auth/session code.
  */
 export function RadarAdminAuthBridge() {
   useEffect(() => {
@@ -25,6 +19,12 @@ export function RadarAdminAuthBridge() {
       }
 
       try {
+        const {
+          consumeRadarAdminReturnIntent,
+          RADAR_ADMIN_ANALYTICS_PATH,
+          resolveRadarAdminSession,
+        } = await import("@/lib/radarAdminSession");
+
         const result = await resolveRadarAdminSession({
           consumeMagicLink: true,
           verifyAdmin: true,
