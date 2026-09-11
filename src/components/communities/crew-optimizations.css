@@ -1,0 +1,56 @@
+/* Crew Directory performance and mobile interaction refinements.
+   Intentionally page-scoped so the rest of NOXA is unaffected. */
+
+@supports (content-visibility: auto) {
+  body:has(#crew-directory-main) #all-crews,
+  body:has(#crew-directory-main) #crew-directory-main > section:has(#community-moments-title),
+  body:has(#crew-directory-main) #crew-directory-main > section:has(#create-crew-title) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+}
+
+body:has(#crew-directory-main) nav[aria-label="Crew style filters"],
+body:has(#crew-directory-main) #crew-directory-main > section:has(#featured-crews-title) > div:last-child,
+body:has(#crew-directory-main) #crew-directory-main > section:has(#community-moments-title) > div:last-child,
+body:has(#crew-directory-main) #all-crews > aside > div:last-child > div:last-child {
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 700px) {
+  /* 16px prevents iOS Safari from zooming the page when search receives focus. */
+  body:has(#crew-directory-main) #crew-search {
+    font-size: 16px !important;
+  }
+
+  /* Keep touch targets comfortably tappable without changing the accepted composition. */
+  body:has(#crew-directory-main) nav[aria-label="Crew style filters"] > * {
+    min-height: 42px !important;
+  }
+
+  /* A single real featured crew should read as a full mobile card, not an empty carousel. */
+  body:has(#crew-directory-main) #crew-directory-main > section:has(#featured-crews-title) > div:last-child:has(> :only-child) {
+    width: 100% !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+  }
+
+  body:has(#crew-directory-main) #crew-directory-main > section:has(#featured-crews-title) > div:last-child:has(> :only-child) > :only-child {
+    flex-basis: 100% !important;
+    max-width: 430px;
+  }
+
+  body:has(#crew-directory-main) #all-crews > div:first-child > div:last-child > a {
+    min-height: 88px;
+  }
+}
+
+@media (hover: none) {
+  body:has(#crew-directory-main) a,
+  body:has(#crew-directory-main) button,
+  body:has(#crew-directory-main) summary,
+  body:has(#crew-directory-main) input {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
