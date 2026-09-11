@@ -2,30 +2,27 @@
 
 import { useEffect } from "react";
 
-const SESSION_KEY = "noxa-radar-admin-session-v1";
+import {
+  RADAR_ADMIN_SESSION_KEY,
+  type RadarAdminSession,
+} from "@/lib/radarAdminSession";
+
 const RETURN_TO_KEY = "noxa-radar-admin-return-to-v1";
 const ANALYTICS_PATH = "/radar/admin/analytics";
 
-type StoredSession = {
-  accessToken?: string;
-  expiresAt?: number;
-};
-
 /**
- * Remembers that an unauthenticated founder came from Analytics. The intent
- * survives Supabase falling back to the Site URL before Radar Admin restores
- * the authenticated session.
+ * Remembers the Analytics destination only when there is no recoverable Radar
+ * Admin session. An expired access token with a refresh token is intentionally
+ * treated as recoverable; Founder Analytics will refresh it automatically.
  */
 export function FounderAnalyticsReturnIntent() {
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(SESSION_KEY);
-      const session = raw ? JSON.parse(raw) as StoredSession : null;
-      const sessionIsUsable = Boolean(
-        session?.accessToken && (!session.expiresAt || session.expiresAt > Date.now()),
-      );
+      const raw = window.localStorage.getItem(RADAR_ADMIN_SESSION_KEY);
+      const session = raw ? JSON.parse(raw) as Partial<RadarAdminSession> : null;
+      const canRecover = Boolean(session?.accessToken && session?.refreshToken);
 
-      if (sessionIsUsable) {
+      if (canRecover) {
         window.localStorage.removeItem(RETURN_TO_KEY);
         return;
       }
