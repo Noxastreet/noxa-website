@@ -7,6 +7,7 @@ const websiteHeader = read("src/components/navigation/WebsiteHeader.tsx");
 const communities = read("src/components/communities/CommunityDirectory.tsx");
 const communityApply = read("src/components/communities/CommunityApplicationForm.tsx");
 const meetSubmit = read("src/components/radar/RadarSubmitForm.tsx");
+const eventDetail = read("src/components/meets/EventDetailPage.tsx");
 const eventSubmit = read("supabase/functions/radar-submit-event/index.ts");
 const proxy = read("src/proxy.ts");
 const sitemap = read("src/app/sitemap.ts");
@@ -56,6 +57,10 @@ expect(proxy.includes('`${base}/communities`'), "Legacy Organizer URLs must redi
 expect(!sitemap.includes('page("/organizers"'), "Sitemap must not publish Organizer directory");
 expect(!sitemap.includes("loadOrganizerSlugs"), "Sitemap must not enumerate Organizer profiles");
 expect(!robots.includes('"/organizer"'), "robots.txt must not carry obsolete Organizer route rules");
+expect(!eventDetail.includes("loadOrganizerById"), "Event detail must not load retired Organizer profiles");
+expect(!eventDetail.includes("VERIFIED ORGANIZER"), "Event detail must not render retired Organizer UI");
+expect(!eventDetail.includes("/organizers/"), "Event detail must not link to retired Organizer profiles");
+expect(eventDetail.includes("Official event information"), "Event detail must retain factual official source information");
 
 // Crews and Business/Partners are the only public event-publisher identities.
 expect(communityApply.includes("community-submit-application"), "Community application must keep its dedicated endpoint");
