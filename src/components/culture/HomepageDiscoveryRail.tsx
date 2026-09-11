@@ -32,15 +32,15 @@ const copy = {
       },
       {
         index: "03",
-        eyebrow: "ORGANIZERS",
-        title: "Follow the people behind it.",
-        body: "Discover verified teams, communities and organizers behind each event.",
+        eyebrow: "COMMUNITY · CREWS",
+        title: "Find the people behind the scene.",
+        body: "Discover Crews and automotive communities active across Greece.",
       },
       {
         index: "04",
-        eyebrow: "HOSTING AN EVENT?",
-        title: "Add it to NOXA.",
-        body: "Send your event to NOXA and put it in front of the Greek car + moto community.",
+        eyebrow: "CREW OR PARTNER?",
+        title: "Add your event to NOXA.",
+        body: "Crew and Business/Partner events can be submitted to NOXA for verification and publication.",
       },
     ],
   },
@@ -61,15 +61,15 @@ const copy = {
       },
       {
         index: "03",
-        eyebrow: "ORGANIZERS",
-        title: "Βρες ποιος είναι πίσω από κάθε event.",
-        body: "Ανακάλυψε verified teams, communities και organizers πίσω από τα events.",
+        eyebrow: "COMMUNITY · CREWS",
+        title: "Βρες τους ανθρώπους της σκηνής.",
+        body: "Ανακάλυψε Crews και automotive communities σε όλη την Ελλάδα.",
       },
       {
         index: "04",
-        eyebrow: "ΔΙΟΡΓΑΝΩΝΕΙΣ EVENT?",
-        title: "Πρόσθεσέ το στο NOXA.",
-        body: "Στείλε το event σου στο NOXA και δείξ’ το στην car + moto κοινότητα της Ελλάδας.",
+        eyebrow: "CREW Ή PARTNER?",
+        title: "Πρόσθεσε το event σου στο NOXA.",
+        body: "Events από Crews και Business/Partners μπορούν να σταλούν στο NOXA για verification και δημοσίευση.",
       },
     ],
   },
@@ -81,7 +81,7 @@ export function HomepageDiscoveryRail({ locale }: Props) {
   const hrefs = [
     `${base}/meets?country=GR&date=weekend`,
     `${base}/map`,
-    `${base}/organizers`,
+    `${base}/communities`,
     `${base}/meets/submit`,
   ];
 
