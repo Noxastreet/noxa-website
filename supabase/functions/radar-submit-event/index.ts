@@ -21,10 +21,12 @@ const EVENT_TYPES = new Set([
   "dexterity",
   "other",
 ]);
+const PUBLISHER_TYPES = new Set(["crew", "business"]);
 const LIMIT = 5;
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 type Submission = {
+  publisherType?: unknown;
   title?: unknown;
   eventType?: unknown;
   startsAt?: unknown;
@@ -185,6 +187,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Please reopen the form and try again." }, 400, origin);
   }
 
+  const publisherType = text(body.publisherType, 20);
   const title = text(body.title, 160);
   const eventType = text(body.eventType, 40);
   const countryCode = text(body.countryCode, 2).toUpperCase();
@@ -198,13 +201,14 @@ Deno.serve(async (req: Request) => {
   const now = Date.now();
   const latestAllowed = now + 550 * 24 * 60 * 60 * 1000;
 
+  if (!PUBLISHER_TYPES.has(publisherType)) return json({ error: "Events can be submitted only by a Crew or Business/Partner." }, 400, origin);
   if (title.length < 3) return json({ error: "Event name is required." }, 400, origin);
   if (!EVENT_TYPES.has(eventType)) return json({ error: "Choose a valid event type." }, 400, origin);
   if (countryCode !== "GR") return json({ error: "NOXA currently accepts public event submissions in Greece only." }, 400, origin);
   if (city.length < 2) return json({ error: "City is required." }, 400, origin);
   if (location.length < 2) return json({ error: "Location is required." }, 400, origin);
-  if (organizerName.length < 2) return json({ error: "Organizer name is required." }, 400, origin);
-  if (!sourceUrl) return json({ error: "Add a public source link for the event." }, 400, origin);
+  if (organizerName.length < 2) return json({ error: "Crew or Business name is required." }, 400, origin);
+  if (!sourceUrl) return json({ error: "Add the official event source link." }, 400, origin);
   if (Number.isNaN(startsAt.getTime()) || startsAt.getTime() < now - 15 * 60 * 1000 || startsAt.getTime() > latestAllowed) {
     return json({ error: "Choose a valid upcoming date and time." }, 400, origin);
   }
@@ -236,9 +240,10 @@ Deno.serve(async (req: Request) => {
         organizer_url: sourceUrl,
         summary,
         ai_confidence: null,
-        ai_reason: "Submitted through the public NOXA Meets event form. Human review is required before publication.",
+        ai_reason: `Submitted by a ${publisherType === "crew" ? "Crew" : "Business/Partner"} through the NOXA Meets form. Human verification is required before publication.`,
         raw_payload: {
           provider: "public_submission",
+          publisher_type: publisherType,
           submitted_via: "https://noxastreetapp.com/meets/submit",
         },
         status: "new",

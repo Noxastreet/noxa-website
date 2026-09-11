@@ -3,14 +3,12 @@ import { notFound } from "next/navigation";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { loadOrganizerById } from "@/components/organizers/organizer-data";
 import { buildNoxaMapHref, eventFamily } from "@/lib/meets/discoveryPersonalization";
 import { isEventCurrentlyVisible, isPastEvent } from "@/lib/meets/eventVisibility";
 
 import discovery from "./EventDiscovery.module.css";
 import { EventActions } from "./EventActions";
 import styles from "./EventDetailPage.module.css";
-import { FollowSubscriptionForm } from "./FollowSubscriptionForm";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
@@ -193,10 +191,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const event = await loadPublicEvent(slug);
   if (!event) notFound();
 
-  const [organizer, related] = await Promise.all([
-    event.organizer_profile_id ? loadOrganizerById(event.organizer_profile_id) : Promise.resolve(null),
-    loadRelatedEvents(event),
-  ]);
+  const related = await loadRelatedEvents(event);
   const content = localizePublicEvent(event, locale);
   const past = isPastEvent(event.starts_at, event.ends_at);
   const place = [content.locationText, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
@@ -295,14 +290,6 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 </section>
               </div>
               <aside className={discovery.sideStack}>
-                {organizer ? (
-                  <section className={discovery.organizerPanel}>
-                    <span>{locale === "el" ? "VERIFIED ORGANIZER" : "VERIFIED ORGANIZER"}</span>
-                    <h2>{organizer.name}</h2>
-                    <Link href={`${base}/organizers/${organizer.slug}`}>{locale === "el" ? "Δες organizer" : "View organizer"} →</Link>
-                    <FollowSubscriptionForm compact locale={locale} target={{ type: "organizer", organizerId: organizer.id }} title={locale === "el" ? `Ακολούθησε ${organizer.name}` : `Follow ${organizer.name}`} />
-                  </section>
-                ) : null}
                 <div className={styles.organizerCard}>
                   <span>{locale === "el" ? "ΠΗΓΗ" : "SOURCE"}</span>
                   <h2>{locale === "el" ? "Επίσημες πληροφορίες event" : "Official event information"}</h2>

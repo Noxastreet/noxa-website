@@ -1,41 +1,38 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
 
-const dashboard = fs.readFileSync("src/components/organizers/OrganizerDashboardP2.tsx", "utf8");
-const routeEn = fs.readFileSync("src/app/organizer/page.tsx", "utf8");
-const routeEl = fs.readFileSync("src/app/el/organizer/page.tsx", "utf8");
-const migration = fs.readFileSync("supabase/migrations/20260909124000_supply_platform_p2_organizer_event_quality.sql", "utf8");
+const retiredRoutes = [
+  "src/app/organizers/page.tsx",
+  "src/app/organizers/apply/page.tsx",
+  "src/app/organizers/[slug]/page.tsx",
+  "src/app/organizers/[slug]/claim/page.tsx",
+  "src/app/organizer/page.tsx",
+  "src/app/organizer/insights/page.tsx",
+  "src/app/el/organizers/page.tsx",
+  "src/app/el/organizers/apply/page.tsx",
+  "src/app/el/organizers/[slug]/page.tsx",
+  "src/app/el/organizers/[slug]/claim/page.tsx",
+  "src/app/el/organizer/page.tsx",
+  "src/app/el/organizer/insights/page.tsx",
+  "src/app/radar/admin/organizers/page.tsx",
+  "src/app/radar/admin/organizers/applications/page.tsx",
+];
 
-assert.match(routeEn, /OrganizerDashboardP2/);
-assert.match(routeEl, /OrganizerDashboardP2/);
-
-for (const eventType of ["car_meet", "moto_meet", "karting", "dexterity"]) {
-  assert.match(dashboard, new RegExp(`\\[\\"${eventType}\\"`), `missing ${eventType} organizer event type`);
+for (const path of retiredRoutes) {
+  assert.equal(fs.existsSync(path), false, `retired Organizer route still exists: ${path}`);
 }
 
-assert.match(dashboard, /latitude,longitude,location_precision/);
-assert.match(dashboard, /location_precision: hasExactPoint \? "exact" : "unknown"/);
-assert.match(dashboard, /Publish requires exact latitude \+ longitude/);
-assert.match(dashboard, /Published events need a description of at least 32 characters/);
-assert.match(dashboard, /Add the official source for this exact event/);
-assert.match(dashboard, /publication_source: "organizer"/);
-assert.match(dashboard, /country_code: "GR"/);
-assert.match(dashboard, /source_url: normalizeUrl\(draft\.sourceUrl\) \|\| profileUrl/);
-assert.match(dashboard, /status === "published"/);
-assert.match(dashboard, /"unpublished"/);
-assert.match(dashboard, /"cancelled"/);
-assert.match(dashboard, /Map point missing/);
+const businessRoute = fs.readFileSync("src/app/business/page.tsx", "utf8");
+const businessPage = fs.readFileSync("src/components/business/BusinessPartnersPage.tsx", "utf8");
+const header = fs.readFileSync("src/components/navigation/WebsiteHeader.tsx", "utf8");
+const homepage = fs.readFileSync("src/components/culture/CultureLandingV2.tsx", "utf8");
 
-assert.match(migration, /target\.publication_source in \('reviewed', 'organizer'\)/);
-assert.match(migration, /missing_organizer_profile/);
-assert.match(migration, /missing_summary/);
-assert.match(migration, /short_summary/);
-assert.match(migration, /map_location_not_exact/);
-assert.match(migration, /map_coordinates_missing/);
-assert.match(migration, /outside_greece/);
-assert.match(migration, /create trigger radar_organizer_event_quality_gate/i);
-assert.match(migration, /before update of[\s\S]*title[\s\S]*summary[\s\S]*source_url/i);
-assert.match(migration, /new\.publication_source = 'organizer' and new\.status = 'published'/i);
-assert.match(migration, /execute function private\.enforce_radar_event_quality_on_publish\(\)/i);
+assert.match(businessRoute, /BusinessPartnersPage/);
+assert.match(businessPage, /Featured Partners/);
+assert.match(businessPage, /Business Categories/);
+assert.match(header, /\["Business", "\/business"\]/);
+assert.equal(header.includes('["Organizers"'), false);
+assert.match(homepage, /BUSINESS & PARTNERS/);
+assert.equal(homepage.includes("Explore Organizers"), false);
 
-console.log("Supply Platform P2 organizer dashboard fixtures passed.");
+console.log("Retired Organizer route surface fixtures passed.");
