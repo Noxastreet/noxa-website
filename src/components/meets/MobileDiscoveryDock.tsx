@@ -1,6 +1,6 @@
 "use client";
 
-import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
 
 import styles from "./MeetsDiscovery.module.css";
 
@@ -9,6 +9,20 @@ type DockButtonProps = {
   icon: string;
   label: string;
   onActivate: () => void;
+};
+
+const dockHitTestStyle: CSSProperties = {
+  pointerEvents: "auto",
+  isolation: "isolate",
+  transform: "translate3d(0, 0, 0)",
+  touchAction: "manipulation",
+  WebkitBackfaceVisibility: "hidden",
+};
+
+const buttonHitTestStyle: CSSProperties = {
+  pointerEvents: "auto",
+  touchAction: "manipulation",
+  WebkitTapHighlightColor: "transparent",
 };
 
 function DockButton({ active = false, icon, label, onActivate }: DockButtonProps) {
@@ -39,6 +53,7 @@ function DockButton({ active = false, icon, label, onActivate }: DockButtonProps
   return (
     <button
       className={active ? styles.mobileDockActive : ""}
+      style={buttonHitTestStyle}
       type="button"
       aria-pressed={active}
       onPointerDown={handlePointerDown}
@@ -76,7 +91,11 @@ export function MobileDiscoveryDock({
     : { near: "Near", weekend: "Weekend", saved: "Saved", filters: "Filters" };
 
   return (
-    <nav className={styles.mobileDock} aria-label={locale === "el" ? "Γρήγορη ανακάλυψη" : "Quick discovery"}>
+    <nav
+      className={styles.mobileDock}
+      style={dockHitTestStyle}
+      aria-label={locale === "el" ? "Γρήγορη ανακάλυψη" : "Quick discovery"}
+    >
       <DockButton active={nearbyActive} icon="⌖" label={t.near} onActivate={onNearby} />
       <DockButton active={weekendActive} icon="◫" label={t.weekend} onActivate={onWeekend} />
       <DockButton active={savedActive} icon="♥" label={`${t.saved}${savedCount ? ` ${savedCount}` : ""}`} onActivate={onSaved} />
