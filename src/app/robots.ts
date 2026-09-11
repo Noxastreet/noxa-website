@@ -5,15 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [
-        "/api/",
-        "/organizer",
-        "/organizer/",
-        "/el/organizer",
-        "/el/organizer/",
-        "/organizers/*/claim",
-        "/el/organizers/*/claim",
-      ],
+      disallow: ["/api/"],
     },
     sitemap: "https://noxastreetapp.com/sitemap.xml",
     host: "https://noxastreetapp.com",
