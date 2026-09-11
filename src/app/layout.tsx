@@ -12,7 +12,7 @@ import "./public-feature-visibility.css";
 
 const SITE_TITLE = "NOXA — Car & Moto Events in Greece";
 const SITE_DESCRIPTION =
-  "Discover car and moto events, Crews, partners, tracks, routes and verified automotive places across Greece with NOXA.";
+  "Discover car and moto events across Greece and explore them on the NOXA automotive map.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),
