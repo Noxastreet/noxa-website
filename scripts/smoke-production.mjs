@@ -66,8 +66,8 @@ if (homeHtml.includes('href="/organizers"')) throw new Error("Home still exposes
 const pages = [
   ["meets", "/meets", "Find your next meet."],
   ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
-  ["communities", "/communities", "Find your scene."],
-  ["greek-communities", "/el/communities", "Βρες τη σκηνή σου."],
+  ["communities", "/communities", "Find your crew."],
+  ["greek-communities", "/el/communities", "Βρες το crew σου."],
   ["business", "/business", "Grow your presence"],
 ];
 for (const [name, pathname, expected] of pages) {
