@@ -143,7 +143,7 @@ export function CultureLandingV2({ locale }: Props) {
                 </div>
               </Link>
 
-              <Link className={`${styles.pathCard} ${styles.businessCard} ${refine.pathCardRefined}`} href={business}>
+              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={business}>
                 <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
                 <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
                   <p className={styles.eyebrow}>{t.paths.business.eyebrow}</p>
