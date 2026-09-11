@@ -25,6 +25,11 @@ const EVENT_TYPES = [
   ["other", "Other"],
 ] as const;
 
+const PUBLISHER_TYPES = [
+  ["crew", "Crew / Community"],
+  ["business", "Business / Partner"],
+] as const;
+
 type SubmitResponse = { ok?: boolean; submitted?: boolean; duplicate?: boolean; message?: string; error?: string };
 
 const copy = {
@@ -32,28 +37,30 @@ const copy = {
     back: "← NOXA Meets",
     eyebrow: "ADD EVENT · GREECE",
     title: "Add your event.",
-    intro: "Organizing or know about a public car or motorcycle event in Greece? Send the official source and event details. NOXA reviews the submission before it appears in Meets.",
-    noticeTitle: "Public submission — NOXA review required.",
-    noticeBody: "This form does not publish instantly. Verified organizers can manage their own events through Organizer access.",
-    organizerCta: "Apply or claim Organizer access",
+    intro: "NOXA event submissions are for Crews and Business/Partners active in Greece. Send the official source and event details. NOXA verifies every submission before it appears in Meets.",
+    noticeTitle: "Crew or Business/Partner submission only.",
+    noticeBody: "This form does not publish instantly. NOXA verifies the publisher and source before publication.",
+    crewCta: "Register or view your Crew",
+    businessCta: "Business & Partners",
+    publisherType: "Publisher type",
     eventName: "Event name",
     type: "Type",
     date: "Date & time",
     country: "Country",
     city: "City",
     location: "Location",
-    organizer: "Organizer name",
-    source: "Official / public event source",
-    sourceHelp: "Organizer website, official Instagram/Facebook post or another public page for this exact event.",
+    publisher: "Crew / Business name",
+    source: "Official event source",
+    sourceHelp: "Use the official Crew, Business/Partner, venue or event page for this exact event.",
     details: "Event details",
     optional: "optional",
     detailsPlaceholder: "Program, entry rules, meetup time, parking, vehicle theme, spectator information…",
-    review: "NOXA checks the source before publication. Do not invent missing details. Final event information remains the organizer’s responsibility.",
+    review: "NOXA checks the publisher and source before publication. Do not invent missing details.",
     submit: "Send event for review",
     submitting: "Submitting…",
     successEyebrow: "EVENT RECEIVED",
     successTitle: "Your event is in the NOXA review queue.",
-    success: "NOXA will verify the source and details before it becomes public.",
+    success: "NOXA will verify the publisher, source and details before it becomes public.",
     duplicate: "This event is already published or waiting in the NOXA review queue.",
     backMeets: "Back to NOXA Meets",
     another: "Add another event",
@@ -64,28 +71,30 @@ const copy = {
     back: "← NOXA Meets",
     eyebrow: "ΠΡΟΣΘΗΚΗ EVENT · ΕΛΛΑΔΑ",
     title: "Πρόσθεσε το event σου.",
-    intro: "Διοργανώνεις ή γνωρίζεις ένα δημόσιο car ή moto event στην Ελλάδα; Στείλε την επίσημη πηγή και τα στοιχεία. Το NOXA ελέγχει την υποβολή πριν εμφανιστεί στα Meets.",
-    noticeTitle: "Δημόσια υποβολή — απαιτείται NOXA review.",
-    noticeBody: "Η φόρμα δεν δημοσιεύει άμεσα. Οι verified organizers μπορούν να διαχειρίζονται τα δικά τους events μέσω Organizer access.",
-    organizerCta: "Apply ή claim Organizer access",
+    intro: "Οι υποβολές event στο NOXA είναι για Crews και Business/Partners που δραστηριοποιούνται στην Ελλάδα. Στείλε την επίσημη πηγή και τα στοιχεία. Το NOXA ελέγχει κάθε υποβολή πριν εμφανιστεί στα Meets.",
+    noticeTitle: "Μόνο Crew ή Business/Partner.",
+    noticeBody: "Η φόρμα δεν δημοσιεύει άμεσα. Το NOXA επιβεβαιώνει τον publisher και την πηγή πριν τη δημοσίευση.",
+    crewCta: "Καταχώρισε ή δες το Crew σου",
+    businessCta: "Business & Partners",
+    publisherType: "Τύπος publisher",
     eventName: "Όνομα event",
     type: "Τύπος",
     date: "Ημερομηνία & ώρα",
     country: "Χώρα",
     city: "Πόλη",
     location: "Τοποθεσία",
-    organizer: "Όνομα organizer",
-    source: "Επίσημη / δημόσια πηγή event",
-    sourceHelp: "Website organizer, επίσημο Instagram/Facebook post ή άλλη δημόσια σελίδα για το συγκεκριμένο event.",
+    publisher: "Όνομα Crew / Business",
+    source: "Επίσημη πηγή event",
+    sourceHelp: "Χρησιμοποίησε την επίσημη σελίδα Crew, Business/Partner, venue ή event για το συγκεκριμένο event.",
     details: "Στοιχεία event",
     optional: "προαιρετικό",
     detailsPlaceholder: "Πρόγραμμα, κανόνες εισόδου, ώρα συνάντησης, parking, vehicle theme, spectator info…",
-    review: "Το NOXA ελέγχει την πηγή πριν τη δημοσίευση. Μην προσθέτεις στοιχεία που δεν είναι επιβεβαιωμένα. Οι τελικές πληροφορίες παραμένουν ευθύνη του organizer.",
+    review: "Το NOXA ελέγχει τον publisher και την πηγή πριν τη δημοσίευση. Μην προσθέτεις στοιχεία που δεν είναι επιβεβαιωμένα.",
     submit: "Στείλε το event για review",
     submitting: "Αποστολή…",
     successEyebrow: "ΤΟ EVENT ΕΛΗΦΘΗ",
     successTitle: "Το event μπήκε στο NOXA review queue.",
-    success: "Το NOXA θα επιβεβαιώσει την πηγή και τα στοιχεία πριν γίνει public.",
+    success: "Το NOXA θα επιβεβαιώσει publisher, πηγή και στοιχεία πριν γίνει public.",
     duplicate: "Αυτό το event είναι ήδη published ή βρίσκεται στο NOXA review queue.",
     backMeets: "Πίσω στα NOXA Meets",
     another: "Πρόσθεσε άλλο event",
@@ -123,13 +132,14 @@ export function RadarSubmitForm({ locale = "en" }: { locale?: Locale }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          publisherType: form.get("publisherType"),
           title: form.get("title"),
           eventType: form.get("eventType"),
           startsAt: parsedDate.toISOString(),
           countryCode: "GR",
           city: form.get("city"),
           location: form.get("location"),
-          organizerName: form.get("organizerName"),
+          organizerName: form.get("publisherName"),
           sourceUrl: form.get("sourceUrl"),
           summary: form.get("summary"),
           website: form.get("website"),
@@ -180,9 +190,16 @@ export function RadarSubmitForm({ locale = "en" }: { locale?: Locale }) {
           <div className={styles.notice}>
             <strong>{t.noticeTitle}</strong>
             <span>{t.noticeBody}</span>
-            <Link className="mt-1 text-sm font-semibold text-white underline underline-offset-4" href={`${base}/organizers`}>{t.organizerCta} →</Link>
+            <div className="mt-2 flex flex-wrap gap-4">
+              <Link className="text-sm font-semibold text-white underline underline-offset-4" href={`${base}/communities`}>{t.crewCta} →</Link>
+              <Link className="text-sm font-semibold text-white underline underline-offset-4" href="/business">{t.businessCta} →</Link>
+            </div>
           </div>
 
+          <label className={styles.field}>
+            <span>{t.publisherType}</span>
+            <select defaultValue="crew" name="publisherType">{PUBLISHER_TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+          </label>
           <label className={styles.field}><span>{t.eventName}</span><input maxLength={160} name="title" placeholder="Thessaloniki Night Meet" required /></label>
           <div className={styles.twoColumns}>
             <label className={styles.field}>
@@ -198,7 +215,7 @@ export function RadarSubmitForm({ locale = "en" }: { locale?: Locale }) {
           </div>
 
           <label className={styles.field}><span>{t.location}</span><input maxLength={180} name="location" placeholder="Venue, track, parking area or meeting point" required /></label>
-          <label className={styles.field}><span>{t.organizer}</span><input maxLength={120} name="organizerName" placeholder="Organizer name" required /></label>
+          <label className={styles.field}><span>{t.publisher}</span><input maxLength={120} name="publisherName" placeholder="Crew or Business name" required /></label>
           <label className={styles.field}>
             <span>{t.source}</span>
             <input inputMode="url" maxLength={500} name="sourceUrl" placeholder="https://instagram.com/..." required type="url" />
