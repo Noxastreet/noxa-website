@@ -30,6 +30,15 @@ type BreakdownItem = {
   label: string;
   count: number;
   visitors: number;
+  path?: string;
+  title?: string;
+  city?: string | null;
+};
+
+type RadarEventLookupRow = {
+  public_slug: string | null;
+  title: string;
+  city: string | null;
 };
 
 function json(body: unknown, init?: ResponseInit) {
@@ -43,15 +52,18 @@ function getBearer(request: NextRequest) {
   return authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
 }
 
-async function verifyRadarAdmin(accessToken: string) {
-  if (!accessToken) return false;
-
-  const headers = {
+function supabaseHeaders(accessToken: string) {
+  return {
     apikey: RADAR_SUPABASE_PUBLISHABLE_KEY,
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
+}
 
+async function verifyRadarAdmin(accessToken: string) {
+  if (!accessToken) return false;
+
+  const headers = supabaseHeaders(accessToken);
   const [userResponse, adminResponse] = await Promise.all([
     fetch(`${RADAR_SUPABASE_URL}/auth/v1/user`, { headers, cache: "no-store" }),
     fetch(`${RADAR_SUPABASE_URL}/rest/v1/rpc/radar_admin_status`, {
@@ -73,8 +85,7 @@ function rangeSince(days: number, now: Date) {
 function vercelBaseParams() {
   const projectId = process.env.VERCEL_PROJECT_ID ?? NOXA_VERCEL_PROJECT_ID;
   const teamId = process.env.VERCEL_ORG_ID ?? NOXA_VERCEL_TEAM_ID;
-  const params = new URLSearchParams({ projectId, teamId });
-  return params;
+  return new URLSearchParams({ projectId, teamId });
 }
 
 async function vercelRequest(path: string, params: URLSearchParams) {
@@ -147,20 +158,86 @@ async function safeBreakdown(
   try {
     return await getBreakdown(dimension, since, until, limit);
   } catch (error) {
-    warnings.push(`${dimension}: ${error instanceof Error ? error.message : "unavailable"}`);
+    warnings.push(dimension);
+    console.warn("[founder-analytics] breakdown unavailable", {
+      dimension,
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return [];
   }
+}
+
+function normalizeReferrer(label: string) {
+  const value = label.trim().toLowerCase();
+  if (!value || value === "direct / unknown" || value === "direct") return "Прямой переход";
+  if (value.includes("instagram")) return "Instagram";
+  if (value.includes("google")) return "Google";
+  if (value.includes("t.me") || value.includes("telegram")) return "Telegram";
+  if (value.includes("facebook") || value.includes("fb.com")) return "Facebook";
+  return "Другие сайты";
+}
+
+function groupReferrers(items: BreakdownItem[]) {
+  const grouped = new Map<string, BreakdownItem>();
+  for (const item of items) {
+    const label = normalizeReferrer(item.label);
+    const current = grouped.get(label);
+    if (current) {
+      current.count += item.count;
+      current.visitors += item.visitors;
+    } else {
+      grouped.set(label, { ...item, label });
+    }
+  }
+  return Array.from(grouped.values()).sort((a, b) => b.count - a.count);
+}
+
+function eventSlugFromPath(path: string) {
+  const match = path.match(/^\/meets\/([^/?#]+)\/?(?:[?#].*)?$/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+async function getRadarEventLookup(accessToken: string) {
+  const response = await fetch(
+    `${RADAR_SUPABASE_URL}/rest/v1/radar_events?select=public_slug,title,city&status=eq.published&public_slug=not.is.null&limit=1000`,
+    {
+      headers: supabaseHeaders(accessToken),
+      cache: "no-store",
+    },
+  );
+  if (!response.ok) throw new Error(`Radar event lookup returned ${response.status}.`);
+  const rows = await response.json() as RadarEventLookupRow[];
+  return new Map(
+    rows
+      .filter((row): row is RadarEventLookupRow & { public_slug: string } => Boolean(row.public_slug))
+      .map((row) => [row.public_slug, row] as const),
+  );
+}
+
+function enrichPages(items: BreakdownItem[], eventLookup: Map<string, RadarEventLookupRow>) {
+  return items.map((item) => {
+    const slug = eventSlugFromPath(item.label);
+    const event = slug ? eventLookup.get(slug) : null;
+    return {
+      ...item,
+      path: item.label,
+      ...(event ? { title: event.title, city: event.city } : {}),
+    };
+  });
 }
 
 export async function GET(request: NextRequest) {
   const accessToken = getBearer(request);
   if (!(await verifyRadarAdmin(accessToken))) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return json({
+      error: "Сессия истекла. Войдите снова.",
+      code: "RADAR_ADMIN_SESSION_INVALID",
+    }, { status: 401 });
   }
 
   if (!process.env.VERCEL_ANALYTICS_TOKEN) {
     return json({
-      error: "Founder Analytics is not configured yet.",
+      error: "Аналитика пока не настроена.",
       code: "VERCEL_ANALYTICS_TOKEN_MISSING",
     }, { status: 503 });
   }
@@ -173,32 +250,56 @@ export async function GET(request: NextRequest) {
   const warnings: string[] = [];
 
   try {
-    const [last24h, last7d, last30d, allTime, countries, pages, referrers, devices, browsers, operatingSystems] = await Promise.all([
+    const selectedCountPromise = range === "90d"
+      ? getCount(since, until)
+      : Promise.resolve<CountData | null>(null);
+
+    const [last24h, last7d, last30d, allTime, selected90d, countries, pages, referrers, devices, browsers, operatingSystems] = await Promise.all([
       getCount(rangeSince(1, now), until),
       getCount(rangeSince(7, now), until),
       getCount(rangeSince(30, now), until),
       getCount(),
+      selectedCountPromise,
       safeBreakdown("country", since, until, warnings, 12),
       safeBreakdown("requestPath", since, until, warnings, 100),
-      safeBreakdown("referrer", since, until, warnings, 12),
+      safeBreakdown("referrer", since, until, warnings, 20),
       safeBreakdown("deviceType", since, until, warnings, 12),
       safeBreakdown("browserName", since, until, warnings, 12),
       safeBreakdown("osName", since, until, warnings, 12),
     ]);
 
-    const topPages = pages.slice(0, 15);
-    const topEventPages = pages
-      .filter((item) => item.label.startsWith("/meets/") && item.label !== "/meets/submit")
+    const selected = range === "1d"
+      ? last24h
+      : range === "7d"
+        ? last7d
+        : range === "30d"
+          ? last30d
+          : selected90d ?? { pageviews: 0, visitors: 0 };
+
+    let eventLookup = new Map<string, RadarEventLookupRow>();
+    try {
+      eventLookup = await getRadarEventLookup(accessToken);
+    } catch (error) {
+      warnings.push("radar_events");
+      console.warn("[founder-analytics] event lookup unavailable", {
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    }
+
+    const enrichedPages = enrichPages(pages, eventLookup);
+    const topPages = enrichedPages.slice(0, 15);
+    const topEventPages = enrichedPages
+      .filter((item) => item.path?.startsWith("/meets/") && item.path !== "/meets/submit")
       .slice(0, 10);
 
     return json({
       generatedAt: until,
       range,
       rangeSince: since,
-      counts: { last24h, last7d, last30d, allTime },
+      counts: { selected, last24h, last7d, last30d, allTime },
       breakdowns: {
         countries,
-        referrers,
+        referrers: groupReferrers(referrers),
         devices,
         browsers,
         operatingSystems,
@@ -208,9 +309,12 @@ export async function GET(request: NextRequest) {
       warnings,
     });
   } catch (error) {
+    console.error("[founder-analytics] Vercel analytics request failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
     return json({
-      error: "Unable to load Vercel Web Analytics.",
-      detail: error instanceof Error ? error.message : "Unknown analytics error.",
+      error: "Аналитика временно недоступна.",
+      code: "ANALYTICS_PROVIDER_UNAVAILABLE",
     }, { status: 502 });
   }
 }

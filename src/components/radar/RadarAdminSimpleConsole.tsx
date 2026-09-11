@@ -6,16 +6,21 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { NoxaLogo } from "@/components/brand/NoxaLogo";
 import {
+  type RadarAdminSession,
+  resolveRadarAdminSession,
+  signOutRadarAdmin,
+} from "@/lib/radarAdminSession";
+import {
   radarCandidateQualityIssues,
   radarQualityIssueSummary,
 } from "@/lib/radarQuality";
+import {
+  RADAR_SUPABASE_PUBLISHABLE_KEY,
+  RADAR_SUPABASE_URL,
+} from "@/lib/radarSupabasePublic";
 
 import { RadarAiAnalyzeButton } from "./RadarAiAnalyzeButton";
 import styles from "./RadarAdminSimple.module.css";
-
-const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
-const SESSION_KEY = "noxa-radar-admin-session-v1";
 
 const MEET_TYPES = new Set(["car_meet", "cars_and_coffee", "group_drive", "show", "festival"]);
 const MOTORSPORT_TYPES = new Set(["track_day", "drag", "drift", "rally"]);
@@ -23,16 +28,6 @@ const MOTORSPORT_TYPES = new Set(["track_day", "drag", "drift", "rally"]);
 type EventFilter = "all" | "meets" | "motorsport" | "moto";
 type Tab = "review" | "live" | "sources";
 type AuthPhase = "checking" | "signed_out" | "unauthorized" | "signed_in";
-
-type AdminSession = {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-  email: string;
-  userId: string;
-};
-
-type AuthUser = { id: string; email?: string };
 
 type RadarCandidate = {
   id: string;
@@ -101,40 +96,9 @@ const emptyDashboard: DashboardData = { candidates: [], events: [], sources: [] 
 
 function apiHeaders(accessToken?: string) {
   return {
-    apikey: SUPABASE_PUBLISHABLE_KEY,
+    apikey: RADAR_SUPABASE_PUBLISHABLE_KEY,
     "Content-Type": "application/json",
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
-}
-
-function readStoredSession(): AdminSession | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const value = window.localStorage.getItem(SESSION_KEY);
-    return value ? JSON.parse(value) as AdminSession : null;
-  } catch {
-    return null;
-  }
-}
-
-function storeSession(session: AdminSession | null) {
-  if (typeof window === "undefined") return;
-  if (!session) window.localStorage.removeItem(SESSION_KEY);
-  else window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-}
-
-function parseMagicLinkSession(): Omit<AdminSession, "email" | "userId"> | null {
-  if (typeof window === "undefined" || !window.location.hash) return null;
-  const params = new URLSearchParams(window.location.hash.slice(1));
-  const accessToken = params.get("access_token");
-  const refreshToken = params.get("refresh_token");
-  const expiresIn = Number(params.get("expires_in") ?? "3600");
-  if (!accessToken || !refreshToken) return null;
-  window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-  return {
-    accessToken,
-    refreshToken,
-    expiresAt: Date.now() + Math.max(60, expiresIn) * 1_000,
   };
 }
 
@@ -255,53 +219,12 @@ function qualityLine(candidate: RadarCandidate) {
   return issues.length ? `BLOCKED · ${radarQualityIssueSummary(issues)}` : "READY · required publication data verified";
 }
 
-async function getUser(accessToken: string): Promise<AuthUser | null> {
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: apiHeaders(accessToken),
-    cache: "no-store",
-  });
-  return response.ok ? await response.json() as AuthUser : null;
-}
-
-async function refreshSession(refreshToken: string): Promise<AdminSession | null> {
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-    method: "POST",
-    headers: apiHeaders(),
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  });
-  if (!response.ok) return null;
-  const payload = await response.json() as {
-    access_token: string;
-    refresh_token: string;
-    expires_in: number;
-    user: AuthUser;
-  };
-  if (!payload.user.email) return null;
-  return {
-    accessToken: payload.access_token,
-    refreshToken: payload.refresh_token,
-    expiresAt: Date.now() + payload.expires_in * 1_000,
-    email: payload.user.email,
-    userId: payload.user.id,
-  };
-}
-
-async function isRadarAdmin(accessToken: string) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/radar_admin_status`, {
-    method: "POST",
-    headers: apiHeaders(accessToken),
-    body: "{}",
-    cache: "no-store",
-  });
-  return response.ok && await response.json() === true;
-}
-
 async function loadDashboard(accessToken: string): Promise<DashboardData> {
   const headers = apiHeaders(accessToken);
   const [candidateResponse, eventResponse, sourceResponse] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/radar_candidates?select=id,title,country_code,event_type,starts_at,ends_at,timezone,location_text,city,organizer_name,summary,original_url,ai_confidence,ai_reason,status,created_at&status=in.(new,needs_review)&order=starts_at.asc.nullslast&limit=250`, { headers, cache: "no-store" }),
-    fetch(`${SUPABASE_URL}/rest/v1/radar_events?select=id,title,country_code,event_type,starts_at,timezone,city,location_text,source_name,source_url,status,published_at&status=eq.published&order=starts_at.asc&limit=500`, { headers, cache: "no-store" }),
-    fetch(`${SUPABASE_URL}/rest/v1/radar_sources?select=id,name,platform,url,country_code,active,trust_level,last_checked_at,last_error,created_at&order=active.desc,created_at.desc&limit=250`, { headers, cache: "no-store" }),
+    fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_candidates?select=id,title,country_code,event_type,starts_at,ends_at,timezone,location_text,city,organizer_name,summary,original_url,ai_confidence,ai_reason,status,created_at&status=in.(new,needs_review)&order=starts_at.asc.nullslast&limit=250`, { headers, cache: "no-store" }),
+    fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_events?select=id,title,country_code,event_type,starts_at,timezone,city,location_text,source_name,source_url,status,published_at&status=eq.published&order=starts_at.asc&limit=500`, { headers, cache: "no-store" }),
+    fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_sources?select=id,name,platform,url,country_code,active,trust_level,last_checked_at,last_error,created_at&order=active.desc,created_at.desc&limit=250`, { headers, cache: "no-store" }),
   ]);
 
   if (![candidateResponse, eventResponse, sourceResponse].every((response) => response.ok)) {
@@ -318,7 +241,7 @@ async function loadDashboard(accessToken: string): Promise<DashboardData> {
 
 export function RadarAdminSimpleConsole() {
   const [phase, setPhase] = useState<AuthPhase>("checking");
-  const [session, setSession] = useState<AdminSession | null>(null);
+  const [session, setSession] = useState<RadarAdminSession | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData>(emptyDashboard);
   const [activeTab, setActiveTab] = useState<Tab>("review");
   const [eventFilter, setEventFilter] = useState<EventFilter>("all");
@@ -382,15 +305,24 @@ export function RadarAdminSimpleConsole() {
     (cityFilter === "all" || item.city === cityFilter)),
   [liveItems, eventFilter, countryFilter, cityFilter]);
 
-  async function hydrateAdmin(nextSession: AdminSession) {
-    if (!(await isRadarAdmin(nextSession.accessToken))) {
-      storeSession(null);
-      setSession(null);
-      setPhase("unauthorized");
-      return;
+  function applyAuthFailure(status: "signed_out" | "unauthorized") {
+    setSession(null);
+    setDashboard(emptyDashboard);
+    setPhase(status);
+  }
+
+  async function requireActiveSession() {
+    const result = await resolveRadarAdminSession({ verifyAdmin: true });
+    if (result.status !== "authorized") {
+      applyAuthFailure(result.status);
+      return null;
     }
+    setSession(result.session);
+    return result.session;
+  }
+
+  async function hydrateAdmin(nextSession: RadarAdminSession) {
     const data = await loadDashboard(nextSession.accessToken);
-    storeSession(nextSession);
     setSession(nextSession);
     setDashboard(data);
     setPhase("signed_in");
@@ -400,33 +332,17 @@ export function RadarAdminSimpleConsole() {
     let cancelled = false;
     async function restore() {
       try {
-        const magic = parseMagicLinkSession();
-        if (magic) {
-          const user = await getUser(magic.accessToken);
-          if (!user?.email || cancelled) {
-            if (!cancelled) setPhase("signed_out");
-            return;
-          }
-          if (!cancelled) await hydrateAdmin({ ...magic, email: user.email, userId: user.id });
+        const result = await resolveRadarAdminSession({
+          consumeMagicLink: true,
+          verifyAdmin: true,
+        });
+        if (cancelled) return;
+        if (result.status !== "authorized") {
+          applyAuthFailure(result.status);
           return;
         }
-
-        let stored = readStoredSession();
-        if (!stored) {
-          if (!cancelled) setPhase("signed_out");
-          return;
-        }
-        if (stored.expiresAt < Date.now() + 30_000) {
-          stored = await refreshSession(stored.refreshToken);
-          if (!stored) {
-            storeSession(null);
-            if (!cancelled) setPhase("signed_out");
-            return;
-          }
-        }
-        if (!cancelled) await hydrateAdmin(stored);
+        await hydrateAdmin(result.session);
       } catch {
-        storeSession(null);
         if (!cancelled) {
           setError("Unable to restore admin access.");
           setPhase("signed_out");
@@ -437,6 +353,26 @@ export function RadarAdminSimpleConsole() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    if (phase !== "signed_in" || !session) return;
+    const delay = Math.max(1_000, session.expiresAt - Date.now() - 60_000);
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const result = await resolveRadarAdminSession({ forceRefresh: true, verifyAdmin: true });
+          if (result.status === "authorized") {
+            setSession(result.session);
+          } else {
+            applyAuthFailure(result.status);
+          }
+        } catch {
+          setError("Unable to refresh admin session.");
+        }
+      })();
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [phase, session]);
+
   async function requestMagicLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -444,7 +380,7 @@ export function RadarAdminSimpleConsole() {
     setMessage("");
     try {
       const redirectTo = `${window.location.origin}/radar/admin`;
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(redirectTo)}`, {
+      const response = await fetch(`${RADAR_SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(redirectTo)}`, {
         method: "POST",
         headers: apiHeaders(),
         body: JSON.stringify({ email: email.trim(), create_user: true }),
@@ -462,11 +398,12 @@ export function RadarAdminSimpleConsole() {
   }
 
   async function refreshDashboard() {
-    if (!session) return;
     setBusy(true);
     setError("");
     try {
-      setDashboard(await loadDashboard(session.accessToken));
+      const activeSession = await requireActiveSession();
+      if (!activeSession) return;
+      setDashboard(await loadDashboard(activeSession.accessToken));
     } catch (refreshError) {
       setError(refreshError instanceof Error ? refreshError.message : "Unable to refresh Radar.");
     } finally {
@@ -475,7 +412,6 @@ export function RadarAdminSimpleConsole() {
   }
 
   async function reviewCandidate(candidate: RadarCandidate, status: "approved" | "rejected") {
-    if (!session) return;
     if (status === "approved") {
       const issues = radarCandidateQualityIssues(candidate);
       if (issues.length) {
@@ -486,12 +422,14 @@ export function RadarAdminSimpleConsole() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_candidates?id=eq.${encodeURIComponent(candidate.id)}`, {
+      const activeSession = await requireActiveSession();
+      if (!activeSession) return;
+      const response = await fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_candidates?id=eq.${encodeURIComponent(candidate.id)}`, {
         method: "PATCH",
-        headers: apiHeaders(session.accessToken),
+        headers: apiHeaders(activeSession.accessToken),
         body: JSON.stringify({
           status,
-          reviewed_by: session.userId,
+          reviewed_by: activeSession.userId,
           reviewed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }),
@@ -513,13 +451,14 @@ export function RadarAdminSimpleConsole() {
 
   async function addSource(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!session) return;
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_sources`, {
+      const activeSession = await requireActiveSession();
+      if (!activeSession) return;
+      const response = await fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_sources`, {
         method: "POST",
-        headers: { ...apiHeaders(session.accessToken), Prefer: "return=minimal" },
+        headers: { ...apiHeaders(activeSession.accessToken), Prefer: "return=minimal" },
         body: JSON.stringify({
           name: sourceName.trim(),
           url: sourceUrl.trim(),
@@ -541,13 +480,14 @@ export function RadarAdminSimpleConsole() {
   }
 
   async function toggleSource(source: RadarSource) {
-    if (!session) return;
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/radar_sources?id=eq.${encodeURIComponent(source.id)}`, {
+      const activeSession = await requireActiveSession();
+      if (!activeSession) return;
+      const response = await fetch(`${RADAR_SUPABASE_URL}/rest/v1/radar_sources?id=eq.${encodeURIComponent(source.id)}`, {
         method: "PATCH",
-        headers: apiHeaders(session.accessToken),
+        headers: apiHeaders(activeSession.accessToken),
         body: JSON.stringify({ active: !source.active, updated_at: new Date().toISOString() }),
       });
       if (!response.ok) throw new Error("Could not change source status.");
@@ -559,11 +499,17 @@ export function RadarAdminSimpleConsole() {
     }
   }
 
-  function signOut() {
-    storeSession(null);
-    setSession(null);
-    setDashboard(emptyDashboard);
-    setPhase("signed_out");
+  async function signOut() {
+    const activeSession = session;
+    setBusy(true);
+    try {
+      await signOutRadarAdmin(activeSession);
+    } finally {
+      setSession(null);
+      setDashboard(emptyDashboard);
+      setPhase("signed_out");
+      setBusy(false);
+    }
   }
 
   function changeTab(tab: Tab) {
@@ -636,8 +582,9 @@ export function RadarAdminSimpleConsole() {
       <header className={styles.header}>
         <div className={styles.brandBlock}><Link aria-label="NOXA Meets home" className={styles.brand} href="/radar"><NoxaLogo /></Link><span>ADMIN</span></div>
         <div className={styles.headerActions}>
+          <Link className={styles.headerActionLink} href="/radar/admin/analytics">Аналитика</Link>
           <button disabled={busy} onClick={() => void refreshDashboard()} type="button">Refresh</button>
-          <button onClick={signOut} type="button">Exit</button>
+          <button disabled={busy} onClick={() => void signOut()} type="button">Exit</button>
         </div>
       </header>
 
