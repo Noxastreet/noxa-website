@@ -7,40 +7,45 @@ const websiteHeader = read("src/components/navigation/WebsiteHeader.tsx");
 const communities = read("src/components/communities/CommunityDirectory.tsx");
 const communityApply = read("src/components/communities/CommunityApplicationForm.tsx");
 const meetSubmit = read("src/components/radar/RadarSubmitForm.tsx");
-const proxy = read("src/proxy.ts");
-const visibility = read("src/app/public-feature-visibility.css");
 const sitemap = read("src/app/sitemap.ts");
-const robots = read("src/app/robots.ts");
 const eventDetail = read("src/components/meets/EventDetailPage.tsx");
+const business = read("src/components/business/BusinessPartnersPage.tsx");
 
-// Supply Platform P1 exposes the organizer directory and profiles as public product surfaces.
-expect(websiteHeader.includes('"/organizers"'), "Public header must expose Organizers");
-expect(websiteHeader.includes('"/meets", "/map", "/communities", "/organizers"'), "Organizers must participate in active navigation state");
-expect(!proxy.includes("isPublicOrganizerPath"), "Proxy must not redirect organizer routes back to Meets");
-expect(!visibility.includes('display: none !important'), "Public visibility layer must not hide organizer product surfaces");
-expect(!visibility.includes('a[href="/organizers"]'), "Public visibility layer must not hide organizer directory links");
-expect(!visibility.includes('RadarSubmitForm-module'), "Add Event organizer guidance must remain visible");
-expect(sitemap.includes('page("/organizers"') && sitemap.includes('page("/organizers/apply"'), "Sitemap must publish organizer discovery and onboarding routes");
-expect(sitemap.includes("loadOrganizerSlugs") && sitemap.includes("/organizers/${slug}"), "Sitemap must publish verified organizer profiles");
-expect(!sitemap.includes('page("/organizer"'), "Sitemap must not publish private organizer dashboard routes");
-expect(robots.includes('"/organizer"') && !robots.includes('"/organizers"'), "robots.txt must hide dashboard but allow public organizer routes");
-expect(eventDetail.includes("Official event information") && !eventDetail.includes("OrganizerProfile"), "Event detail must keep factual source information independent from organizer profile rendering");
-expect(!communities.includes("organizer identities"), "Community discovery copy must not conflate Communities with Organizers");
+// Public publishing identities are now Crew and Business / Partner.
+expect(websiteHeader.includes('"/business"'), "Public header must expose Business");
+expect(!websiteHeader.includes('"/organizers"'), "Public header must not expose removed Organizers");
+expect(sitemap.includes('page("/business"'), "Sitemap must publish Business & Partners");
+expect(!sitemap.includes('page("/organizers"') && !sitemap.includes("loadOrganizerSlugs"), "Sitemap must not publish removed organizer routes");
+expect(business.includes("BUSINESS & PARTNERS") && business.includes("Join as a Partner"), "Business page must expose partner onboarding");
+expect(business.includes("Featured Partners") && business.includes("Business Categories"), "Business page must include reference sections");
 
-// Organizer product implementation is now an active public supply surface.
-const organizerDirectory = read("src/components/organizers/OrganizerDirectory.tsx");
-const organizerApply = read("src/components/organizers/OrganizerApplicationForm.tsx");
-const organizerProfile = read("src/components/organizers/OrganizerProfile.tsx");
-const dashboard = read("src/components/organizers/OrganizerDashboardFlow.tsx");
-expect(organizerDirectory.includes("New Organizer") && organizerDirectory.includes("I already have access"), "Organizer directory must expose onboarding and existing access paths");
-expect(organizerApply.includes("organizer-submit-application"), "Organizer application backend integration must remain active");
-expect(organizerProfile.includes("/claim"), "Organizer profile must expose reviewed claim entry point");
-expect(dashboard.length > 0, "Organizer dashboard implementation must remain available behind auth");
+for (const route of [
+  "src/app/organizers/page.tsx",
+  "src/app/organizers/apply/page.tsx",
+  "src/app/organizers/[slug]/page.tsx",
+  "src/app/organizers/[slug]/claim/page.tsx",
+  "src/app/el/organizers/page.tsx",
+  "src/app/el/organizers/apply/page.tsx",
+  "src/app/el/organizers/[slug]/page.tsx",
+  "src/app/el/organizers/[slug]/claim/page.tsx",
+  "src/app/organizer/page.tsx",
+  "src/app/el/organizer/page.tsx",
+]) {
+  expect(!fs.existsSync(route), `Removed organizer route still exists: ${route}`);
+}
 
-// Community and event submissions remain separate, functional supply channels.
+// Existing event records may keep factual host/source metadata, but no public organizer profile coupling.
+expect(eventDetail.includes("Official source") || eventDetail.includes("OFFICIAL SOURCE"), "Event detail must keep factual official source information");
+expect(!eventDetail.includes("loadOrganizerById"), "Event detail must not load organizer profiles");
+expect(!eventDetail.includes("/organizers/"), "Event detail must not link to organizer profiles");
+expect(!communities.includes("organizer identities"), "Community discovery copy must not conflate crews with removed organizers");
+
+// Community and event submissions remain functional; direct publishing identity is Crew or Business Partner.
 expect(communityApply.includes("community-submit-application"), "Community application must keep its dedicated endpoint");
 expect(meetSubmit.includes("radar-submit-event"), "Add Event must keep its dedicated Radar endpoint");
-expect(meetSubmit.includes('name="organizerName"'), "Add Event must still capture the factual organizer name");
-expect(meetSubmit.includes("Apply or claim Organizer access"), "Add Event must expose organizer supply escalation");
+expect(meetSubmit.includes('name="organizerName"'), "Radar payload must retain factual host name compatibility");
+expect(meetSubmit.includes("approved Crews and Business Partners"), "Add Event must explain the new publishing model");
+expect(meetSubmit.includes("/communities/apply") && meetSubmit.includes("/business#partner-cta"), "Add Event must route publisher onboarding to Crew and Business");
+expect(!meetSubmit.includes("/organizers"), "Add Event must not expose removed organizer onboarding");
 
 console.log("platform flow consistency: PASS");

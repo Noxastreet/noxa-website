@@ -1,6 +1,5 @@
 import { cookies, headers } from "next/headers";
 
-import { loadPublicOrganizers } from "@/components/organizers/organizer-data";
 import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
 
 import { MeetsDirectory, type MeetsDirectoryEvent } from "./MeetsDirectory";
@@ -24,7 +23,6 @@ type Row = {
   city: string | null;
   region: string | null;
   organizer_name: string | null;
-  organizer_profile_id: string | null;
   source_name: string;
   featured: boolean;
   partner_badge: string | null;
@@ -49,7 +47,7 @@ function savedCountry(value: string | undefined) {
 
 async function loadEventRows(): Promise<Row[]> {
   const query = new URLSearchParams({
-    select: "id,public_slug,country_code,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,organizer_name,organizer_profile_id,source_name,featured,partner_badge,cover_image_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
+    select: "id,public_slug,country_code,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,organizer_name,source_name,featured,partner_badge,cover_image_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
     status: "eq.published",
     order: "starts_at.asc",
     limit: "500",
@@ -66,11 +64,7 @@ async function loadEventRows(): Promise<Row[]> {
   }
 }
 
-function localizeEvents(
-  rows: Row[],
-  locale: "en" | "el",
-  organizerSlugs: Map<string, string>,
-): MeetsDirectoryEvent[] {
+function localizeEvents(rows: Row[], locale: "en" | "el"): MeetsDirectoryEvent[] {
   return rows
     .filter((row) => isEventCurrentlyVisible(row.starts_at, row.ends_at))
     .map((row) => {
@@ -91,8 +85,6 @@ function localizeEvents(
         city: row.city ?? "",
         region: row.region ?? "",
         organizer: row.organizer_name ?? row.source_name,
-        organizerProfileId: row.organizer_profile_id,
-        organizerSlug: row.organizer_profile_id ? organizerSlugs.get(row.organizer_profile_id) ?? null : null,
         featured: row.featured,
         partnerBadge: row.partner_badge,
         coverImageUrl: row.cover_image_url,
@@ -105,14 +97,12 @@ function localizeEvents(
 }
 
 export async function MeetsDirectoryPage({ locale, initialFilters = {} }: { locale: "en" | "el"; initialFilters?: InitialFilters }) {
-  const [requestHeaders, cookieStore, rows, organizers] = await Promise.all([
+  const [requestHeaders, cookieStore, rows] = await Promise.all([
     headers(),
     cookies(),
     loadEventRows(),
-    loadPublicOrganizers(),
   ]);
-  const organizerSlugs = new Map(organizers.map((organizer) => [organizer.id, organizer.slug]));
-  const events = localizeEvents(rows, locale, organizerSlugs);
+  const events = localizeEvents(rows, locale);
   const detectedCountryCode = savedCountry(cookieStore.get("noxa_country")?.value)
     ?? requestHeaders.get("x-vercel-ip-country")
     ?? fallbackCountry(requestHeaders.get("accept-language"));

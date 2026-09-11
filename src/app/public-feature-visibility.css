@@ -1,4 +1,3 @@
 /* Public feature visibility overrides.
-   Supply Platform P1 makes the organizer directory, organizer profiles and organizer
-   application/claim entry points public. Private organizer management remains protected
-   by authentication/RLS and is excluded from search indexing separately. */
+   Public publishing identities are Crew (Community) and Business / Partner.
+   Legacy organizer backend data remains private and is not exposed as a public product surface. */

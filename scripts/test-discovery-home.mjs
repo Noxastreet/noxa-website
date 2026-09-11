@@ -12,21 +12,26 @@ assert.match(landing, /HomepageDiscoveryRail/);
 assert.match(landing, /secondaryButton/);
 assert.match(landing, /Open NOXA Map/);
 assert.match(landing, /Άνοιξε το NOXA Map/);
+assert.match(landing, /BUSINESS & PARTNERS/);
+assert.match(landing, /href={business}/);
+assert.doesNotMatch(landing, /\/organizers/);
 
 assert.match(rail, /date=weekend/);
 assert.match(rail, /\/map/);
-assert.match(rail, /\/organizers/);
+assert.match(rail, /\/communities/);
 assert.match(rail, /\/meets\/submit/);
 assert.match(rail, /THIS WEEKEND/);
 assert.match(rail, /ΑΥΤΟ ΤΟ WEEKEND/);
+assert.match(rail, /CREWS & COMMUNITY/);
 assert.match(rail, /HOSTING AN EVENT\?/);
 assert.match(rail, /ΔΙΟΡΓΑΝΩΝΕΙΣ EVENT\?/);
+assert.doesNotMatch(rail, /\/organizers/);
 
 assert.match(railCss, /scroll-snap-type:\s*x mandatory/);
 assert.match(railCss, /scroll-snap-align:\s*start/);
 assert.match(railCss, /@media \(max-width: 900px\)/);
 
 assert.match(layout, /NOXA — Car & Moto Events in Greece/);
-assert.match(layout, /Discover car and moto events, organizers, tracks, routes and verified automotive places across Greece with NOXA\./);
+assert.match(layout, /Discover car and moto events, crews, automotive businesses, tracks, routes and verified places across Greece with NOXA\./);
 
 console.log("NOXA Discovery homepage fixtures passed.");

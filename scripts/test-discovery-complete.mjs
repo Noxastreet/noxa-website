@@ -28,20 +28,22 @@ for (const expected of [
   "This weekend",
   "Saved",
   "NOXA Map",
-  "/organizers/${lead.organizerSlug}",
+  "Event, crew, business or city",
 ]) {
   assert.ok(directory.includes(expected), `Meets Discovery missing: ${expected}`);
 }
+assert.ok(!directory.includes("/organizers/"), "Meets Discovery must not link to removed organizer profiles");
+assert.ok(!directory.includes("organizerSlug"), "Meets Discovery must not depend on organizer profile slugs");
 
 for (const expected of [
-  "organizer_profile_id",
   "latitude,longitude,location_precision",
-  "loadPublicOrganizers",
-  "organizerSlug",
+  "organizer_name",
   "locationPrecision",
 ]) {
   assert.ok(directoryPage.includes(expected), `Meets data bridge missing: ${expected}`);
 }
+assert.ok(!directoryPage.includes("loadPublicOrganizers"), "Meets data bridge must not load removed organizer profiles");
+assert.ok(!directoryPage.includes("organizer_profile_id"), "Meets data bridge must not depend on organizer profile IDs");
 
 for (const expected of [
   "distanceKm",
@@ -67,16 +69,17 @@ for (const expected of [
 }
 
 for (const expected of [
-  "loadOrganizerById",
   "loadRelatedEvents",
-  "FollowSubscriptionForm",
   "buildNoxaMapHref",
-  "VERIFIED ORGANIZER",
+  "OFFICIAL SOURCE",
+  "Open official source",
   "Open in NOXA Map",
   "More events like this.",
 ]) {
   assert.ok(eventPage.includes(expected), `Event discovery bridge missing: ${expected}`);
 }
+assert.ok(!eventPage.includes("loadOrganizerById"), "Event detail must not load removed organizer profiles");
+assert.ok(!eventPage.includes("VERIFIED ORGANIZER"), "Event detail must not render removed organizer profile UI");
 
 for (const expected of ["Near", "Weekend", "Saved", "Filters", "mobileDock"]) {
   assert.ok(mobileDock.includes(expected), `Mobile dock missing: ${expected}`);

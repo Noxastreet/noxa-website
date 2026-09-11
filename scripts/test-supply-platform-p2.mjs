@@ -2,15 +2,14 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 
 const dashboard = fs.readFileSync("src/components/organizers/OrganizerDashboardP2.tsx", "utf8");
-const routeEn = fs.readFileSync("src/app/organizer/page.tsx", "utf8");
-const routeEl = fs.readFileSync("src/app/el/organizer/page.tsx", "utf8");
 const migration = fs.readFileSync("supabase/migrations/20260909124000_supply_platform_p2_organizer_event_quality.sql", "utf8");
 
-assert.match(routeEn, /OrganizerDashboardP2/);
-assert.match(routeEl, /OrganizerDashboardP2/);
+assert.equal(fs.existsSync("src/app/organizer/page.tsx"), false, "Legacy organizer dashboard route must be retired");
+assert.equal(fs.existsSync("src/app/el/organizer/page.tsx"), false, "Legacy Greek organizer dashboard route must be retired");
 
+// Keep the legacy implementation and database quality gate dormant so existing data remains reversible and safe.
 for (const eventType of ["car_meet", "moto_meet", "karting", "dexterity"]) {
-  assert.match(dashboard, new RegExp(`\\[\\"${eventType}\\"`), `missing ${eventType} organizer event type`);
+  assert.match(dashboard, new RegExp(`\\[\\"${eventType}\\"`), `missing ${eventType} legacy organizer event type`);
 }
 
 assert.match(dashboard, /latitude,longitude,location_precision/);
@@ -38,4 +37,4 @@ assert.match(migration, /before update of[\s\S]*title[\s\S]*summary[\s\S]*source
 assert.match(migration, /new\.publication_source = 'organizer' and new\.status = 'published'/i);
 assert.match(migration, /execute function private\.enforce_radar_event_quality_on_publish\(\)/i);
 
-console.log("Supply Platform P2 organizer dashboard fixtures passed.");
+console.log("Supply Platform P2 legacy compatibility fixtures passed.");

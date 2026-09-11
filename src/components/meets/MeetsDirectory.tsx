@@ -42,8 +42,6 @@ export type MeetsDirectoryEvent = {
   city: string;
   region: string;
   organizer: string;
-  organizerProfileId: string | null;
-  organizerSlug: string | null;
   featured: boolean;
   partnerBadge: string | null;
   coverImageUrl: string | null;
@@ -226,7 +224,7 @@ export function MeetsDirectory({
     sectionBody: "Today, αυτό το weekend, κοντά σου ή από τα saved σου — χωρίς περιττό ψάξιμο.",
     add: "Πρόσθεσε Event",
     search: "Αναζήτηση",
-    searchPlaceholder: "Event, organizer ή πόλη",
+    searchPlaceholder: "Event, crew, business ή πόλη",
     country: "Χώρα",
     city: "Πόλη",
     type: "Τύπος",
@@ -268,7 +266,6 @@ export function MeetsDirectory({
     savedBody: "Τα upcoming events που κράτησες.",
     map: "NOXA Map",
     mapBody: "Events, tracks, routes και places σε έναν χάρτη.",
-    organizer: "Organizer",
     forYou: "ΓΙΑ ΕΣΕΝΑ",
     recTitle: "Προτάσεις με βάση τα ενδιαφέροντά σου.",
     recBody: "Χρησιμοποιούμε μόνο τα saved σου, τα φίλτρα και — αν το επέλεξες — την τοποθεσία της συσκευής σου.",
@@ -282,7 +279,7 @@ export function MeetsDirectory({
     sectionBody: "Today, this weekend, near you or from your saved list — without digging through noise.",
     add: "Add Event",
     search: "Search",
-    searchPlaceholder: "Event, organizer or city",
+    searchPlaceholder: "Event, crew, business or city",
     country: "Country",
     city: "City",
     type: "Type",
@@ -324,7 +321,6 @@ export function MeetsDirectory({
     savedBody: "The upcoming events you kept for later.",
     map: "NOXA Map",
     mapBody: "Events, tracks, routes and places on one map.",
-    organizer: "Organizer",
     forYou: "FOR YOU",
     recTitle: "Recommendations shaped around you.",
     recBody: "Based only on your saved events, current filters and — if you chose it — your on-device location.",
@@ -562,7 +558,6 @@ export function MeetsDirectory({
                   </Link>
                   <div className={discovery.featuredActions}>
                     <div className={discovery.actionGroup}>
-                      {lead.organizerSlug ? <Link className={discovery.organizerLink} href={`${locale === "el" ? "/el" : ""}/organizers/${lead.organizerSlug}`}>{t.organizer} · {lead.organizer}</Link> : null}
                       {mapHref ? <Link className={discovery.actionLink} href={mapHref}>{t.map} ↗</Link> : null}
                     </div>
                     <SavedEventButton eventId={lead.id} locale={locale} />
@@ -594,7 +589,6 @@ export function MeetsDirectory({
                 </Link>
                 <div className={discovery.cardActions}>
                   <div className={discovery.actionGroup}>
-                    {event.organizerSlug ? <Link className={discovery.organizerLink} href={`${locale === "el" ? "/el" : ""}/organizers/${event.organizerSlug}`}>{t.organizer}</Link> : null}
                     {mapHref ? <Link className={discovery.actionLink} href={mapHref}>{t.map}</Link> : null}
                   </div>
                   <SavedEventButton eventId={event.id} locale={locale} compact />

@@ -32,9 +32,9 @@ const copy = {
       },
       {
         index: "03",
-        eyebrow: "ORGANIZERS",
-        title: "Follow the people behind it.",
-        body: "Discover verified teams, communities and organizers behind each event.",
+        eyebrow: "CREWS & COMMUNITY",
+        title: "Find your people.",
+        body: "Discover the crews and communities shaping automotive culture around you.",
       },
       {
         index: "04",
@@ -61,9 +61,9 @@ const copy = {
       },
       {
         index: "03",
-        eyebrow: "ORGANIZERS",
-        title: "Βρες ποιος είναι πίσω από κάθε event.",
-        body: "Ανακάλυψε verified teams, communities και organizers πίσω από τα events.",
+        eyebrow: "CREWS & COMMUNITY",
+        title: "Βρες την κοινότητά σου.",
+        body: "Ανακάλυψε crews και κοινότητες που διαμορφώνουν την automotive σκηνή γύρω σου.",
       },
       {
         index: "04",
@@ -81,7 +81,7 @@ export function HomepageDiscoveryRail({ locale }: Props) {
   const hrefs = [
     `${base}/meets?country=GR&date=weekend`,
     `${base}/map`,
-    `${base}/organizers`,
+    `${base}/communities`,
     `${base}/meets/submit`,
   ];
 

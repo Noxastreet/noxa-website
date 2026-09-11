@@ -20,27 +20,27 @@ const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
 
 const copy = {
   en: {
-    nav: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "NOXA App" },
+    nav: { meets: "Meets", communities: "Communities", business: "Business", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · GREECE",
       title: "Discover car & moto events across Greece.",
-      body: "See what’s happening this weekend, explore the map and find the organizers behind each event.",
+      body: "See what’s happening this weekend, explore the map and find the crews and businesses shaping the scene.",
       primary: "Explore Events",
       map: "Open NOXA Map",
       app: "NOXA App · Coming soon",
     },
     paths: {
       communities: {
-        eyebrow: "COMMUNITIES",
-        title: "Find your community.",
-        body: "Discover car and moto communities near you.",
-        cta: "Explore Communities",
+        eyebrow: "COMMUNITY",
+        title: "Find your crew.",
+        body: "Discover car and moto crews and communities near you.",
+        cta: "Explore Community",
       },
-      organizers: {
-        eyebrow: "ORGANIZERS",
-        title: "Meet the people behind the events.",
-        body: "Discover verified teams, companies, pages and groups running automotive events.",
-        cta: "Explore Organizers",
+      business: {
+        eyebrow: "BUSINESS & PARTNERS",
+        title: "Meet the businesses behind the culture.",
+        body: "Discover automotive businesses and partners connected to the NOXA community.",
+        cta: "Explore Business",
       },
     },
     culture: { line1: "Different cars.", line2: "Same passion." },
@@ -50,30 +50,30 @@ const copy = {
       body: "Meets. Crews. Routes. Live Map.",
       cta: "Join Early Access",
     },
-    footer: { meets: "Meets", communities: "Communities", organizers: "Organizers", app: "Early Access", instagram: "Instagram" },
+    footer: { meets: "Meets", communities: "Community", business: "Business", app: "Early Access", instagram: "Instagram" },
   },
   el: {
-    nav: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "NOXA App" },
+    nav: { meets: "Meets", communities: "Κοινότητες", business: "Business", app: "NOXA App" },
     hero: {
       eyebrow: "NOXA · ΕΛΛΑΔΑ",
       title: "Ανακάλυψε car & moto events σε όλη την Ελλάδα.",
-      body: "Δες τι γίνεται αυτό το weekend, εξερεύνησε τον χάρτη και βρες τους organizers πίσω από κάθε event.",
+      body: "Δες τι γίνεται αυτό το weekend, εξερεύνησε τον χάρτη και βρες τα crews και τις επιχειρήσεις που διαμορφώνουν τη σκηνή.",
       primary: "Δες Events",
       map: "Άνοιξε το NOXA Map",
       app: "NOXA App · Σύντομα",
     },
     paths: {
       communities: {
-        eyebrow: "ΚΟΙΝΟΤΗΤΕΣ",
-        title: "Βρες την κοινότητά σου.",
-        body: "Ανακάλυψε car και moto κοινότητες κοντά σου.",
-        cta: "Δες Κοινότητες",
+        eyebrow: "COMMUNITY",
+        title: "Βρες το crew σου.",
+        body: "Ανακάλυψε car και moto crews και κοινότητες κοντά σου.",
+        cta: "Δες Community",
       },
-      organizers: {
-        eyebrow: "ORGANIZERS",
-        title: "Βρες αυτούς που βρίσκονται πίσω από τα events.",
-        body: "Ανακάλυψε verified teams, εταιρείες, pages και groups που διοργανώνουν automotive events.",
-        cta: "Δες Organizers",
+      business: {
+        eyebrow: "BUSINESS & PARTNERS",
+        title: "Βρες τις επιχειρήσεις πίσω από την κουλτούρα.",
+        body: "Ανακάλυψε automotive επιχειρήσεις και partners που συνδέονται με την κοινότητα του NOXA.",
+        cta: "Δες Business",
       },
     },
     culture: { line1: "Different cars.", line2: "Same passion." },
@@ -83,7 +83,7 @@ const copy = {
       body: "Meets. Crews. Routes. Live Map.",
       cta: "Μπες στο Early Access",
     },
-    footer: { meets: "Meets", communities: "Κοινότητες", organizers: "Organizers", app: "Early Access", instagram: "Instagram" },
+    footer: { meets: "Meets", communities: "Community", business: "Business", app: "Early Access", instagram: "Instagram" },
   },
 } as const;
 
@@ -94,7 +94,7 @@ export function CultureLandingV2({ locale }: Props) {
   const meets = locale === "el" ? "/el/meets" : "/meets";
   const map = locale === "el" ? "/el/map" : "/map";
   const communities = locale === "el" ? "/el/communities" : "/communities";
-  const organizers = locale === "el" ? "/el/organizers" : "/organizers";
+  const business = "/business";
 
   return (
     <div className={styles.site}>
@@ -145,13 +145,13 @@ export function CultureLandingV2({ locale }: Props) {
                 </div>
               </Link>
 
-              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={organizers}>
+              <Link className={`${styles.pathCard} ${styles.organizerCard} ${refine.pathCardRefined}`} href={business}>
                 <div className={`${styles.pathShade} ${refine.pathShadeRefined}`} />
                 <div className={`${styles.pathCopy} ${refine.pathCopyRefined}`}>
-                  <p className={styles.eyebrow}>{t.paths.organizers.eyebrow}</p>
-                  <h2>{t.paths.organizers.title}</h2>
-                  <p>{t.paths.organizers.body}</p>
-                  <strong>{t.paths.organizers.cta} <span aria-hidden="true">→</span></strong>
+                  <p className={styles.eyebrow}>{t.paths.business.eyebrow}</p>
+                  <h2>{t.paths.business.title}</h2>
+                  <p>{t.paths.business.body}</p>
+                  <strong>{t.paths.business.cta} <span aria-hidden="true">→</span></strong>
                 </div>
               </Link>
             </div>
@@ -193,7 +193,7 @@ export function CultureLandingV2({ locale }: Props) {
             <nav aria-label="Footer">
               <Link href={meets}>{t.footer.meets}</Link>
               <Link href={communities}>{t.footer.communities}</Link>
-              <Link href={organizers}>{t.footer.organizers}</Link>
+              <Link href={business}>{t.footer.business}</Link>
               <a href="#app">{t.footer.app}</a>
               <a href="https://www.instagram.com/noxa_app/" rel="noreferrer" target="_blank">{t.footer.instagram}</a>
             </nav>

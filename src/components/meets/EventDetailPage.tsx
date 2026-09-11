@@ -3,14 +3,12 @@ import { notFound } from "next/navigation";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { loadOrganizerById } from "@/components/organizers/organizer-data";
 import { buildNoxaMapHref, eventFamily } from "@/lib/meets/discoveryPersonalization";
 import { isEventCurrentlyVisible, isPastEvent } from "@/lib/meets/eventVisibility";
 
 import discovery from "./EventDiscovery.module.css";
 import { EventActions } from "./EventActions";
 import styles from "./EventDetailPage.module.css";
-import { FollowSubscriptionForm } from "./FollowSubscriptionForm";
 
 const SUPABASE_URL = "https://qrouwtqsqrfeeeppyeru.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vR9wivNa_fIb0QKmqua6Wg_H_7OPvUk";
@@ -66,7 +64,6 @@ export type EventRow = {
   country_code: string;
   organizer_name: string | null;
   organizer_url: string | null;
-  organizer_profile_id: string | null;
   source_name: string;
   source_url: string;
   summary: string | null;
@@ -114,7 +111,7 @@ export function localizePublicEvent(event: EventRow, locale: "en" | "el"): Local
 
 export async function loadPublicEvent(slug: string): Promise<EventRow | null> {
   const query = new URLSearchParams({
-    select: "id,public_slug,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,country_code,organizer_name,organizer_url,organizer_profile_id,source_name,source_url,summary,summary_el,featured,partner_badge,cover_image_url,cover_image_source_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
+    select: "id,public_slug,title,title_el,event_type,starts_at,ends_at,timezone,location_text,location_text_el,city,region,country_code,organizer_name,organizer_url,source_name,source_url,summary,summary_el,featured,partner_badge,cover_image_url,cover_image_source_url,cover_image_alt,cover_image_alt_el,latitude,longitude,location_precision",
     public_slug: `eq.${slug}`,
     status: "eq.published",
     limit: "1",
@@ -193,10 +190,7 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const event = await loadPublicEvent(slug);
   if (!event) notFound();
 
-  const [organizer, related] = await Promise.all([
-    event.organizer_profile_id ? loadOrganizerById(event.organizer_profile_id) : Promise.resolve(null),
-    loadRelatedEvents(event),
-  ]);
+  const related = await loadRelatedEvents(event);
   const content = localizePublicEvent(event, locale);
   const past = isPastEvent(event.starts_at, event.ends_at);
   const place = [content.locationText, event.city, event.region].filter(Boolean).join(" · ") || event.country_code;
@@ -219,6 +213,8 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const directionsHref = mapHref && event.latitude !== null && event.longitude !== null
     ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
     : null;
+  const officialHref = event.organizer_url?.trim() || event.source_url;
+  const officialName = event.organizer_name?.trim() || event.source_name;
 
   return (
     <div className={styles.page}>
@@ -295,18 +291,10 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 </section>
               </div>
               <aside className={discovery.sideStack}>
-                {organizer ? (
-                  <section className={discovery.organizerPanel}>
-                    <span>{locale === "el" ? "VERIFIED ORGANIZER" : "VERIFIED ORGANIZER"}</span>
-                    <h2>{organizer.name}</h2>
-                    <Link href={`${base}/organizers/${organizer.slug}`}>{locale === "el" ? "Δες organizer" : "View organizer"} →</Link>
-                    <FollowSubscriptionForm compact locale={locale} target={{ type: "organizer", organizerId: organizer.id }} title={locale === "el" ? `Ακολούθησε ${organizer.name}` : `Follow ${organizer.name}`} />
-                  </section>
-                ) : null}
                 <div className={styles.organizerCard}>
-                  <span>{locale === "el" ? "ΠΗΓΗ" : "SOURCE"}</span>
-                  <h2>{locale === "el" ? "Επίσημες πληροφορίες event" : "Official event information"}</h2>
-                  <a href={event.source_url} rel="noreferrer" target="_blank">{locale === "el" ? "Άνοιγμα πηγής" : "Open source"} ↗</a>
+                  <span>{locale === "el" ? "ΕΠΙΣΗΜΗ ΠΗΓΗ" : "OFFICIAL SOURCE"}</span>
+                  <h2>{officialName}</h2>
+                  <a href={officialHref} rel="noreferrer" target="_blank">{locale === "el" ? "Άνοιγμα επίσημης πηγής" : "Open official source"} ↗</a>
                   <small>{locale === "el" ? "Έλεγξε την επίσημη πηγή για τις τελευταίες αλλαγές." : "Check the official source for the latest changes."}</small>
                 </div>
               </aside>
