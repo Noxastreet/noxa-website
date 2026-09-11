@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   restoreRadarAdminSession,
@@ -82,22 +82,16 @@ function countryName(code: string) {
 }
 
 function friendlyReferrer(value: string) {
-  const normalized = value.trim();
-  if (!normalized) return "Прямой переход";
-
-  const lower = normalized.toLowerCase();
+  const lower = value.trim().toLowerCase();
+  if (!lower || lower === "direct" || lower === "(direct)" || lower === "unknown" || lower === "(none)") {
+    return "Прямой переход";
+  }
   if (lower.includes("instagram")) return "Instagram";
   if (lower.includes("google")) return "Google";
   if (lower.includes("t.me") || lower.includes("telegram")) return "Telegram";
   if (lower.includes("facebook") || lower.includes("fb.com")) return "Facebook";
   if (lower.includes("noxastreetapp.com")) return "Внутренний переход";
-
-  try {
-    const url = new URL(normalized.startsWith("http") ? normalized : `https://${normalized}`);
-    return url.hostname.replace(/^www\./, "");
-  } catch {
-    return normalized;
-  }
+  return "Другие сайты";
 }
 
 function friendlyPage(value: string) {
@@ -108,6 +102,30 @@ function friendlyPage(value: string) {
 
 function friendlyDevice(value: string) {
   return deviceNames[value.toLowerCase()] ?? value;
+}
+
+function friendlyOperatingSystem(value: string) {
+  const lower = value.toLowerCase();
+  if (lower.includes("iphone") || lower.includes("ipad") || lower === "ios") return "iOS";
+  if (lower.includes("android")) return "Android";
+  if (lower.includes("windows")) return "Windows";
+  if (lower.includes("mac") || lower.includes("os x")) return "macOS";
+  if (lower.includes("linux")) return "Linux";
+  return value;
+}
+
+function mergeBreakdown(items: BreakdownItem[], labelFor: (value: string) => string) {
+  const merged = new Map<string, BreakdownItem>();
+  for (const item of items) {
+    const label = labelFor(item.label);
+    const current = merged.get(label);
+    merged.set(label, {
+      label,
+      count: (current?.count ?? 0) + item.count,
+      visitors: (current?.visitors ?? 0) + item.visitors,
+    });
+  }
+  return Array.from(merged.values()).sort((a, b) => b.count - a.count);
 }
 
 function SelectedMetric({ label, value }: { label: string; value: number }) {
@@ -141,20 +159,20 @@ function BreakdownList({
   labelFor?: (value: string) => string;
   empty?: string;
 }) {
-  const max = Math.max(1, ...items.map((item) => item.count));
-  const total = Math.max(1, items.reduce((sum, item) => sum + item.count, 0));
+  const normalizedItems = labelFor ? mergeBreakdown(items, labelFor) : items;
+  const max = Math.max(1, ...normalizedItems.map((item) => item.count));
+  const total = Math.max(1, normalizedItems.reduce((sum, item) => sum + item.count, 0));
 
   return (
     <section className="min-w-0 rounded-3xl border border-white/10 bg-[#0b0b0d] p-5 sm:p-6">
       <h2 className="text-base font-semibold text-white">{title}</h2>
       <div className="mt-5 grid gap-4">
-        {items.length ? items.map((item) => {
+        {normalizedItems.length ? normalizedItems.map((item) => {
           const width = Math.max(3, Math.round((item.count / max) * 100));
-          const label = labelFor ? labelFor(item.label) : item.label;
           return (
             <div className="min-w-0" key={`${title}-${item.label}`}>
               <div className="flex min-w-0 items-center justify-between gap-3 text-sm">
-                <span className="min-w-0 truncate text-white/70" title={label}>{label}</span>
+                <span className="min-w-0 truncate text-white/70" title={item.label}>{item.label}</span>
                 <span className="shrink-0 font-semibold text-white">{formatNumber(item.count)}</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
@@ -244,10 +262,9 @@ export function FounderAnalyticsDashboard() {
     return () => { cancelled = true; };
   }, [range]);
 
-  const updated = useMemo(() => {
-    if (!data?.generatedAt) return "";
-    return new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt));
-  }, [data?.generatedAt]);
+  const updated = data?.generatedAt
+    ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt))
+    : "";
 
   if (state === "signed_out") {
     return (
@@ -338,7 +355,7 @@ export function FounderAnalyticsDashboard() {
               <BreakdownList items={data.breakdowns.devices} labelFor={friendlyDevice} title="Устройства" />
               <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                 <BreakdownList items={data.breakdowns.browsers} title="Браузеры" />
-                <BreakdownList items={data.breakdowns.operatingSystems} title="Операционные системы" />
+                <BreakdownList items={data.breakdowns.operatingSystems} labelFor={friendlyOperatingSystem} title="Операционные системы" />
               </div>
             </section>
 
