@@ -18,8 +18,8 @@ assert.equal(landing.includes("CulturePromoSection"), false);
 assert.equal(landing.includes("WaitlistForm"), false);
 assert.equal(landing.includes("Explore Organizers"), false);
 
-assert.match(rail, /`${base}\/meets`/);
-assert.match(rail, /`${base}\/map`/);
+assert.ok(rail.includes('`${base}/meets`'), "Discovery rail must link to Meets");
+assert.ok(rail.includes('`${base}/map`'), "Discovery rail must link to Map");
 assert.match(rail, /CAR & MOTO EVENTS/);
 assert.match(rail, /NOXA MAP/);
 assert.equal(rail.includes("/communities"), false);
