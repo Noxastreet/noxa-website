@@ -25,11 +25,19 @@ type AggregateRow = Record<string, unknown> & {
   visitors?: number;
   pageviews?: number;
 };
-
 type BreakdownItem = {
   label: string;
   count: number;
   visitors: number;
+};
+type EventRow = {
+  public_slug: string | null;
+  title: string;
+  city: string | null;
+};
+type EventBreakdownItem = BreakdownItem & {
+  path: string;
+  city: string | null;
 };
 
 function json(body: unknown, init?: ResponseInit) {
@@ -43,15 +51,17 @@ function getBearer(request: NextRequest) {
   return authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
 }
 
-async function verifyRadarAdmin(accessToken: string) {
-  if (!accessToken) return false;
-
-  const headers = {
+function supabaseHeaders(accessToken: string) {
+  return {
     apikey: RADAR_SUPABASE_PUBLISHABLE_KEY,
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
+}
 
+async function verifyRadarAdmin(accessToken: string) {
+  if (!accessToken) return false;
+  const headers = supabaseHeaders(accessToken);
   const [userResponse, adminResponse] = await Promise.all([
     fetch(`${RADAR_SUPABASE_URL}/auth/v1/user`, { headers, cache: "no-store" }),
     fetch(`${RADAR_SUPABASE_URL}/rest/v1/rpc/radar_admin_status`, {
@@ -61,7 +71,6 @@ async function verifyRadarAdmin(accessToken: string) {
       cache: "no-store",
     }),
   ]);
-
   if (!userResponse.ok || !adminResponse.ok) return false;
   return await adminResponse.json() === true;
 }
@@ -73,13 +82,12 @@ function rangeSince(days: number, now: Date) {
 function vercelBaseParams() {
   const projectId = process.env.VERCEL_PROJECT_ID ?? NOXA_VERCEL_PROJECT_ID;
   const teamId = process.env.VERCEL_ORG_ID ?? NOXA_VERCEL_TEAM_ID;
-  const params = new URLSearchParams({ projectId, teamId });
-  return params;
+  return new URLSearchParams({ projectId, teamId });
 }
 
 async function vercelRequest(path: string, params: URLSearchParams) {
   const token = process.env.VERCEL_ANALYTICS_TOKEN;
-  if (!token) throw new Error("VERCEL_ANALYTICS_TOKEN is not configured.");
+  if (!token) throw new Error("VERCEL_ANALYTICS_TOKEN_MISSING");
 
   const response = await fetch(`https://api.vercel.com${path}?${params.toString()}`, {
     headers: {
@@ -89,10 +97,7 @@ async function vercelRequest(path: string, params: URLSearchParams) {
     cache: "no-store",
   });
 
-  if (!response.ok) {
-    throw new Error(`Vercel Web Analytics API returned ${response.status}.`);
-  }
-
+  if (!response.ok) throw new Error(`VERCEL_ANALYTICS_${response.status}`);
   return response.json() as Promise<{ data?: unknown }>;
 }
 
@@ -112,9 +117,8 @@ function normalizeBreakdown(rows: AggregateRow[], dimension: string): BreakdownI
   return rows
     .map((row) => {
       const rawLabel = row[dimension];
-      const label = typeof rawLabel === "string" && rawLabel.trim() ? rawLabel.trim() : "Direct / unknown";
       return {
-        label,
+        label: typeof rawLabel === "string" ? rawLabel.trim() : "",
         count: Number(row.count ?? row.pageviews ?? 0),
         visitors: Number(row.visitors ?? 0),
       };
@@ -122,12 +126,7 @@ function normalizeBreakdown(rows: AggregateRow[], dimension: string): BreakdownI
     .filter((item) => Number.isFinite(item.count) && item.count > 0);
 }
 
-async function getBreakdown(
-  dimension: string,
-  since: string,
-  until: string,
-  limit = 12,
-): Promise<BreakdownItem[]> {
+async function getBreakdown(dimension: string, since: string, until: string, limit = 12) {
   const params = vercelBaseParams();
   params.set("since", since);
   params.set("until", until);
@@ -137,32 +136,71 @@ async function getBreakdown(
   return normalizeBreakdown(Array.isArray(payload.data) ? payload.data as AggregateRow[] : [], dimension);
 }
 
-async function safeBreakdown(
-  dimension: string,
-  since: string,
-  until: string,
-  warnings: string[],
-  limit?: number,
-) {
+async function safeBreakdown(dimension: string, since: string, until: string, limit?: number) {
   try {
     return await getBreakdown(dimension, since, until, limit);
   } catch (error) {
-    warnings.push(`${dimension}: ${error instanceof Error ? error.message : "unavailable"}`);
+    console.warn("[founder-analytics] breakdown unavailable", {
+      dimension,
+      reason: error instanceof Error ? error.message : "unknown",
+    });
     return [];
+  }
+}
+
+function eventSlugFromPath(path: string) {
+  const match = path.match(/^\/(?:el\/)?meets\/([^/?#]+)\/?$/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+async function enrichEventPages(accessToken: string, pages: BreakdownItem[]): Promise<EventBreakdownItem[]> {
+  const eventPages = pages
+    .map((item) => ({ item, slug: eventSlugFromPath(item.label) }))
+    .filter((entry): entry is { item: BreakdownItem; slug: string } => Boolean(entry.slug) && entry.slug !== "submit")
+    .slice(0, 10);
+
+  if (!eventPages.length) return [];
+
+  try {
+    const response = await fetch(
+      `${RADAR_SUPABASE_URL}/rest/v1/radar_events?select=public_slug,title,city&status=eq.published&public_slug=not.is.null&limit=1000`,
+      { headers: supabaseHeaders(accessToken), cache: "no-store" },
+    );
+    if (!response.ok) throw new Error(`SUPABASE_${response.status}`);
+
+    const rows = await response.json() as EventRow[];
+    const bySlug = new Map(rows.filter((row) => row.public_slug).map((row) => [row.public_slug!, row]));
+
+    return eventPages.map(({ item, slug }) => {
+      const event = bySlug.get(slug);
+      return {
+        ...item,
+        label: event?.title ?? slug.replaceAll("-", " "),
+        path: item.label,
+        city: event?.city ?? null,
+      };
+    });
+  } catch (error) {
+    console.warn("[founder-analytics] event title enrichment unavailable", {
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    return eventPages.map(({ item, slug }) => ({
+      ...item,
+      label: slug.replaceAll("-", " "),
+      path: item.label,
+      city: null,
+    }));
   }
 }
 
 export async function GET(request: NextRequest) {
   const accessToken = getBearer(request);
   if (!(await verifyRadarAdmin(accessToken))) {
-    return json({ error: "Unauthorized" }, { status: 401 });
+    return json({ error: "SESSION_EXPIRED" }, { status: 401 });
   }
 
   if (!process.env.VERCEL_ANALYTICS_TOKEN) {
-    return json({
-      error: "Founder Analytics is not configured yet.",
-      code: "VERCEL_ANALYTICS_TOKEN_MISSING",
-    }, { status: 503 });
+    return json({ error: "ANALYTICS_NOT_CONFIGURED", code: "VERCEL_ANALYTICS_TOKEN_MISSING" }, { status: 503 });
   }
 
   const rawRange = request.nextUrl.searchParams.get("range") ?? "7d";
@@ -170,7 +208,6 @@ export async function GET(request: NextRequest) {
   const now = new Date();
   const until = now.toISOString();
   const since = rangeSince(RANGE_DAYS[range], now);
-  const warnings: string[] = [];
 
   try {
     const [last24h, last7d, last30d, allTime, countries, pages, referrers, devices, browsers, operatingSystems] = await Promise.all([
@@ -178,24 +215,30 @@ export async function GET(request: NextRequest) {
       getCount(rangeSince(7, now), until),
       getCount(rangeSince(30, now), until),
       getCount(),
-      safeBreakdown("country", since, until, warnings, 12),
-      safeBreakdown("requestPath", since, until, warnings, 100),
-      safeBreakdown("referrer", since, until, warnings, 12),
-      safeBreakdown("deviceType", since, until, warnings, 12),
-      safeBreakdown("browserName", since, until, warnings, 12),
-      safeBreakdown("osName", since, until, warnings, 12),
+      safeBreakdown("country", since, until, 12),
+      safeBreakdown("requestPath", since, until, 100),
+      safeBreakdown("referrer", since, until, 12),
+      safeBreakdown("deviceType", since, until, 12),
+      safeBreakdown("browserName", since, until, 12),
+      safeBreakdown("osName", since, until, 12),
     ]);
 
+    const selected = range === "1d"
+      ? last24h
+      : range === "7d"
+        ? last7d
+        : range === "30d"
+          ? last30d
+          : await getCount(since, until);
+
     const topPages = pages.slice(0, 15);
-    const topEventPages = pages
-      .filter((item) => item.label.startsWith("/meets/") && item.label !== "/meets/submit")
-      .slice(0, 10);
+    const topEventPages = await enrichEventPages(accessToken, pages);
 
     return json({
       generatedAt: until,
       range,
       rangeSince: since,
-      counts: { last24h, last7d, last30d, allTime },
+      counts: { selected, last24h, last7d, last30d, allTime },
       breakdowns: {
         countries,
         referrers,
@@ -205,12 +248,11 @@ export async function GET(request: NextRequest) {
         topPages,
         topEventPages,
       },
-      warnings,
     });
   } catch (error) {
-    return json({
-      error: "Unable to load Vercel Web Analytics.",
-      detail: error instanceof Error ? error.message : "Unknown analytics error.",
-    }, { status: 502 });
+    console.error("[founder-analytics] Vercel analytics request failed", {
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    return json({ error: "ANALYTICS_UNAVAILABLE" }, { status: 502 });
   }
 }

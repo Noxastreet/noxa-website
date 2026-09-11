@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { RadarAdminAnalyticsLink } from "@/components/radar/RadarAdminAnalyticsLink";
 import { RadarAdminSimpleConsole } from "@/components/radar/RadarAdminSimpleConsole";
 
 export const metadata: Metadata = {
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default function RadarAdminPage() {
-  return <RadarAdminSimpleConsole />;
+  return (
+    <>
+      <RadarAdminSimpleConsole />
+      <RadarAdminAnalyticsLink />
+    </>
+  );
 }
