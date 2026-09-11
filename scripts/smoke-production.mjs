@@ -61,6 +61,7 @@ for (const forbidden of [
   'href="/routes"',
   'href="#app"',
   "NOXA App",
+  "instagram.com/noxa_app",
 ]) {
   if (homeHtml.includes(forbidden)) throw new Error(`Home still exposes hidden surface: ${forbidden}`);
 }
