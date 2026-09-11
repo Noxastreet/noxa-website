@@ -15,6 +15,7 @@ export function WebsiteHeader({ locale, path = "" }: Props) {
     homeHref={base || "/"}
     currentPath={activeRoot ? `${base}${activeRoot}` : undefined}
     joinHref={`${base}/meets/submit`}
+    showInstagram={false}
     languagePaths={{ en: path || "/", el: `/el${path}` }}
     languageCopy={copy.language}
     navigationCopy={{ ...copy.navigation,
