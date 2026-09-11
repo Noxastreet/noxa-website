@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CommunityDirectory } from "@/components/communities/CommunityDirectory";
 import "@/components/communities/crew-mobile.css";
+import "@/components/communities/crew-optimizations.css";
 
 export const metadata: Metadata = {
   title: "NOXA Crew Directory — Automotive crews στην Ελλάδα",
