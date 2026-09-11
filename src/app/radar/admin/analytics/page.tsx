@@ -4,8 +4,8 @@ import { FounderAnalyticsDashboard } from "@/components/radar/FounderAnalyticsDa
 import { FounderAnalyticsReturnIntent } from "@/components/radar/FounderAnalyticsReturnIntent";
 
 export const metadata: Metadata = {
-  title: "NOXA Founder Analytics",
-  description: "Private NOXA founder analytics dashboard.",
+  title: "NOXA — Аналитика",
+  description: "Приватная аналитика сайта NOXA для Founder.",
   robots: {
     index: false,
     follow: false,
