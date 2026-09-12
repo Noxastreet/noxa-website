@@ -1,117 +1,280 @@
-/* Route-scoped UX polish for the focused Events experience.
-   Imported by both /meets and /el/meets so EN/EL keep the same structure and visual rhythm. */
+/* Focused Events UX pass shared by /meets and /el/meets.
+   Keep EN/EL structure identical and move users to real event content faster. */
 
 #main-content > section:first-child {
-  min-height: 420px;
+  min-height: 350px;
 }
 
 #main-content > section:first-child > div:last-child {
-  padding-top: 118px;
-  padding-bottom: 34px;
+  padding-top: 108px;
+  padding-bottom: 28px;
 }
 
 #main-content > section:first-child h1 {
   max-width: 15ch;
-  font-size: clamp(44px, 5.2vw, 68px);
+  margin-top: 14px;
+  font-size: clamp(42px, 4.9vw, 64px);
+  line-height: 1.01;
+}
+
+#main-content > section:first-child p:not(:first-child) {
+  max-width: 44ch;
+}
+
+/* Explore Events is redundant on the Events page. Keep Add Event as the quiet secondary action. */
+#main-content > section:first-child a[href="#events"] {
+  display: none;
 }
 
 #events {
-  padding-top: 36px;
+  padding-top: 28px;
 }
 
-/* Keep standard event cards information-first without changing their data contract. */
+#events > div > div:first-child {
+  margin-bottom: 18px;
+}
+
+/* Quick discovery becomes a compact mode switch instead of a second marketing section. */
+#events [class*="quickSection"] {
+  margin-bottom: 16px;
+}
+
+#events [class*="quickHeader"] {
+  margin-bottom: 8px;
+}
+
+#events [class*="quickRail"] {
+  gap: 8px;
+}
+
+#events [class*="quickCard"] {
+  min-height: 104px;
+  border-radius: 12px;
+  padding: 13px;
+}
+
+#events [class*="quickCard"] p {
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* Standard cards are editorial discovery items, not marketing panels. */
 #events article > a {
-  min-height: 272px;
+  min-height: 238px;
+  border-radius: 13px;
+  padding: 18px;
 }
 
 #events article > a > h3 {
-  margin-top: 18px;
-  line-height: 1.12;
+  margin-top: 16px;
+  font-size: clamp(21px, 2vw, 27px);
+  line-height: 1.1;
 }
 
 #events article > a > p {
-  margin-top: 9px;
-  margin-bottom: 14px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 #events article > a > div:last-child {
-  padding-top: 14px;
+  padding-top: 12px;
+}
+
+/* At most two discovery badges stay visible on normal cards. */
+#events article > a [class*="discoveryBadges"] > span:nth-child(n+3) {
+  display: none;
 }
 
 @media (max-width: 700px) {
+  #main-content > section:first-child {
+    min-height: 286px;
+  }
+
   #main-content > section:first-child > div:last-child {
-    gap: 16px;
-    padding-top: 96px;
-    padding-bottom: 20px;
+    gap: 12px;
+    padding-top: 84px;
+    padding-bottom: 18px;
   }
 
   #main-content > section:first-child h1 {
-    margin-top: 12px;
-    font-size: clamp(34px, 9.5vw, 44px);
-    line-height: 1.03;
+    margin-top: 9px;
+    max-width: 12ch;
+    font-size: clamp(32px, 8.9vw, 40px);
+    line-height: 1.01;
   }
 
-  /* The country/event counter repeats information available in the feed.
-     Removing it on phones gets users to real events noticeably sooner. */
+  #main-content > section:first-child p:not(:first-child) {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* Country/event counter repeats feed information and slows the mobile entry. */
   #main-content > section:first-child > div:last-child > div:last-child {
     display: none;
   }
 
   #events {
-    padding-top: 22px;
+    padding-top: 18px;
+    padding-bottom: 76px;
   }
 
-  #events > div > div:first-child,
-  #events > div > section:first-of-type {
-    margin-bottom: 16px;
+  #events > div > div:first-child {
+    margin-bottom: 12px;
   }
 
-  /* Mobile event cards should read like compact discovery items, not shrunken desktop panels. */
+  #events > div > div:first-child > p:last-child {
+    display: none;
+  }
+
+  #events [class*="quickSection"] {
+    margin: 0 -2px 12px;
+  }
+
+  #events [class*="quickHeader"] strong {
+    display: none;
+  }
+
+  #events [class*="quickRail"] {
+    gap: 7px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  #events [class*="quickRail"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  #events [class*="quickCard"] {
+    min-width: 146px;
+    min-height: 76px;
+    flex: 0 0 146px;
+    padding: 10px 11px;
+  }
+
+  #events [class*="quickCard"] p {
+    display: none;
+  }
+
+  /* Search/date controls stay useful but become much less visually dominant. */
+  #events [class*="compactPanel"] {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 12px !important;
+  }
+
+  #events [class*="dateRow"] {
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  #events [class*="dateRow"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  #events [class*="dateChip"] {
+    min-height: 40px;
+    flex: 0 0 auto;
+    padding-inline: 12px;
+  }
+
+  /* Compact mobile event card: poster/thumbnail left, core information right. */
   #events article > a {
-    min-height: 0;
-    border-radius: 16px;
-    padding: 15px;
+    display: grid;
+    min-height: 154px;
+    grid-template-columns: 76px minmax(0,1fr);
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: 12px;
+    align-items: start;
+    border-radius: 13px;
+    padding: 12px;
+  }
+
+  #events article > a > div[aria-hidden="true"]:first-child {
+    grid-column: 1;
+    grid-row: 1 / -1;
+  }
+
+  #events article > a > div:not([aria-hidden="true"]):first-child,
+  #events article > a > div[aria-hidden="true"]:first-child + div {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    align-self: stretch;
+  }
+
+  /* When a verified image exists, move metadata/title into the right column. */
+  #events article > a:has(> div[aria-hidden="true"]:first-child) > div[aria-hidden="true"]:first-child + div,
+  #events article > a:has(> div[aria-hidden="true"]:first-child) > [class*="discoveryBadges"],
+  #events article > a:has(> div[aria-hidden="true"]:first-child) > h3,
+  #events article > a:has(> div[aria-hidden="true"]:first-child) > p,
+  #events article > a:has(> div[aria-hidden="true"]:first-child) > div:last-child {
+    grid-column: 2;
   }
 
   #events article > a [aria-label] {
-    width: 58px;
-    min-height: 68px;
-    padding: 6px 5px;
+    width: 54px;
+    min-height: 62px;
+    padding: 5px 4px;
   }
 
   #events article > a [aria-label] > strong {
-    font-size: 25px;
+    font-size: 23px;
   }
 
   #events article > a > h3 {
-    margin-top: 16px;
-    font-size: clamp(21px, 6.2vw, 25px);
+    margin-top: 9px;
+    font-size: 18px;
     line-height: 1.12;
   }
 
   #events article > a > p {
-    margin: 8px 0 12px;
-    font-size: 13px;
-    line-height: 1.42;
+    margin: 5px 0 8px;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   #events article > a > div:last-child {
-    padding-top: 12px;
+    align-self: end;
+    margin-top: 0;
+    padding-top: 8px;
   }
 
   #events article > a > div:last-child small,
   #events article > a > div:last-child strong {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  #events article > a [class*="discoveryBadges"] {
+    margin-top: 6px;
+  }
+
+  #events article > a [class*="discoveryBadges"] > span {
+    min-height: 22px;
+    padding-inline: 7px;
+    font-size: 8px;
   }
 }
 
 @media (max-width: 390px) {
   #events article > a {
-    padding: 14px;
+    min-height: 148px;
+    grid-template-columns: 72px minmax(0,1fr);
+    column-gap: 10px;
+    padding: 11px;
   }
 
   #events article > a > h3 {
-    font-size: 21px;
+    font-size: 17px;
   }
 }
 
