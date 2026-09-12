@@ -55,6 +55,11 @@ assert.ok(mapUi.includes("center: GREECE_CENTER"), "global map must still open f
 assert.ok(mapCss.includes(".main :global(.maplibregl-ctrl-group)"), "map controls must have dedicated responsive treatment");
 assert.ok(mapCss.includes("detailSheetExpanded"), "mobile detail bottom sheet styles must exist");
 assert.ok(mapCss.includes("@media (max-width: 900px)"), "map must have a dedicated mobile layout");
+assert.ok(!mapCss.includes("overlow-y"), "mobile detail sheet scrolling must not regress to the misspelled overflow property");
+assert.ok(mapCss.includes("overflow-y: auto; overscroll-behavior: contain;"), "expanded mobile detail sheet must scroll independently");
+assert.ok(mapCss.includes(".layerChip, .layerChipActive { min-height: 44px;"), "mobile map layer controls must keep a 44px touch target");
+assert.ok(mapCss.includes("bottom: max(7px, env(safe-area-inset-bottom))"), "mobile detail sheet must respect the iPhone safe area");
+assert.ok(mapCss.includes(".searchBox input { font-size: 16px; }"), "mobile map search must avoid iOS focus zoom");
 assert.ok(homepageMap.includes("Open NOXA Map"), "homepage must expose the full automotive map CTA");
 for (const glyph of ["⚑", "⌁", "⌖"]) assert.ok(!homepageMap.includes(glyph), `homepage map preview must not use ${glyph} as a POI icon`);
 assert.ok(homepageMapCss.includes("61svh"), "homepage map preview must have a strong mobile visual presence");
