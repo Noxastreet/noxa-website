@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EventDetailPage, loadPublicEvent, localizePublicEvent } from "@/components/meets/EventDetailPage";
+import "@/components/meets/event-detail-polish.css";
 
 type Props = { params: Promise<{ slug: string }> };
 
