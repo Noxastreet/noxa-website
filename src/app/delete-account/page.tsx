@@ -131,7 +131,7 @@ export default function DeleteAccountPage() {
               rights, read the{" "}
               <a
                 className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
-                href="/privacy"
+                href="https://noxastreetapp.com/privacy"
               >
                 NOXA Privacy Policy
               </a>
