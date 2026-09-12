@@ -373,7 +373,7 @@ export default function PrivacyPage() {
                 and associated-data deletion through our{" "}
                 <a
                   className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
-                  href="/delete-account"
+                  href="https://noxastreetapp.com/delete-account"
                 >
                   account deletion page
                 </a>
