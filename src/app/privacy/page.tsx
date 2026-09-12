@@ -79,8 +79,11 @@ export default function PrivacyPage() {
                   <strong>Account and authentication data:</strong> email
                   address, account identifier, authentication provider,
                   session information and security events. Authentication may
-                  be provided through email/password, Apple or Google. NOXA
-                  does not receive your Apple ID or Google password.
+                  be provided through email/password, Apple or Google. When you
+                  use Apple or Google sign-in, NOXA may receive the account
+                  identifier and profile information that provider permits you
+                  to share, such as an email address or name. NOXA does not
+                  receive your Apple or Google account password.
                 </li>
                 <li>
                   <strong>Profile data:</strong> display name, username,
