@@ -12,11 +12,11 @@ const LABEL_SECONDARY = "#7d828b";
 const LABEL_HALO = "rgba(8,9,11,.92)";
 
 function safePaint(map: MapLibreMap, id: string, property: string, value: unknown) {
-  try { map.setPaintProperty(id, property, value); } catch { /* style layer does not support this property */ }
+  try { map.setPaintProperty(id, property as never, value as never); } catch { /* style layer does not support this property */ }
 }
 
 function safeLayout(map: MapLibreMap, id: string, property: string, value: unknown) {
-  try { map.setLayoutProperty(id, property, value); } catch { /* keep upstream style if unsupported */ }
+  try { map.setLayoutProperty(id, property as never, value as never); } catch { /* keep upstream style if unsupported */ }
 }
 
 export function applyNoxaBasemapTheme(map: MapLibreMap) {
