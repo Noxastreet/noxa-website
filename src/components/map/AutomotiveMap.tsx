@@ -144,6 +144,12 @@ function geometryBounds(geometry: MapGeometry): [[number, number], [number, numb
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+function pointCoordinates(geometry: MapGeometry): [number, number] | null {
+  if (geometry.type !== "Point" || !Array.isArray(geometry.coordinates)) return null;
+  const [lng, lat] = geometry.coordinates;
+  return typeof lng === "number" && typeof lat === "number" ? [lng, lat] : null;
+}
+
 function deepLinkTarget() {
   if (typeof window === "undefined") return { center: GREECE_CENTER, zoom: 5.35, eventId: null as string | null };
   const params = new URLSearchParams(window.location.search);
@@ -185,7 +191,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
     loading: "Φόρτωση περιοχής…", visible: "ορατά σημεία", empty: "Δεν υπάρχουν επαληθευμένα σημεία εδώ.",
     chooseLayer: "Επίλεξε τουλάχιστον ένα επίπεδο.", capped: "Μεγάλη περιοχή — κάνε zoom για περισσότερες λεπτομέρειες.",
     details: "Λεπτομέρειες", explore: "Επίλεξε ένα σημείο ή μετακίνησε τον χάρτη.", viewEvent: "Δες Event",
-    source: "Πηγή", locate: "Η τοποθεσία μου", locationError: "Δεν ήταν δυνατή η πρόσβαση στην τοποθεσία.", retry: "Δοκίμασε ξανά",
+    source: "Πηγή", directions: "Οδηγίες", locate: "Η τοποθεσία μου", locationError: "Δεν ήταν δυνατή η πρόσβαση στην τοποθεσία.", retry: "Δοκίμασε ξανά",
     results: "Αποτελέσματα", noResults: "Δεν βρέθηκε κάτι στην ορατή περιοχή.", close: "Κλείσιμο",
   } : {
     search: "Search the map", searchPlaceholder: "Event, city, track or place",
@@ -193,7 +199,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
     loading: "Loading this area…", visible: "visible objects", empty: "No verified objects in this area yet.",
     chooseLayer: "Choose at least one map layer.", capped: "Large area — zoom in for more detail.",
     details: "Details", explore: "Select a place or move around the map.", viewEvent: "View Event",
-    source: "Source", locate: "My location", locationError: "Location access was not available.", retry: "Try again",
+    source: "Source", directions: "Directions", locate: "My location", locationError: "Location access was not available.", retry: "Try again",
     results: "Results", noResults: "No matches in the visible area.", close: "Close",
   };
 
@@ -284,28 +290,30 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
           const imageId = `noxa-poi-${layer}`;
           if (!map.hasImage(imageId)) map.addImage(imageId, createNoxaPoiImage(layer));
         }
-        map.addSource("noxa-points", { type: "geojson", data: EMPTY_COLLECTION, cluster: true, clusterMaxZoom: 13, clusterRadius: 52 });
+        map.addSource("noxa-points", { type: "geojson", data: EMPTY_COLLECTION, cluster: true, clusterMaxZoom: 13, clusterRadius: 48 });
         map.addSource("noxa-shapes", { type: "geojson", data: EMPTY_COLLECTION });
         map.addLayer({ id: "noxa-clusters", type: "circle", source: "noxa-points", filter: ["has", "point_count"], paint: {
-          "circle-color": "#c8102e", "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 40, 28],
-          "circle-stroke-width": 2, "circle-stroke-color": "rgba(255,255,255,.84)", "circle-opacity": .94,
+          "circle-color": "#17181c", "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 40, 24],
+          "circle-stroke-width": 1.5, "circle-stroke-color": "#e32c49", "circle-opacity": .96,
         }});
         map.addLayer({ id: "noxa-cluster-count", type: "symbol", source: "noxa-points", filter: ["has", "point_count"],
-          layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 12 }, paint: { "text-color": "#fff" } });
+          layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 11 }, paint: { "text-color": "#fff" } });
         map.addLayer({ id: "noxa-points", type: "symbol", source: "noxa-points", filter: ["!", ["has", "point_count"]], layout: {
           "icon-image": ["match", ["get", "layer"],
             "events", "noxa-poi-events", "tracks", "noxa-poi-tracks",
             "routes", "noxa-poi-routes", "places", "noxa-poi-places", "noxa-poi-events"],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 5, .48, 10, .62, 15, .78],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 5, .44, 10, .59, 15, .74],
           "icon-allow-overlap": false,
           "icon-ignore-placement": false,
         }});
         map.addLayer({ id: "noxa-polygons", type: "fill", source: "noxa-shapes", filter: ["==", ["geometry-type"], "Polygon"], paint: {
-          "fill-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"], "fill-opacity": .17, "fill-outline-color": "#e32c49",
+          "fill-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "routes", "#ff8a3d", "places", "#70d6ff", "#e32c49"],
+          "fill-opacity": .15,
+          "fill-outline-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "routes", "#ff8a3d", "places", "#70d6ff", "#e32c49"],
         }});
         map.addLayer({ id: "noxa-lines", type: "line", source: "noxa-shapes", filter: ["==", ["geometry-type"], "LineString"], paint: {
-          "line-color": ["match", ["get", "layer"], "routes", "#e32c49", "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"],
-          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 2, 10, 4, 15, 6], "line-opacity": .92,
+          "line-color": ["match", ["get", "layer"], "routes", "#ff8a3d", "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.8, 10, 3.5, 15, 5.5], "line-opacity": .9,
         }});
 
         const selectRendered = (feature: unknown) => {
@@ -378,6 +386,10 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   const selectedTitle = selected ? (locale === "el" ? selected.titleEl || selected.title : selected.title) : null;
   const selectedLocation = selected ? (locale === "el" ? selected.locationEl || selected.location : selected.location) : null;
   const selectedDate = selected ? formatEventDate(selected.startsAt, locale) : null;
+  const selectedPoint = selected ? pointCoordinates(selected.geometry) : null;
+  const directionsHref = selectedPoint
+    ? `https://www.google.com/maps/search/?api=1&query=${selectedPoint[1]},${selectedPoint[0]}`
+    : null;
   const statusText = activeLayers.size === 0 ? t.chooseLayer : loading ? t.loading : error ? error : capped ? t.capped : visibleCount === 0 ? t.empty : `${visibleCount} ${t.visible}`;
 
   return (
@@ -436,6 +448,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
               {selectedLocation || selected.city ? <p className={styles.detailLocation}>{selectedLocation || [selected.city, selected.region].filter(Boolean).join(", ")}</p> : null}
               <div className={styles.detailActions}>
                 {selected.href ? <Link href={selected.href}>{t.viewEvent}<span aria-hidden="true">↗</span></Link> : null}
+                {directionsHref ? <a href={directionsHref} target="_blank" rel="noreferrer">{t.directions}<span aria-hidden="true">↗</span></a> : null}
                 <a href={selected.sourceUrl} target="_blank" rel="noreferrer">{t.source}<span aria-hidden="true">↗</span></a>
               </div>
             </> : <p className={styles.sheetIntro}>{t.explore}</p>}
