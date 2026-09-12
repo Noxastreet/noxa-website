@@ -4,7 +4,8 @@ import { LegalDocument } from "@/components/legal/LegalDocument";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | NOXA",
-  description: "How NOXA handles personal data collected through the website and early-access waitlist.",
+  description:
+    "How NOXA handles personal data across the NOXA website and NOXA: Car & Moto mobile applications.",
   alternates: { canonical: "https://noxastreetapp.com/privacy" },
 };
 
@@ -15,13 +16,14 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Privacy at NOXA"
       title="Privacy Policy"
-      updated="30 August 2026"
+      updated="12 September 2026"
       intro={
         <p>
-          This policy explains how NOXA collects and uses personal data through
-          noxastreetapp.com and its early-access waitlist. It applies to the
-          launch website only. A separate policy may apply when the NOXA mobile
-          application becomes publicly available.
+          This policy explains how NOXA collects, uses, shares, retains and
+          protects personal data across noxastreetapp.com, the NOXA: Car & Moto
+          applications for iOS and Android, and the related NOXA backend
+          services. It also explains your choices and how to request access,
+          correction or deletion of your data.
         </p>
       }
       sections={[
@@ -31,13 +33,15 @@ export default function PrivacyPage() {
           content: (
             <>
               <p>
-                NOXA is an early-stage automotive social platform operated by
-                S. Karaketidis in Greece. For the purposes of the General Data
-                Protection Regulation, NOXA is the data controller for the
-                personal data described in this policy.
+                NOXA is an automotive and moto community platform operated by
+                Sergkei Karaketidis in Greece. For the purposes of applicable
+                data-protection law, including the General Data Protection
+                Regulation where it applies, Sergkei Karaketidis is the data
+                controller for the personal data described in this policy.
               </p>
               <p>
-                Privacy requests can be sent to{" "}
+                Privacy, data-access and account-deletion requests can be sent
+                to{" "}
                 <a
                   className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
                   href={`mailto:${privacyEmail}`}
@@ -50,24 +54,119 @@ export default function PrivacyPage() {
           ),
         },
         {
+          id: "scope-age",
+          title: "Scope and age requirement",
+          content: (
+            <p>
+              This policy applies to the NOXA website, NOXA: Car & Moto mobile
+              applications, authentication and storage systems, maps, events,
+              community features, notifications, support channels and other
+              NOXA services that link to this policy. NOXA is not intended for
+              children under 16, and we do not knowingly collect personal data
+              from children under 16. If you believe a child has provided data,
+              contact us so we can review and remove it where appropriate.
+            </p>
+          ),
+        },
+        {
           id: "data-collected",
           title: "Data we collect",
           content: (
             <>
-              <p>When you join the early-access waitlist, we collect:</p>
+              <p>Depending on the NOXA features you use, we may collect:</p>
               <ul className="list-disc space-y-2 pl-5 marker:text-[#e32c49]">
-                <li>your email address;</li>
-                <li>your city, when you choose to provide it;</li>
-                <li>your consent and the date and time it was given;</li>
-                <li>your selected language;</li>
-                <li>campaign parameters, referrer information and the page source, when available.</li>
+                <li>
+                  <strong>Account and authentication data:</strong> email
+                  address, account identifier, authentication provider,
+                  session information and security events. Authentication may
+                  be provided through email/password, Apple or Google. When you
+                  use Apple or Google sign-in, NOXA may receive the account
+                  identifier and profile information that provider permits you
+                  to share, such as an email address or name. NOXA does not
+                  receive your Apple or Google account password.
+                </li>
+                <li>
+                  <strong>Profile data:</strong> display name, username,
+                  avatar, biography, city and other profile details you choose
+                  to add.
+                </li>
+                <li>
+                  <strong>Garage and vehicle data:</strong> vehicle brand,
+                  model, year, specifications, tuning details, description,
+                  photos and visibility settings.
+                </li>
+                <li>
+                  <strong>Content and social activity:</strong> posts, photos,
+                  captions, comments, likes, saves, follows, crew memberships,
+                  invitations, join requests, event attendance, messages and
+                  other interactions you choose to create.
+                </li>
+                <li>
+                  <strong>Crews, events and drives:</strong> crew roles,
+                  event details, attendance responses, group-drive or convoy
+                  participation, route points and content submitted as a host,
+                  organiser or member.
+                </li>
+                <li>
+                  <strong>Location data:</strong> precise device coordinates
+                  when you grant location permission and use map positioning,
+                  nearby features, route calculation, Live Drive or an active
+                  Group Drive. During an explicitly enabled sharing session,
+                  we may also process heading, speed, accuracy, timestamps,
+                  visibility audience and session-expiry information.
+                </li>
+                <li>
+                  <strong>Photos and media:</strong> images you deliberately
+                  select from your device or otherwise choose to upload to
+                  profiles, vehicles, crews, posts or events.
+                </li>
+                <li>
+                  <strong>Notification data:</strong> notification
+                  preferences, Expo push tokens, delivery status and identifiers
+                  needed to route a notification to the correct NOXA screen.
+                </li>
+                <li>
+                  <strong>Website and submission data:</strong> waitlist email,
+                  optional city, selected language, event or community
+                  submissions, organiser or community application details,
+                  campaign/referrer information and consent records when those
+                  features are used.
+                </li>
+                <li>
+                  <strong>Technical and security data:</strong> IP address,
+                  user-agent, device/app information, request timestamps,
+                  network and security signals, and similar service logs that
+                  may be processed by NOXA or its infrastructure providers.
+                </li>
               </ul>
+            </>
+          ),
+        },
+        {
+          id: "location",
+          title: "Location and background location",
+          content: (
+            <>
               <p>
-                For security and abuse prevention, the website also temporarily
-                processes technical information such as IP address, user-agent,
-                request timing and form-submission signals. This information is
-                used for rate limiting and fraud prevention and is not written
-                into the NOXA waitlist table.
+                Location access is permission-based. NOXA may use precise
+                foreground location to place you on the map, show relevant
+                nearby activity, or calculate a route when you request those
+                features.
+              </p>
+              <p>
+                Background location is used only while a Live Drive or Group
+                Drive location-sharing session that you explicitly started is
+                active. It can continue while the app is in the background or
+                the screen is locked so the approved sharing feature continues
+                to work. NOXA does not need continuous background location for
+                ordinary browsing of events, profiles or the map.
+              </p>
+              <p>
+                Live Drive sharing is optional and time-limited. You can stop
+                sharing in NOXA, sign out, or revoke location permission in
+                your device settings. The audience that can see active location
+                depends on the visibility option you choose and the applicable
+                NOXA access rules.
               </p>
             </>
           ),
@@ -77,71 +176,148 @@ export default function PrivacyPage() {
           title: "Why we use your data",
           content: (
             <>
-              <p>We use waitlist data to:</p>
+              <p>We use personal data to:</p>
               <ul className="list-disc space-y-2 pl-5 marker:text-[#e32c49]">
-                <li>register and manage your early-access request;</li>
-                <li>notify the NOXA team when a new early-access request is received;</li>
-                <li>send relevant launch, testing and product updates;</li>
-                <li>understand general geographic and campaign interest;</li>
-                <li>prevent spam, automated submissions and misuse;</li>
-                <li>maintain the security and reliability of the website.</li>
+                <li>create, authenticate and secure NOXA accounts;</li>
+                <li>
+                  provide profiles, garages, posts, crews, events, maps,
+                  group-drive features and the interactions you request;
+                </li>
+                <li>
+                  operate optional location sharing and enforce the audience you
+                  select;
+                </li>
+                <li>store and deliver photos and content you upload;</li>
+                <li>
+                  send service notifications, event reminders and other
+                  communications you have enabled;
+                </li>
+                <li>
+                  process waitlist, organiser, community and event submissions;
+                </li>
+                <li>
+                  maintain, troubleshoot, protect and improve NOXA and prevent
+                  spam, abuse, fraud and unauthorised access;
+                </li>
+                <li>respond to support, privacy, safety and legal requests.</li>
               </ul>
               <p>
-                We do not sell your personal data and do not use the waitlist
-                for third-party advertising profiles.
+                NOXA does not currently sell personal data, use third-party
+                advertising SDKs, or use personal data for cross-app behavioural
+                advertising. We do not make automated decisions that produce
+                legal or similarly significant effects about users.
               </p>
             </>
           ),
         },
         {
           id: "legal-basis",
-          title: "Legal basis",
+          title: "Legal bases in the EEA",
+          content: (
+            <>
+              <p>Where EEA data-protection law applies, we rely on:</p>
+              <ul className="list-disc space-y-2 pl-5 marker:text-[#e32c49]">
+                <li>
+                  <strong>Contract:</strong> processing needed to create your
+                  account and provide the NOXA features you request.
+                </li>
+                <li>
+                  <strong>Consent:</strong> precise/background location, photo
+                  access, optional marketing communications and other
+                  permission-based features. You can withdraw consent at any
+                  time through NOXA or your device settings where applicable.
+                </li>
+                <li>
+                  <strong>Legitimate interests:</strong> service security,
+                  abuse prevention, debugging, moderation, reliability and
+                  understanding how the service performs, balanced against your
+                  rights and expectations.
+                </li>
+                <li>
+                  <strong>Legal obligation:</strong> processing or retention
+                  required by applicable law or a valid legal request.
+                </li>
+              </ul>
+            </>
+          ),
+        },
+        {
+          id: "sharing",
+          title: "When information is shared",
           content: (
             <>
               <p>
-                We process your email, optional city and early-access
-                communications on the basis of your consent. You can withdraw
-                that consent at any time.
+                Some information is shared because NOXA is a social and
+                event-discovery service. Profile, vehicle, crew, event, post and
+                location information is shown to other users only according to
+                the relevant visibility, membership and sharing settings. Public
+                content may be visible broadly within NOXA or on NOXA public
+                pages.
+              </p>
+              <p>We also use service providers, including:</p>
+              <ul className="list-disc space-y-2 pl-5 marker:text-[#e32c49]">
+                <li>
+                  <strong>Supabase</strong> for authentication, database,
+                  storage, realtime and serverless backend services;
+                </li>
+                <li>
+                  <strong>Mapbox</strong> for native mobile map functionality
+                  and map-related network requests;
+                </li>
+                <li>
+                  <strong>OpenRouteService</strong> for route calculations;
+                  route origin and destination coordinates are sent when a route
+                  is requested;
+                </li>
+                <li>
+                  <strong>Apple and Google</strong> when you choose their
+                  sign-in services;
+                </li>
+                <li>
+                  <strong>Expo</strong> for mobile build/platform services and
+                  push-notification delivery; Expo push tokens and notification
+                  payload data may be processed to deliver notifications;
+                </li>
+                <li>
+                  <strong>Vercel</strong> for website hosting, performance
+                  monitoring, Vercel Analytics and Speed Insights;
+                </li>
+                <li>
+                  <strong>Resend</strong> where used for transactional or
+                  operational email delivery.
+                </li>
+              </ul>
+              <p>
+                Providers receive only the information reasonably necessary for
+                the service they provide. They may process data in countries
+                outside Greece or the EEA. Where required, international
+                transfers are protected by an adequacy decision, contractual
+                safeguards or another lawful transfer mechanism.
               </p>
               <p>
-                We process limited technical information where necessary for
-                our legitimate interests in protecting the website, preventing
-                abuse and maintaining reliable operation. We may also process
-                information when required to comply with a legal obligation.
+                We may also disclose information when required by law, court
+                order or a competent authority, or where reasonably necessary
+                to protect users, investigate abuse or protect NOXA and others.
               </p>
             </>
           ),
         },
         {
-          id: "processors",
-          title: "Service providers and international processing",
+          id: "analytics",
+          title: "Website analytics, cookies and local storage",
           content: (
             <>
               <p>
-                The website is hosted by Vercel, waitlist records are stored
-                using Supabase, and transactional email delivery may be handled
-                by Resend. These providers process only the information needed
-                on our behalf to deliver hosting, database, security,
-                infrastructure and email-notification services.
+                The NOXA website uses Vercel Analytics and Vercel Speed Insights
+                to understand website usage and technical performance. These
+                services may process technical request, page-view and
+                performance information needed to provide those measurements.
               </p>
               <p>
-                When an early-access request is submitted, relevant waitlist
-                details such as email address, optional city, selected language
-                and campaign/referrer context may be included in a private NOXA
-                team notification email. This does not change the purpose for
-                which the information was submitted and is not used by NOXA for
-                third-party advertising.
-              </p>
-              <p>
-                Provider infrastructure may involve processing outside Greece
-                or the European Economic Area. Where required, transfers are
-                made using contractual or other safeguards recognised by
-                applicable data-protection law.
-              </p>
-              <p>
-                We may disclose information when required by law, court order or
-                a competent public authority, or when necessary to protect users,
-                the project or the security of the service.
+                NOXA does not currently use third-party advertising cookies.
+                Essential storage, security mechanisms and local preferences may
+                be used where needed to operate the website, remember choices
+                and protect the service.
               </p>
             </>
           ),
@@ -152,47 +328,100 @@ export default function PrivacyPage() {
           content: (
             <>
               <p>
-                Waitlist data is kept until you withdraw your consent, the NOXA
-                early-access purpose ends, or the project is discontinued. We
-                will review and remove inactive waitlist records no later than
-                24 months after the public launch of the relevant NOXA service,
-                unless a longer period is required by law or needed to establish,
-                exercise or defend legal claims.
+                Account, profile and user-content data is generally retained
+                while your NOXA account is active or for as long as needed to
+                provide the service you requested. Data that you delete is
+                removed from active product views, subject to normal technical
+                backup cycles and lawful retention requirements.
               </p>
               <p>
-                Short-lived rate-limit information is automatically discarded
-                as server instances expire and is not retained as a permanent
-                NOXA customer record.
+                Active Live Drive location sharing is time-limited and is
+                designed to expire after no more than four hours. Active
+                location is also designed to be removed when sharing is stopped,
+                you sign out, or account deletion completes.
+              </p>
+              <p>
+                Waitlist information is retained until you withdraw consent,
+                the relevant early-access purpose ends or the project no longer
+                needs the record. Website application or submission data is
+                retained for as long as reasonably needed to review the
+                submission, operate the resulting relationship, resolve disputes
+                or meet legal requirements.
+              </p>
+              <p>
+                Limited security, fraud-prevention, legal or backup records may
+                be retained after other data is deleted where there is a valid
+                reason to do so. Protected backup copies are removed through
+                normal backup-expiry cycles and are not used as active profile
+                data.
+              </p>
+            </>
+          ),
+        },
+        {
+          id: "deletion",
+          title: "Account and data deletion",
+          content: (
+            <>
+              <p>
+                You can start permanent account deletion from the NOXA mobile
+                app under Settings → Privacy & Safety → Delete Account. The app
+                requires an identity check before deletion is completed.
+              </p>
+              <p>
+                If you no longer have access to the app, you can request account
+                and associated-data deletion through our{" "}
+                <a
+                  className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
+                  href="https://noxastreetapp.com/delete-account"
+                >
+                  account deletion page
+                </a>
+                .
+              </p>
+              <p>
+                A completed account deletion request is designed to remove the
+                authentication account and associated personal data from active
+                NOXA systems, including profile data, garage data, posts,
+                comments, follows, crew/event ownership data and uploaded media,
+                subject only to limited lawful security, fraud-prevention,
+                dispute or legal retention described above.
               </p>
             </>
           ),
         },
         {
           id: "rights",
-          title: "Your rights",
+          title: "Your choices and rights",
           content: (
             <>
               <p>
-                Depending on the circumstances, you may request access,
-                correction, deletion, restriction or portability of your data,
-                object to certain processing, and withdraw consent at any time.
-                Withdrawal does not affect processing that was lawful before the
-                withdrawal.
+                Depending on your location and the circumstances, you may have
+                rights to access, correct, delete, restrict or receive a copy of
+                your personal data, object to certain processing, and withdraw
+                consent. Withdrawal does not affect processing that was lawful
+                before the withdrawal.
               </p>
               <p>
-                Send requests to{" "}
+                You can manage many choices directly in NOXA, including profile
+                information, content, visibility, notifications and device
+                permissions. Location and photo permissions can also be changed
+                in your operating-system settings.
+              </p>
+              <p>
+                Send privacy requests to{" "}
                 <a
                   className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
                   href={`mailto:${privacyEmail}`}
                 >
                   {privacyEmail}
                 </a>
-                . We may need to verify your identity before completing a
-                request.
+                . We may request limited information to verify that the request
+                belongs to you.
               </p>
               <p>
-                You also have the right to lodge a complaint with the Hellenic
-                Data Protection Authority at{" "}
+                If GDPR applies, you also have the right to lodge a complaint
+                with the Hellenic Data Protection Authority at{" "}
                 <a
                   className="text-white underline decoration-white/25 underline-offset-4 hover:decoration-white"
                   href="https://www.dpa.gr/en"
@@ -201,23 +430,9 @@ export default function PrivacyPage() {
                 >
                   dpa.gr
                 </a>
-                .
+                , or another competent supervisory authority.
               </p>
             </>
-          ),
-        },
-        {
-          id: "cookies",
-          title: "Cookies and analytics",
-          content: (
-            <p>
-              NOXA does not currently use advertising cookies or a third-party
-              behavioural analytics service on this launch website. Essential
-              technical storage or security mechanisms may be used by the site
-              or its infrastructure when required to deliver and protect the
-              service. This policy will be updated before non-essential cookies
-              or tracking technologies are introduced.
-            </p>
           ),
         },
         {
@@ -225,23 +440,13 @@ export default function PrivacyPage() {
           title: "Security",
           content: (
             <p>
-              We use reasonable technical and organisational safeguards,
-              including encrypted HTTPS connections, restricted database rules,
-              server-side validation, request limits and access controls. No
-              internet service can guarantee absolute security, so users should
-              avoid submitting information that is not requested by the form.
-            </p>
-          ),
-        },
-        {
-          id: "children",
-          title: "Children",
-          content: (
-            <p>
-              The launch website is not intended to knowingly collect personal
-              data from children who cannot validly provide consent under the
-              law applicable to them. A parent or guardian who believes that a
-              child has submitted data may contact us to request its deletion.
+              We use technical and organisational measures designed to protect
+              personal data, including encrypted network connections,
+              authentication controls, restricted database access, row-level
+              access rules, server-side validation, rate limits and provider
+              security controls. No internet service can guarantee absolute
+              security, so keep your credentials private and contact us if you
+              suspect unauthorised access.
             </p>
           ),
         },
@@ -251,10 +456,11 @@ export default function PrivacyPage() {
           content: (
             <>
               <p>
-                We may update this policy when the website, mobile application
-                or legal requirements change. The date at the top of this page
-                identifies the latest version. Material changes will be
-                communicated through the website or another appropriate channel.
+                We may update this policy as NOXA, its mobile applications,
+                website, service providers or legal requirements change. The
+                date at the top identifies the latest version. Material changes
+                will be communicated through the app, website or another
+                appropriate channel.
               </p>
               <p>
                 Questions about this policy can be sent to{" "}
