@@ -59,7 +59,7 @@
 .detailDate, .detailLocation, .sheetIntro { margin: 9px 0 0; color: rgba(245,245,247,.62); font-size: 13px; line-height: 1.48; }
 .detailDate { color: #fff; font-weight: 700; }
 .detailActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
-.detailActions a { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,.11); border-radius: 999px; background: rgba(255,255,255,.045); padding: 0 13px; color: #fff; font-size: 12px; font-weight: 800; text-decoration: none; }
+.detailActions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,.11); border-radius: 999px; background: rgba(255,255,255,.045); padding: 0 13px; color: #fff; font-size: 12px; font-weight: 800; text-decoration: none; }
 .detailActions a:first-child { border-color: #c8102e; background: #c8102e; }
 .locationMarker { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: #e32c49; box-shadow: 0 0 0 7px rgba(227,44,73,.2), 0 5px 18px rgba(0,0,0,.4); }
 
@@ -81,21 +81,21 @@
   .searchBox, .locateButton { min-height: 46px; border-radius: 15px; }
   .locateButton { width: 46px; }
   .layerChips { margin-top: 8px; }
-  .layerChip, .layerChipActive { min-height: 35px; padding: 0 10px; font-size: 11px; }
+  .layerChip, .layerChipActive { min-height: 44px; padding: 0 11px; font-size: 11px; }
   .searchResults { max-height: min(330px, 42dvh); overflow-y: auto; }
-  .statusPill { top: auto; right: auto; bottom: 70px; left: 9px; max-width: calc(100% - 70px); min-height: 34px; font-size: 10px; }
-  .detailSheet { right: 7px; bottom: 7px; left: 7px; width: auto; max-height: 64px; border-radius: 18px; transition: max-height 220ms ease; }
+  .statusPill { top: auto; right: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 9px; max-width: calc(100% - 70px); min-height: 34px; font-size: 10px; }
+  .detailSheet { right: 7px; bottom: max(7px, env(safe-area-inset-bottom)); left: 7px; width: auto; max-height: 64px; border-radius: 18px; transition: max-height 220ms ease; }
   .detailSheetExpanded { max-height: min(430px, 58dvh); }
   .sheetHandle { min-height: 62px; grid-template-columns: 30px minmax(0,1fr); padding: 8px 13px; }
   .sheetGrabber { display: block; width: 26px; height: 4px; border-radius: 999px; background: rgba(255,255,255,.26); }
-  .sheetBody { max-height: calc(58dvh - 62px); overlow-y: auto; }
+  .sheetBody { max-height: calc(58dvh - 62px); overflow-y: auto; overscroll-behavior: contain; }
   .main :global(.maplibregl-ctrl-group) { display: none; }
-  .main :global(.maplibregl-ctrl-bottom-right) { right: 4px; bottom: 64px; }
+  .main :global(.maplibregl-ctrl-bottom-right) { right: 4px; bottom: calc(64px + env(safe-area-inset-bottom)); }
   .main :global(.maplibregl-ctrl-attrib) { max-width: 180px; opacity: .72; }
 }
 
 @media (max-width: 480px) {
-  .searchBox input { font-size: 13px; }
+  .searchBox input { font-size: 16px; }
   .poiIcon { width: 12px; height: 12px; }
   .detailImage { height: 132px; }
 }
