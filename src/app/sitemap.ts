@@ -43,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       page(`/el/meets/${slug}`, .74, "weekly"),
     ]),
     page("/privacy", .4, "monthly"),
+    page("/delete-account", .4, "monthly"),
     page("/terms", .4, "monthly"),
   ];
 }
