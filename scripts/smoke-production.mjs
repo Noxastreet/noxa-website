@@ -1,7 +1,7 @@
 const baseUrl = process.env.PRODUCTION_URL;
 if (!baseUrl) throw new Error("PRODUCTION_URL is required");
 
-const userAgent = "NOXA-production-smoke/3.7";
+const userAgent = "NOXA-production-smoke/3.8";
 const checks = [
   ["home", "/", "text/html"],
   ["greek-home", "/el", "text/html"],
@@ -74,6 +74,29 @@ for (const [name, pathname, expected] of pages) {
   const html = await (await fetch(new URL(pathname, baseUrl), { headers: { "User-Agent": userAgent } })).text();
   if (!html.includes(expected)) throw new Error(`${name} missing: ${expected}`);
   if (!html.includes("/brand/noxa-maps-logo.png")) throw new Error(`${name} missing NOXA logo`);
+}
+
+// Exercise one real Event Detail route in both locales. Discover the slug from the
+// current rendered Events dataset so this smoke test never depends on fake data.
+const directoryHtml = await (await fetch(new URL("/meets", baseUrl), { headers: { "User-Agent": userAgent } })).text();
+const eventSlugs = Array.from(directoryHtml.matchAll(/href="\/meets\/([^"?#/]+)"/g), (match) => match[1])
+  .filter((slug) => slug !== "submit");
+const eventSlug = eventSlugs[0];
+if (!eventSlug) throw new Error("Meets did not expose a real Event Detail route for smoke testing");
+
+for (const [name, pathname, expectedBackLabel] of [
+  ["event-detail", `/meets/${eventSlug}`, "All events"],
+  ["greek-event-detail", `/el/meets/${eventSlug}`, "Όλα τα events"],
+]) {
+  const response = await fetch(new URL(pathname, baseUrl), { headers: { "User-Agent": userAgent } });
+  if (!response.ok) throw new Error(`${name} failed with HTTP ${response.status}`);
+  if (!(response.headers.get("content-type") ?? "").includes("text/html")) throw new Error(`${name} did not return HTML`);
+  if (pathname.startsWith("/el/") && response.headers.get("content-language") !== "el") {
+    throw new Error(`${name} did not preserve Greek locale`);
+  }
+  const html = await response.text();
+  if (!html.includes(expectedBackLabel)) throw new Error(`${name} missing localized Event Detail navigation`);
+  console.log(`✓ ${name}: ${response.status} (${eventSlug})`);
 }
 
 for (const [pathname, expectedLocation] of [
