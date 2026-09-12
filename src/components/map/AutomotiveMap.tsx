@@ -112,6 +112,31 @@ function selectedFromRenderedFeature(feature: unknown): SelectedFeature | null {
   };
 }
 
+function mapFeatureFromSelected(feature: SelectedFeature): MapApiFeature {
+  return {
+    type: "Feature",
+    id: feature.id,
+    geometry: feature.geometry,
+    properties: {
+      layer: feature.layer,
+      kind: feature.kind,
+      title: feature.title,
+      titleEl: feature.titleEl,
+      featureType: feature.featureType,
+      countryCode: feature.countryCode,
+      city: feature.city,
+      region: feature.region,
+      location: feature.location,
+      locationEl: feature.locationEl,
+      coverImageUrl: feature.coverImageUrl,
+      href: feature.href,
+      startsAt: feature.startsAt,
+      endsAt: feature.endsAt,
+      sourceUrl: feature.sourceUrl,
+    },
+  };
+}
+
 function formatEventDate(value: string | null, locale: "en" | "el") {
   if (!value) return null;
   const date = new Date(value);
@@ -144,11 +169,26 @@ function geometryBounds(geometry: MapGeometry): [[number, number], [number, numb
   return [[minLng, minLat], [maxLng, maxLat]];
 }
 
+function pointCoordinates(geometry: MapGeometry): [number, number] | null {
+  if (geometry.type !== "Point" || !Array.isArray(geometry.coordinates)) return null;
+  const [lng, lat] = geometry.coordinates;
+  return typeof lng === "number" && typeof lat === "number" ? [lng, lat] : null;
+}
+
+function localizedEventHref(href: string | null, locale: "en" | "el") {
+  if (!href) return null;
+  if (locale === "el" && href.startsWith("/meets/")) return `/el${href}`;
+  if (locale === "en" && href.startsWith("/el/meets/")) return href.replace(/^\/el/, "");
+  return href;
+}
+
 function deepLinkTarget() {
   if (typeof window === "undefined") return { center: GREECE_CENTER, zoom: 5.35, eventId: null as string | null };
   const params = new URLSearchParams(window.location.search);
-  const latitude = Number(params.get("lat"));
-  const longitude = Number(params.get("lng"));
+  const latitudeParam = params.get("lat");
+  const longitudeParam = params.get("lng");
+  const latitude = latitudeParam === null ? Number.NaN : Number(latitudeParam);
+  const longitude = longitudeParam === null ? Number.NaN : Number(longitudeParam);
   const validPoint = Number.isFinite(latitude) && latitude >= -90 && latitude <= 90
     && Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
   const eventId = params.get("event")?.trim() || null;
@@ -182,19 +222,23 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   const t = locale === "el" ? {
     search: "Αναζήτηση στον χάρτη", searchPlaceholder: "Event, πόλη, πίστα ή μέρος",
     layers: "Επίπεδα", events: "Events", tracks: "Πίστες", routes: "Διαδρομές", places: "Μέρη",
-    loading: "Φόρτωση περιοχής…", visible: "ορατά σημεία", empty: "Δεν υπάρχουν επαληθευμένα σημεία εδώ.",
+    loading: "Φόρτωση περιοχής…", empty: "Δεν υπάρχουν επαληθευμένα σημεία εδώ.",
     chooseLayer: "Επίλεξε τουλάχιστον ένα επίπεδο.", capped: "Μεγάλη περιοχή — κάνε zoom για περισσότερες λεπτομέρειες.",
-    details: "Λεπτομέρειες", explore: "Επίλεξε ένα σημείο ή μετακίνησε τον χάρτη.", viewEvent: "Δες Event",
-    source: "Πηγή", locate: "Η τοποθεσία μου", locationError: "Δεν ήταν δυνατή η πρόσβαση στην τοποθεσία.", retry: "Δοκίμασε ξανά",
+    details: "Λεπτομέρειες", viewEvent: "Δες Event", source: "Πηγή", directions: "Οδηγίες",
+    locate: "Η τοποθεσία μου", locationError: "Δεν ήταν δυνατή η πρόσβαση στην τοποθεσία.",
+    loadError: "Δεν ήταν δυνατή η φόρτωση του χάρτη.", retry: "Δοκίμασε ξανά",
     results: "Αποτελέσματα", noResults: "Δεν βρέθηκε κάτι στην ορατή περιοχή.", close: "Κλείσιμο",
+    expand: "Άνοιγμα λεπτομερειών", collapse: "Σύμπτυξη λεπτομερειών",
   } : {
     search: "Search the map", searchPlaceholder: "Event, city, track or place",
     layers: "Layers", events: "Events", tracks: "Tracks", routes: "Routes", places: "Places",
-    loading: "Loading this area…", visible: "visible objects", empty: "No verified objects in this area yet.",
+    loading: "Loading this area…", empty: "No verified objects in this area yet.",
     chooseLayer: "Choose at least one map layer.", capped: "Large area — zoom in for more detail.",
-    details: "Details", explore: "Select a place or move around the map.", viewEvent: "View Event",
-    source: "Source", locate: "My location", locationError: "Location access was not available.", retry: "Try again",
+    details: "Details", viewEvent: "View Event", source: "Source", directions: "Directions",
+    locate: "My location", locationError: "Location access was not available.",
+    loadError: "The map could not be loaded.", retry: "Try again",
     results: "Results", noResults: "No matches in the visible area.", close: "Close",
+    expand: "Expand details", collapse: "Collapse details",
   };
 
   const layerLabels: Record<MapLayer, string> = { events: t.events, tracks: t.tracks, routes: t.routes, places: t.places };
@@ -240,23 +284,40 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
           initialEventIdRef.current = null;
         }
       }
-    } catch (cause) {
-      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Map data request failed");
-    } finally { if (!controller.signal.aborted) setLoading(false); }
-  }, [updateMapSources]);
+    } catch {
+      if (!controller.signal.aborted) setError(locale === "el" ? "Δεν ήταν δυνατή η φόρτωση του χάρτη." : "The map could not be loaded.");
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [locale, updateMapSources]);
 
-  useEffect(() => { queryRef.current = query; updateMapSources(allFeaturesRef.current); }, [query, updateMapSources]);
+  useEffect(() => {
+    queryRef.current = query;
+    updateMapSources(allFeaturesRef.current);
+  }, [query, updateMapSources]);
+
   useEffect(() => {
     activeLayersRef.current = activeLayers;
-    const map = mapRef.current; if (map?.loaded()) void loadVisibleFeatures(map);
+    const map = mapRef.current;
+    if (map?.loaded()) void loadVisibleFeatures(map);
   }, [activeLayers, loadVisibleFeatures]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    const source = map.getSource("noxa-selected-point") as GeoJSONSource | undefined;
+    if (!source) return;
+    const point = selected && selected.geometry.type === "Point" ? mapFeatureFromSelected(selected) : null;
+    source.setData((point ? featureCollection([point]) : EMPTY_COLLECTION) as Parameters<GeoJSONSource["setData"]>[0]);
+  }, [selected]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setQuery(""); setSelected(null); setSheetExpanded(false);
     };
-    window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   useEffect(() => {
@@ -270,8 +331,14 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
       const maplibregl = module;
       maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
       const map = new maplibregl.Map({
-        container: mapContainerRef.current, style: DARK_STYLE_URL, center: target.center, zoom: target.zoom,
-        minZoom: 4.6, maxZoom: 18, maxBounds: GREECE_BOUNDS, attributionControl: false,
+        container: mapContainerRef.current,
+        style: DARK_STYLE_URL,
+        center: target.center,
+        zoom: target.zoom,
+        minZoom: 4.6,
+        maxZoom: 18,
+        maxBounds: GREECE_BOUNDS,
+        attributionControl: false,
         cooperativeGestures: false,
       });
       mapRef.current = map;
@@ -284,62 +351,139 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
           const imageId = `noxa-poi-${layer}`;
           if (!map.hasImage(imageId)) map.addImage(imageId, createNoxaPoiImage(layer));
         }
-        map.addSource("noxa-points", { type: "geojson", data: EMPTY_COLLECTION, cluster: true, clusterMaxZoom: 13, clusterRadius: 52 });
+
+        map.addSource("noxa-points", { type: "geojson", data: EMPTY_COLLECTION, cluster: true, clusterMaxZoom: 13, clusterRadius: 46 });
         map.addSource("noxa-shapes", { type: "geojson", data: EMPTY_COLLECTION });
-        map.addLayer({ id: "noxa-clusters", type: "circle", source: "noxa-points", filter: ["has", "point_count"], paint: {
-          "circle-color": "#c8102e", "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 40, 28],
-          "circle-stroke-width": 2, "circle-stroke-color": "rgba(255,255,255,.84)", "circle-opacity": .94,
-        }});
-        map.addLayer({ id: "noxa-cluster-count", type: "symbol", source: "noxa-points", filter: ["has", "point_count"],
-          layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 12 }, paint: { "text-color": "#fff" } });
-        map.addLayer({ id: "noxa-points", type: "symbol", source: "noxa-points", filter: ["!", ["has", "point_count"]], layout: {
-          "icon-image": ["match", ["get", "layer"],
-            "events", "noxa-poi-events", "tracks", "noxa-poi-tracks",
-            "routes", "noxa-poi-routes", "places", "noxa-poi-places", "noxa-poi-events"],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 5, .48, 10, .62, 15, .78],
-          "icon-allow-overlap": false,
-          "icon-ignore-placement": false,
-        }});
-        map.addLayer({ id: "noxa-polygons", type: "fill", source: "noxa-shapes", filter: ["==", ["geometry-type"], "Polygon"], paint: {
-          "fill-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"], "fill-opacity": .17, "fill-outline-color": "#e32c49",
-        }});
-        map.addLayer({ id: "noxa-lines", type: "line", source: "noxa-shapes", filter: ["==", ["geometry-type"], "LineString"], paint: {
-          "line-color": ["match", ["get", "layer"], "routes", "#e32c49", "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"],
-          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 2, 10, 4, 15, 6], "line-opacity": .92,
-        }});
+        map.addSource("noxa-selected-point", { type: "geojson", data: EMPTY_COLLECTION });
+
+        map.addLayer({
+          id: "noxa-clusters",
+          type: "circle",
+          source: "noxa-points",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#121318",
+            "circle-radius": ["step", ["get", "point_count"], 15, 10, 18, 40, 21],
+            "circle-stroke-width": 1.25,
+            "circle-stroke-color": "#e32c49",
+            "circle-opacity": .96,
+          },
+        });
+        map.addLayer({
+          id: "noxa-cluster-count",
+          type: "symbol",
+          source: "noxa-points",
+          filter: ["has", "point_count"],
+          layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 10.5 },
+          paint: { "text-color": "#fff" },
+        });
+        map.addLayer({
+          id: "noxa-points",
+          type: "symbol",
+          source: "noxa-points",
+          filter: ["!", ["has", "point_count"]],
+          layout: {
+            "icon-image": ["match", ["get", "layer"],
+              "events", "noxa-poi-events", "tracks", "noxa-poi-tracks",
+              "routes", "noxa-poi-routes", "places", "noxa-poi-places", "noxa-poi-events"],
+            "icon-size": ["interpolate", ["linear"], ["zoom"], 5, .4, 10, .54, 15, .68],
+            "icon-allow-overlap": false,
+            "icon-ignore-placement": false,
+          },
+        });
+        map.addLayer({
+          id: "noxa-polygons",
+          type: "fill",
+          source: "noxa-shapes",
+          filter: ["==", ["geometry-type"], "Polygon"],
+          paint: {
+            "fill-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "routes", "#ff8a3d", "places", "#70d6ff", "#e32c49"],
+            "fill-opacity": .12,
+            "fill-outline-color": ["match", ["get", "layer"], "tracks", "#f5f5f7", "routes", "#ff8a3d", "places", "#70d6ff", "#e32c49"],
+          },
+        });
+        map.addLayer({
+          id: "noxa-lines",
+          type: "line",
+          source: "noxa-shapes",
+          filter: ["==", ["geometry-type"], "LineString"],
+          paint: {
+            "line-color": ["match", ["get", "layer"], "routes", "#ff8a3d", "tracks", "#f5f5f7", "places", "#70d6ff", "#e32c49"],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.6, 10, 3, 15, 5],
+            "line-opacity": .88,
+          },
+        });
+        map.addLayer({
+          id: "noxa-selected-ring",
+          type: "circle",
+          source: "noxa-selected-point",
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 14, 10, 19, 15, 24],
+            "circle-color": "rgba(5,5,5,.82)",
+            "circle-stroke-width": 2,
+            "circle-stroke-color": ["match", ["get", "layer"], "events", "#e32c49", "routes", "#ff8a3d", "places", "#70d6ff", "#f5f5f7"],
+          },
+        });
+        map.addLayer({
+          id: "noxa-selected-point",
+          type: "symbol",
+          source: "noxa-selected-point",
+          layout: {
+            "icon-image": ["match", ["get", "layer"],
+              "events", "noxa-poi-events", "tracks", "noxa-poi-tracks",
+              "routes", "noxa-poi-routes", "places", "noxa-poi-places", "noxa-poi-events"],
+            "icon-size": ["interpolate", ["linear"], ["zoom"], 5, .5, 10, .68, 15, .82],
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+          },
+        });
 
         const selectRendered = (feature: unknown) => {
-          const next = selectedFromRenderedFeature(feature); if (!next) return;
-          setSelected(next); setSheetExpanded(true);
+          const next = selectedFromRenderedFeature(feature);
+          if (!next) return;
+          setSelected(next);
+          setSheetExpanded(false);
         };
+
         map.on("click", "noxa-clusters", async (event) => {
           setSelected(null); setSheetExpanded(false);
-          const cluster = event.features?.[0]; const clusterId = cluster?.properties?.cluster_id;
+          const cluster = event.features?.[0];
+          const clusterId = cluster?.properties?.cluster_id;
           const source = map.getSource("noxa-points") as GeoJSONSource | undefined;
           let zoom = Math.min(map.getZoom() + 2, 14);
           if (source && typeof clusterId === "number") {
             try { zoom = Math.min(await source.getClusterExpansionZoom(clusterId), 14); } catch { /* fallback */ }
           }
-          map.easeTo({ center: event.lngLat, zoom, duration: 500 });
+          map.easeTo({ center: event.lngLat, zoom, duration: 460 });
         });
+
         for (const layerId of ["noxa-points", "noxa-lines", "noxa-polygons"] as const) {
           map.on("click", layerId, (event) => selectRendered(event.features?.[0]));
           map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
           map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
         }
+
         map.on("click", (event) => {
-          const hits = map.queryRenderedFeatures(event.point, { layers: ["noxa-points", "noxa-lines", "noxa-polygons", "noxa-clusters"] });
+          const hits = map.queryRenderedFeatures(event.point, { layers: ["noxa-points", "noxa-lines", "noxa-polygons", "noxa-clusters", "noxa-selected-point"] });
           if (hits.length === 0) { setSelected(null); setSheetExpanded(false); }
         });
         map.on("moveend", () => void loadVisibleFeatures(map));
         void loadVisibleFeatures(map);
       });
-      map.on("error", (event) => { if (event.error) setError(event.error.message); });
+
+      map.on("error", (event) => {
+        if (event.error) setError(locale === "el" ? "Δεν ήταν δυνατή η φόρτωση του χάρτη." : "The map could not be loaded.");
+      });
     });
+
     return () => {
-      disposed = true; requestRef.current?.abort(); locationMarkerRef.current?.remove(); mapRef.current?.remove(); mapRef.current = null;
+      disposed = true;
+      requestRef.current?.abort();
+      locationMarkerRef.current?.remove();
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
-  }, [loadVisibleFeatures]);
+  }, [loadVisibleFeatures, locale]);
 
   function toggleLayer(layer: MapLayer) {
     setSelected(null); setSheetExpanded(false);
@@ -352,14 +496,18 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
   }
 
   function focusFeature(feature: MapApiFeature) {
-    const map = mapRef.current; if (!map) return;
-    setSelected(selectedFromFeature(feature)); setSheetExpanded(true); setQuery("");
+    const map = mapRef.current;
+    if (!map) return;
+    setSelected(selectedFromFeature(feature));
+    setSheetExpanded(false);
+    setQuery("");
     if (feature.geometry.type === "Point" && Array.isArray(feature.geometry.coordinates)) {
       const [lng, lat] = feature.geometry.coordinates as [number, number];
-      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 12), duration: 650 }); return;
+      map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 12), duration: 600 });
+      return;
     }
     const bounds = geometryBounds(feature.geometry);
-    if (bounds) map.fitBounds(bounds as LngLatBoundsLike, { padding: 88, maxZoom: 13, duration: 700 });
+    if (bounds) map.fitBounds(bounds as LngLatBoundsLike, { padding: 88, maxZoom: 13, duration: 650 });
   }
 
   async function locateUser() {
@@ -367,18 +515,45 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
       const center: [number, number] = [position.coords.longitude, position.coords.latitude];
-      const map = mapRef.current; if (!map) return;
-      const maplibreModule = await import("maplibre-gl"); locationMarkerRef.current?.remove();
-      const markerElement = document.createElement("div"); markerElement.className = styles.locationMarker;
+      const map = mapRef.current;
+      if (!map) return;
+      const maplibreModule = await import("maplibre-gl");
+      locationMarkerRef.current?.remove();
+      const markerElement = document.createElement("div");
+      markerElement.className = styles.locationMarker;
       locationMarkerRef.current = new maplibreModule.Marker({ element: markerElement }).setLngLat(center).addTo(map);
-      map.flyTo({ center, zoom: Math.max(map.getZoom(), 11.5), duration: 850 }); setLocating(false);
-    }, () => { setLocating(false); setError(t.locationError); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 });
+      map.flyTo({ center, zoom: Math.max(map.getZoom(), 11.5), duration: 800 });
+      setLocating(false);
+    }, () => {
+      setLocating(false);
+      setError(t.locationError);
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 });
   }
 
   const selectedTitle = selected ? (locale === "el" ? selected.titleEl || selected.title : selected.title) : null;
   const selectedLocation = selected ? (locale === "el" ? selected.locationEl || selected.location : selected.location) : null;
   const selectedDate = selected ? formatEventDate(selected.startsAt, locale) : null;
-  const statusText = activeLayers.size === 0 ? t.chooseLayer : loading ? t.loading : error ? error : capped ? t.capped : visibleCount === 0 ? t.empty : `${visibleCount} ${t.visible}`;
+  const selectedPoint = selected ? pointCoordinates(selected.geometry) : null;
+  const eventHref = selected?.kind === "event" ? localizedEventHref(selected.href, locale) : null;
+  const directionsHref = selectedPoint
+    ? `https://www.google.com/maps/search/?api=1&query=${selectedPoint[1]},${selectedPoint[0]}`
+    : null;
+  const selectedPlace = selected ? (selected.city || selectedLocation || selected.region) : null;
+  const selectedSummary = selected
+    ? [selectedDate, selectedPlace, selected.featureType.replaceAll("_", " ")].filter(Boolean).join(" · ")
+    : "";
+
+  const statusText = activeLayers.size === 0
+    ? t.chooseLayer
+    : error
+      ? error
+      : loading
+        ? t.loading
+        : capped
+          ? t.capped
+          : visibleCount === 0
+            ? t.empty
+            : null;
 
   return (
     <div className={styles.page}>
@@ -409,7 +584,7 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
             </button>) : <p>{t.noResults}</p>}
           </div> : null}
 
-          <div className={styles.layerChips}>
+          <div className={styles.layerChips} aria-label={t.layers}>
             {MAP_LAYERS.map((layer) => <button key={layer} type="button" className={activeLayers.has(layer) ? styles.layerChipActive : styles.layerChip}
               aria-pressed={activeLayers.has(layer)} onClick={() => toggleLayer(layer)}>
               <span className={`${styles.poiIcon} ${styles[`poiIcon_${layer}`]}`} aria-hidden="true" />{layerLabels[layer]}
@@ -417,30 +592,33 @@ export function AutomotiveMap({ locale }: { locale: "en" | "el" }) {
           </div>
         </section>
 
-        <div className={`${styles.statusPill} ${error ? styles.statusError : ""}`} role="status">
-          {statusText}{error ? <button type="button" onClick={() => mapRef.current && void loadVisibleFeatures(mapRef.current)}>{t.retry}</button> : null}
-        </div>
+        {statusText ? <div className={`${styles.statusPill} ${error ? styles.statusError : ""}`} role="status">
+          <span>{statusText}</span>
+          {error ? <button type="button" onClick={() => mapRef.current && void loadVisibleFeatures(mapRef.current)}>{t.retry}</button> : null}
+        </div> : null}
 
-        <aside className={`${styles.detailSheet} ${sheetExpanded ? styles.detailSheetExpanded : ""}`} aria-label={t.details}>
-          <button type="button" className={styles.sheetHandle} aria-expanded={sheetExpanded} onClick={() => setSheetExpanded((value) => !value)}>
+        {selected ? <aside className={`${styles.detailSheet} ${sheetExpanded ? styles.detailSheetExpanded : ""}`} aria-label={t.details}>
+          <button type="button" className={styles.sheetHandle} aria-expanded={sheetExpanded} aria-label={sheetExpanded ? t.collapse : t.expand} onClick={() => setSheetExpanded((value) => !value)}>
             <span className={styles.sheetGrabber} aria-hidden="true" />
-            <strong>{selectedTitle || (visibleCount ? `${visibleCount} ${t.visible}` : t.details)}</strong>
-            <small>{selected ? layerLabels[selected.layer] : t.explore}</small>
+            <span className={styles.sheetHeading}>
+              <span className={styles.sheetEyebrow}>{layerLabels[selected.layer]}</span>
+              <strong>{selectedTitle}</strong>
+              <small>{selectedSummary}</small>
+            </span>
           </button>
           <div className={styles.sheetBody}>
-            {selected ? <>
-              {selected.coverImageUrl ? <div className={styles.detailImage} style={{ backgroundImage: `url(${selected.coverImageUrl})` }} role="img" aria-label={selectedTitle || selected.title} /> : null}
-              <div className={styles.detailMeta}><span>{layerLabels[selected.layer]}</span><span>{selected.featureType.replaceAll("_", " ")}</span></div>
-              <h2>{selectedTitle}</h2>
-              {selectedDate ? <p className={styles.detailDate}>{selectedDate}</p> : null}
-              {selectedLocation || selected.city ? <p className={styles.detailLocation}>{selectedLocation || [selected.city, selected.region].filter(Boolean).join(", ")}</p> : null}
-              <div className={styles.detailActions}>
-                {selected.href ? <Link href={selected.href}>{t.viewEvent}<span aria-hidden="true">↗</span></Link> : null}
-                <a href={selected.sourceUrl} target="_blank" rel="noreferrer">{t.source}<span aria-hidden="true">↗</span></a>
-              </div>
-            </> : <p className={styles.sheetIntro}>{t.explore}</p>}
+            {selected.coverImageUrl ? <div className={styles.detailImage} style={{ backgroundImage: `url(${selected.coverImageUrl})` }} role="img" aria-label={selectedTitle || selected.title} /> : null}
+            <div className={styles.detailMeta}><span>{layerLabels[selected.layer]}</span><span>{selected.featureType.replaceAll("_", " ")}</span></div>
+            <h2>{selectedTitle}</h2>
+            {selectedDate ? <p className={styles.detailDate}>{selectedDate}</p> : null}
+            {selectedLocation || selected.city ? <p className={styles.detailLocation}>{selectedLocation || [selected.city, selected.region].filter(Boolean).join(", ")}</p> : null}
+            <div className={styles.detailActions}>
+              {eventHref ? <Link className={styles.primaryDetailAction} href={eventHref}>{t.viewEvent}<span aria-hidden="true">↗</span></Link> : null}
+              {directionsHref ? <a className={eventHref ? styles.secondaryDetailAction : styles.primaryDetailAction} href={directionsHref} target="_blank" rel="noreferrer">{t.directions}<span aria-hidden="true">↗</span></a> : null}
+              <a className={styles.sourceAction} href={selected.sourceUrl} target="_blank" rel="noreferrer">{t.source}<span aria-hidden="true">↗</span></a>
+            </div>
           </div>
-        </aside>
+        </aside> : null}
       </main>
     </div>
   );
