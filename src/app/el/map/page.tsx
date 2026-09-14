@@ -15,5 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function GreekMapPage() {
-  return <AutomotiveMap locale="el" />;
+  return (
+    <>
+      <h1 className="sr-only">Ανακάλυψε automotive events σε όλη την Ελλάδα</h1>
+      <AutomotiveMap locale="el" />
+    </>
+  );
 }
