@@ -15,5 +15,10 @@ export const metadata: Metadata = {
 };
 
 export default function MapPage() {
-  return <AutomotiveMap locale="en" />;
+  return (
+    <>
+      <h1 className="sr-only">Explore automotive events across Greece</h1>
+      <AutomotiveMap locale="en" />
+    </>
+  );
 }
