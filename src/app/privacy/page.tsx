@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Privacy at NOXA"
       title="Privacy Policy"
-      updated="12 September 2026"
+      updated="2 October 2026"
       intro={
         <p>
           This policy explains how NOXA collects, uses, shares, retains and
@@ -154,19 +154,26 @@ export default function PrivacyPage() {
                 features.
               </p>
               <p>
-                Background location is used only while a Live Drive or Group
-                Drive location-sharing session that you explicitly started is
-                active. It can continue while the app is in the background or
-                the screen is locked so the approved sharing feature continues
-                to work. NOXA does not need continuous background location for
-                ordinary browsing of events, profiles or the map.
+                Personal map visibility is intended for foreground use. When
+                NOXA enters the background, personal presence returns to Ghost
+                and the app attempts to remove the active personal-presence
+                record.
               </p>
               <p>
-                Live Drive sharing is optional and time-limited. You can stop
-                sharing in NOXA, sign out, or revoke location permission in
-                your device settings. The audience that can see active location
-                depends on the visibility option you choose and the applicable
-                NOXA access rules.
+                Background location is used only for an active Group Drive
+                location-sharing session that you explicitly joined and enabled.
+                It may continue while the app is in the background or the screen
+                is locked so accepted participants can keep the shared drive
+                position current. NOXA does not need continuous background
+                location for ordinary browsing of events, profiles or the map.
+              </p>
+              <p>
+                Personal location sharing is optional and time-limited. You can
+                stop sharing by selecting Ghost, leaving NOXA in the background,
+                signing out, or revoking location permission in device settings.
+                The audience that can see active personal location depends on
+                the visibility option you choose and the applicable NOXA access
+                rules.
               </p>
             </>
           ),
@@ -189,8 +196,9 @@ export default function PrivacyPage() {
                 </li>
                 <li>store and deliver photos and content you upload;</li>
                 <li>
-                  send service notifications, event reminders and other
-                  communications you have enabled;
+                  send service notifications and reminders for events you
+                  explicitly save or organise, plus other communications you
+                  have enabled;
                 </li>
                 <li>
                   process waitlist, organiser, community and event submissions;
@@ -335,10 +343,12 @@ export default function PrivacyPage() {
                 backup cycles and lawful retention requirements.
               </p>
               <p>
-                Active Live Drive location sharing is time-limited and is
-                designed to expire after no more than four hours. Active
-                location is also designed to be removed when sharing is stopped,
-                you sign out, or account deletion completes.
+                Personal map sharing is time-limited and is designed to expire
+                after no more than four hours. Active personal location is also
+                designed to be removed when you select Ghost, NOXA enters the
+                background, you sign out, or account deletion completes. Group
+                Drive location follows the participant-scoped drive lifecycle
+                and its cleanup rules.
               </p>
               <p>
                 Waitlist information is retained until you withdraw consent,
