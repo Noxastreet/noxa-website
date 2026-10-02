@@ -4,8 +4,8 @@ import Link from "next/link";
 import { LegalDocument } from "@/components/legal/LegalDocument";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | NOXA",
-  description: "Terms governing use of the NOXA launch website and early-access waitlist.",
+  title: "Terms of Service | NOXA",
+  description: "Terms governing the NOXA website and NOXA: Car & Moto mobile applications.",
   alternates: { canonical: "https://noxastreetapp.com/terms" },
 };
 
@@ -14,15 +14,15 @@ const contactEmail = "support@noxastreetapp.com";
 export default function TermsPage() {
   return (
     <LegalDocument
-      eyebrow="Website terms"
-      title="Terms of Use"
-      updated="31 July 2026"
+      eyebrow="The rules of NOXA"
+      title="Terms of Service"
+      updated="2 October 2026"
       intro={
         <p>
-          These terms govern your use of noxastreetapp.com and the NOXA
-          early-access waitlist. They apply to the launch website only. The
-          future NOXA mobile application may have additional terms before it is
-          made available to users.
+          These terms govern your use of noxastreetapp.com, the NOXA: Car & Moto
+          mobile applications for iOS and Android, and related NOXA services.
+          Mobile use is also subject to the in-app safety, account, location,
+          content, moderation and deletion rules presented by NOXA.
         </p>
       }
       sections={[
@@ -75,11 +75,9 @@ export default function TermsPage() {
           content: (
             <>
               <p>
-                Joining the waitlist records your interest only. It does not
-                create an account, guarantee admission to testing, reserve a
-                place, establish a commercial relationship or guarantee that the
-                mobile application will launch on a particular date or with a
-                particular feature set.
+                Joining the website waitlist records your interest only. It does
+                not create a mobile-app account, guarantee admission to testing,
+                reserve a place or establish a commercial relationship.
               </p>
               <p>
                 You must submit accurate information that belongs to you. You
@@ -168,7 +166,7 @@ export default function TermsPage() {
         },
         {
           id: "availability",
-          title: "Availability and disclaimers",
+          title: "Availability, driving and safety",
           content: (
             <>
               <p>
@@ -178,9 +176,10 @@ export default function TermsPage() {
                 that all content is complete and current.
               </p>
               <p>
-                Nothing on the website is driving, navigation, safety, legal,
-                financial or professional advice. Users remain responsible for
-                lawful and safe conduct on public roads and at automotive events.
+                NOXA is a social and event platform, not an emergency service or
+                certified navigation system. Do not interact with NOXA while
+                operating a vehicle. Users remain responsible for lawful and safe
+                conduct on public roads and at automotive events.
               </p>
             </>
           ),
@@ -236,13 +235,14 @@ export default function TermsPage() {
         },
         {
           id: "changes",
-          title: "Changes to these terms",
+          title: "Changes, accounts and deletion",
           content: (
             <p>
-              We may update these terms as the project, website or legal
-              requirements change. The latest version will be published here
-              with a revised date. Continued use of the website after an update
-              means the revised terms apply from the date they take effect.
+              We may update these terms as the project, website, mobile apps or
+              legal requirements change. The latest version will be published
+              here with a revised date. Mobile users can permanently delete an
+              account from Settings under Privacy & Safety, or use the account
+              deletion page if the app is unavailable.
             </p>
           ),
         },
