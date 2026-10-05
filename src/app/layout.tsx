@@ -10,9 +10,9 @@ import "./globals.css";
 import "./header-logo.css";
 import "./public-feature-visibility.css";
 
-const SITE_TITLE = "NOXA — Automotive Events & Map in Greece";
+const SITE_TITLE = "NOXA — Automotive Platform for Greece";
 const SITE_DESCRIPTION =
-  "Discover car and moto events, tracks, routes and verified automotive places across Greece with NOXA.";
+  "Discover car and moto events across Greece and meet the NOXA app for maps, crews, live drives, profiles and garages.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: "/brand/noxa-og-preview.jpg",
         width: 1200,
         height: 630,
-        alt: "NOXA — Automotive Events & Map in Greece",
+        alt: "NOXA — Automotive Platform for Greece",
         type: "image/jpeg",
       },
     ],
