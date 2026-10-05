@@ -20,9 +20,9 @@ const HERO_VIDEO_URL = "/media/noxa-hero-720p.mp4?v=20260905-1";
 const copy = {
   en: {
     hero: {
-      eyebrow: "NOXA · GREECE",
-      title: "Car & moto events across Greece.",
-      body: "Find what is happening, open the event details and explore the automotive scene directly on the NOXA Map.",
+      eyebrow: "NOXA · AUTOMOTIVE GREECE",
+      title: "Greece’s automotive scene, in one place.",
+      body: "Discover car & moto events, tracks, routes and verified automotive places across Greece — then open them directly on the NOXA Map.",
       primary: "Explore Events",
       map: "Open NOXA Map",
     },
@@ -30,9 +30,9 @@ const copy = {
   },
   el: {
     hero: {
-      eyebrow: "NOXA · ΕΛΛΑΔΑ",
-      title: "Car & moto events σε όλη την Ελλάδα.",
-      body: "Βρες τι γίνεται, δες τις λεπτομέρειες κάθε event και εξερεύνησε την automotive σκηνή απευθείας στο NOXA Map.",
+      eyebrow: "NOXA · AUTOMOTIVE ΕΛΛΑΔΑ",
+      title: "Η automotive σκηνή της Ελλάδας, σε ένα μέρος.",
+      body: "Ανακάλυψε car & moto events, πίστες, διαδρομές και verified automotive μέρη σε όλη την Ελλάδα — και άνοιξέ τα απευθείας στο NOXA Map.",
       primary: "Δες Events",
       map: "Άνοιξε το NOXA Map",
     },
