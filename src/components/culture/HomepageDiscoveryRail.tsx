@@ -16,7 +16,7 @@ type Item = {
 
 const copy = {
   en: {
-    label: "Explore NOXA events and map",
+    label: "Explore NOXA events and app",
     items: [
       {
         index: "01",
@@ -26,14 +26,14 @@ const copy = {
       },
       {
         index: "02",
-        eyebrow: "NOXA MAP",
-        title: "Explore the scene.",
-        body: "Open the map and discover events, tracks, routes and automotive places across Greece.",
+        eyebrow: "NOXA APP",
+        title: "The full NOXA experience.",
+        body: "Map, crews, live drives, profiles, events and garage — built for the car & moto community.",
       },
     ],
   },
   el: {
-    label: "Εξερεύνησε NOXA events και map",
+    label: "Εξερεύνησε NOXA events και app",
     items: [
       {
         index: "01",
@@ -43,9 +43,9 @@ const copy = {
       },
       {
         index: "02",
-        eyebrow: "NOXA MAP",
-        title: "Εξερεύνησε τη σκηνή.",
-        body: "Άνοιξε τον χάρτη και ανακάλυψε events, πίστες, διαδρομές και automotive μέρη σε όλη την Ελλάδα.",
+        eyebrow: "NOXA APP",
+        title: "Η πλήρης εμπειρία NOXA.",
+        body: "Map, crews, live drives, profiles, events και garage — για την car & moto κοινότητα.",
       },
     ],
   },
@@ -56,7 +56,7 @@ export function HomepageDiscoveryRail({ locale }: Props) {
   const t = copy[locale];
   const hrefs = [
     `${base}/meets`,
-    `${base}/map`,
+    `${base}/app`,
   ];
 
   const items: Item[] = t.items.map((item, index) => ({ ...item, href: hrefs[index] }));
