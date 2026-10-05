@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
 
 import "./globals.css";
@@ -81,7 +82,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body>
-        <MotionProvider>{children}</MotionProvider>
+        <MotionProvider><ScrollProgress />{children}</MotionProvider>
         <SitePreferencesGate />
         <Analytics />
         <SpeedInsights />
