@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Reveal } from "@/components/motion/Reveal";
 import type { Locale } from "@/i18n/landing-copy";
 import { matchesDateFilter } from "@/lib/meets/dateFilters";
 import { isEventCurrentlyVisible } from "@/lib/meets/eventVisibility";
@@ -115,7 +116,7 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
   return (
     <section className={styles.section} aria-labelledby="weekend-heading">
       <div className={styles.shell}>
-        <div className={styles.heading}>
+        <Reveal className={styles.heading}>
           <div>
             <p className={styles.eyebrow}>
               <span aria-hidden="true" />
@@ -136,12 +137,16 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
           <Link className={styles.cta} href={`${base}/meets?country=GR&date=weekend`}>
             {text.cta} <span aria-hidden="true">→</span>
           </Link>
-        </div>
+        </Reveal>
 
-        {weekend.length === 0 ? <div className={styles.weekendEmpty}>{text.empty}</div> : null}
+        {weekend.length === 0 ? (
+          <Reveal delay={0.06}>
+            <div className={styles.weekendEmpty}>{text.empty}</div>
+          </Reveal>
+        ) : null}
 
         {cards.length ? (
-          <div className={styles.grid}>
+          <Reveal className={styles.grid} delay={0.08}>
             {cards.map((event) => (
               <Link
                 className={styles.card}
@@ -157,7 +162,7 @@ export async function RadarHomeSpotlight({ locale }: { locale: Locale }) {
                 <span className={styles.cardLink}>{text.view} →</span>
               </Link>
             ))}
-          </div>
+          </Reveal>
         ) : null}
       </div>
     </section>
