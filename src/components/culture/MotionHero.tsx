@@ -54,13 +54,10 @@ export function MotionHero({
   const after = accentIndex >= 0 ? title.slice(accentIndex + accent.length) : "";
 
   return (
-    <m.section
+    <section
       ref={sectionRef}
       className={`${styles.hero} ${refine.heroRefined}`}
       id="top"
-      initial={reduceMotion ? false : { opacity: 0.985 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: reduceMotion ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <m.div
         className={`${styles.heroMedia} ${videoStyles.media}`}
@@ -87,15 +84,11 @@ export function MotionHero({
             {eyebrow}
           </m.p>
 
-          <m.h1
-            initial={reduceMotion ? false : { opacity: 0, y: 34, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : 0.13, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <h1>
             {before}
             {accentIndex >= 0 ? <span className={styles.heroAccent}>{accent}</span> : null}
             {after}
-          </m.h1>
+          </h1>
 
           <m.p
             className={styles.heroBody}
@@ -135,6 +128,6 @@ export function MotionHero({
           </div>
         ) : null}
       </div>
-    </m.section>
+    </section>
   );
 }
