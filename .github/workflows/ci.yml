@@ -103,8 +103,8 @@ jobs:
             sleep 1
           done
           if [ "$READY" -ne 1 ]; then cat /tmp/noxa-next.log; exit 1; fi
-          curl --fail --silent http://127.0.0.1:3000/map | grep -q 'id="map-main"'
-          curl --fail --silent http://127.0.0.1:3000/el/map | grep -q 'id="map-main"'
+          curl --fail --silent http://127.0.0.1:3000/app | grep -q 'Built for the road'
+          curl --fail --silent http://127.0.0.1:3000/organizers | grep -q 'FOR ORGANIZERS'
           PRODUCTION_URL=http://127.0.0.1:3000 npm run smoke:production
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
