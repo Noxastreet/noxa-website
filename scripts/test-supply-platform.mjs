@@ -29,20 +29,22 @@ assert.match(eventForm, /name="publisherName"/);
 assert.equal(eventForm.includes("Apply or claim Organizer access"), false);
 assert.equal(eventForm.includes("COUNTRY_CODES"), false);
 
-assert.equal(sitemap.includes('page("/organizers"'), false);
+assert.equal(sitemap.includes('page("/organizers"'), true);
+assert.equal(sitemap.includes('page("/el/organizers"'), true);
 assert.equal(sitemap.includes('page("/organizers/apply"'), false);
 assert.equal(sitemap.includes("loadOrganizerSlugs"), false);
 assert.equal(sitemap.includes('page("/business"'), false, "Focused sitemap must not publish Business");
 assert.match(sitemap, /page\("\/meets", \.98, "daily"\)/);
-assert.match(sitemap, /page\("\/map", \.94, "daily"\)/);
+assert.match(sitemap, /page\("\/app", \.86, "weekly"\)/);
+assert.equal(sitemap.includes('page("/map"'), false);
 
 assert.match(proxy, /localizedPath === "\/organizers\/apply"/);
-assert.match(proxy, /localizedPath === "\/organizers"/);
+assert.equal(proxy.includes('localizedPath === "/organizers" ||'), false);
 assert.match(proxy, /localizedPath === "\/organizer"/);
 assert.match(proxy, /communities\/apply/);
 
 assert.match(business, /Business &amp; Partners/);
 assert.match(business, /Join as a Partner/);
-assert.match(businessRoute, /redirect\("\/meets"\)/, "Business implementation must be hidden, not deleted");
+assert.match(businessRoute, /redirect\("\/organizers"\)/, "Legacy Business route must lead to the public Organizers landing page");
 
 console.log("Crew and Business supply policy fixtures passed.");
