@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
-import { buildNoxaMapHref, eventFamily } from "@/lib/meets/discoveryPersonalization";
+import { eventFamily } from "@/lib/meets/discoveryPersonalization";
 import { isEventCurrentlyVisible, isPastEvent } from "@/lib/meets/eventVisibility";
 
 import discovery from "./EventDiscovery.module.css";
@@ -202,18 +202,12 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
   const heroMediaStyle = {
     backgroundImage: event.cover_image_url ? `url(${JSON.stringify(event.cover_image_url)})` : NOXA_EVENT_FALLBACK,
   };
-  const mapHref = buildNoxaMapHref({
-    id: event.id,
-    title: content.title,
-    city: event.city ?? "",
-    eventType: event.event_type,
-    latitude: event.latitude,
-    longitude: event.longitude,
-    locationPrecision: event.location_precision,
-  }, locale);
-  const directionsHref = mapHref && event.latitude !== null && event.longitude !== null
-    ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
-    : null;
+  const directionsHref =
+    event.location_precision === "exact" &&
+    event.latitude !== null &&
+    event.longitude !== null
+      ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
+      : null;
 
   return (
     <div className={styles.page}>
@@ -283,10 +277,13 @@ export async function EventDetailPage({ slug, locale }: { slug: string; locale: 
                 <section className={styles.block}>
                   <span>{locale === "el" ? "ΤΟΠΟΘΕΣΙΑ" : "LOCATION"}</span>
                   <strong>{place}</strong>
-                  {mapHref ? <div className={discovery.locationActions}>
-                    <Link href={mapHref}>{locale === "el" ? "Άνοιγμα στο NOXA Map" : "Open in NOXA Map"} →</Link>
-                    {directionsHref ? <a href={directionsHref} target="_blank" rel="noreferrer">{locale === "el" ? "Οδηγίες" : "Directions"} ↗</a> : null}
-                  </div> : null}
+                  {directionsHref ? (
+                    <div className={discovery.locationActions}>
+                      <a href={directionsHref} target="_blank" rel="noreferrer">
+                        {locale === "el" ? "Άνοιγμα τοποθεσίας" : "Open location"} ↗
+                      </a>
+                    </div>
+                  ) : null}
                 </section>
               </div>
               <aside className={discovery.sideStack}>
