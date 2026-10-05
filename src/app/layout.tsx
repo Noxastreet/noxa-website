@@ -10,9 +10,9 @@ import "./globals.css";
 import "./header-logo.css";
 import "./public-feature-visibility.css";
 
-const SITE_TITLE = "NOXA — Car & Moto Events in Greece";
+const SITE_TITLE = "NOXA — Automotive Events & Map in Greece";
 const SITE_DESCRIPTION =
-  "Discover car and moto events across Greece and explore them on the NOXA automotive map.";
+  "Discover car and moto events, tracks, routes and verified automotive places across Greece with NOXA.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: "/brand/noxa-og-preview.jpg",
         width: 1200,
         height: 630,
-        alt: "NOXA — Car & Moto Events in Greece",
+        alt: "NOXA — Automotive Events & Map in Greece",
         type: "image/jpeg",
       },
     ],
@@ -80,11 +80,6 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        <link rel="preconnect" href="https://videos.pexels.com" />
-        <link rel="preconnect" href="https://images.pexels.com" />
-        <link rel="dns-prefetch" href="https://videos.pexels.com" />
-      </head>
       <body>
         <MotionProvider>{children}</MotionProvider>
         <SitePreferencesGate />
