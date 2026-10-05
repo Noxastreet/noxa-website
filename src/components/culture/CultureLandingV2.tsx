@@ -6,8 +6,7 @@ import { AppShowcase } from "@/components/marketing/AppShowcase";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import { landingCopy, type Locale } from "@/i18n/landing-copy";
 
-import videoStyles from "./CultureHeroVideo.module.css";
-import { HeroVideo } from "./HeroVideo";
+import { MotionHero } from "./MotionHero";
 import { HomepageDiscoveryRail } from "./HomepageDiscoveryRail";
 import { RadarHomeSpotlight } from "./RadarHomeSpotlight";
 import styles from "./CultureLandingV2.module.css";
@@ -22,6 +21,7 @@ const copy = {
     hero: {
       eyebrow: "NOXA · AUTOMOTIVE GREECE",
       title: "The automotive platform for Greece.",
+      accent: "platform",
       body: "Discover car & moto events today. The full NOXA app brings together the map, crews, live drives, profiles and your garage.",
       primary: "Explore Events",
       app: "Discover the app",
@@ -32,6 +32,7 @@ const copy = {
     hero: {
       eyebrow: "NOXA · AUTOMOTIVE ΕΛΛΑΔΑ",
       title: "Η automotive πλατφόρμα για την Ελλάδα.",
+      accent: "πλατφόρμα",
       body: "Ανακάλυψε car & moto events σήμερα. Η πλήρης εμπειρία NOXA στο app ενώνει map, crews, live drives, profiles και το garage σου.",
       primary: "Δες Events",
       app: "Δες το app",
@@ -56,23 +57,17 @@ export function CultureLandingV2({ locale }: Props) {
       </div>
 
       <main id="main-content">
-        <section className={`${styles.hero} ${refine.heroRefined}`} id="top">
-          <div className={`${styles.heroMedia} ${videoStyles.media}`} aria-hidden="true">
-            <HeroVideo className={videoStyles.video} src={HERO_VIDEO_URL} />
-          </div>
-          <div className={styles.heroShade} aria-hidden="true" />
-          <div className={styles.shell}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>{t.hero.eyebrow}</p>
-              <h1>{t.hero.title}</h1>
-              <p className={styles.heroBody}>{t.hero.body}</p>
-              <div className={styles.heroActions}>
-                <Link className={styles.primaryButton} href={meets}>{t.hero.primary} <span aria-hidden="true">→</span></Link>
-                <Link className={styles.secondaryButton} href={app}>{t.hero.app} <span aria-hidden="true">↗</span></Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <MotionHero
+          eyebrow={t.hero.eyebrow}
+          title={t.hero.title}
+          accent={t.hero.accent}
+          body={t.hero.body}
+          primary={t.hero.primary}
+          secondary={t.hero.app}
+          primaryHref={meets}
+          secondaryHref={app}
+          videoSrc={HERO_VIDEO_URL}
+        />
 
         <HomepageDiscoveryRail locale={locale} />
 
