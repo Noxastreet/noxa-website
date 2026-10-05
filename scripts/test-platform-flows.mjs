@@ -18,18 +18,19 @@ const communityRoute = read("src/app/communities/page.tsx");
 const businessRoute = read("src/app/business/page.tsx");
 const featureRoute = read("src/app/[feature]/page.tsx");
 
-// Temporary public product focus: Events + Map only. Hidden product implementations stay in source.
-expect(websiteHeader.includes('["/meets", "/map"]'), "Public header active roots must be Events + Map only");
-expect(websiteHeader.includes('["Meets", `${base}/meets`]'), "Public header must expose Meets");
-expect(websiteHeader.includes('["Map", `${base}/map`]'), "Public header must expose Map");
+// Public website focus: Events + App + Organizers. Full social/spatial functionality stays in the mobile app.
+expect(websiteHeader.includes('["/meets", "/app", "/organizers"]'), "Public header active roots must be Events + App + Organizers");
+expect(websiteHeader.includes('["Events", `${base}/meets`]'), "Public header must expose Events");
+expect(websiteHeader.includes('["App", `${base}/app`]'), "Public header must expose App");
+expect(websiteHeader.includes('`${base}/organizers`'), "Public header must expose Organizers");
+expect(!websiteHeader.includes('["Map", `${base}/map`]'), "Public header must not expose retired web Map");
 expect(!websiteHeader.includes('"/business"'), "Public header must hide Business");
 expect(!websiteHeader.includes('"/communities"'), "Public header must hide Community");
-expect(!websiteHeader.includes('"/organizers"'), "Public header must not expose Organizers");
 expect(websiteHeader.includes("showInstagram={false}"), "Focused public header must hide social navigation");
 expect(communityRoute.includes('redirect("/meets")'), "Community directory route must temporarily redirect to Meets");
-expect(businessRoute.includes('redirect("/meets")'), "Business route must temporarily redirect to Meets");
-expect(featureRoute.includes('feature === "routes"') && featureRoute.includes('redirect("/map")'), "Routes must temporarily resolve into Map");
-expect(featureRoute.includes('feature === "crews"') && featureRoute.includes('redirect("/meets")'), "Crews must temporarily resolve into Meets");
+expect(businessRoute.includes('redirect("/organizers")'), "Business route must redirect to Organizers");
+expect(featureRoute.includes('feature === "routes"') && featureRoute.includes('redirect("/app")'), "Routes must resolve into App");
+expect(featureRoute.includes('feature === "crews"') && featureRoute.includes('redirect("/app")'), "Crews must resolve into App");
 
 // Business & Partners implementation is preserved intact for later reactivation.
 for (const expected of [
@@ -52,21 +53,26 @@ expect(businessCss.includes("scroll-snap-type: x mandatory"), "Preserved mobile 
 expect(businessCss.includes("grid-template-columns: repeat(3, minmax(0, 1fr))"), "Preserved mobile Business Categories implementation must retain its 3-column grid");
 expect(businessCss.includes("@media (prefers-reduced-motion: reduce)"), "Preserved Business implementation must respect reduced motion");
 
-// Organizer product pages are retired and old URLs retain their safe legacy redirect path.
+// Organizer public landing pages are active, while old organizer profile/onboarding paths remain safely retired.
 for (const path of [
   "src/app/organizers/page.tsx",
+  "src/app/el/organizers/page.tsx",
+]) {
+  expect(fs.existsSync(path), `Organizer landing route must exist: ${path}`);
+}
+for (const path of [
   "src/app/organizers/apply/page.tsx",
   "src/app/organizer/page.tsx",
-  "src/app/el/organizers/page.tsx",
   "src/app/el/organizers/apply/page.tsx",
   "src/app/el/organizer/page.tsx",
 ]) {
-  expect(!fs.existsSync(path), `Retired Organizer route must not exist: ${path}`);
+  expect(!fs.existsSync(path), `Retired organizer profile/onboarding route must not exist: ${path}`);
 }
-expect(proxy.includes('localizedPath === "/organizers"'), "Legacy Organizer URLs must redirect safely");
-expect(proxy.includes('`${base}/communities`'), "Legacy Organizer redirect chain must remain compatible");
-expect(!sitemap.includes('page("/organizers"'), "Sitemap must not publish Organizer directory");
-expect(!sitemap.includes("loadOrganizerSlugs"), "Sitemap must not enumerate Organizer profiles");
+expect(proxy.includes('localizedPath === "/organizers/apply"'), "Legacy Organizer apply URL must redirect safely");
+expect(!proxy.includes('localizedPath === "/organizers" ||'), "Exact Organizers landing route must not be intercepted by proxy");
+expect(sitemap.includes('page("/organizers"'), "Sitemap must publish Organizer landing page");
+expect(sitemap.includes('page("/el/organizers"'), "Sitemap must publish Greek Organizer landing page");
+expect(!sitemap.includes("loadOrganizerSlugs"), "Sitemap must not enumerate retired Organizer profiles");
 expect(!robots.includes('"/organizer"'), "robots.txt must not carry obsolete Organizer route rules");
 expect(!eventDetail.includes("loadOrganizerById"), "Event detail must not load retired Organizer profiles");
 expect(!eventDetail.includes("VERIFIED ORGANIZER"), "Event detail must not render retired Organizer UI");
