@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
+import { Reveal } from "@/components/motion/Reveal";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import type { Locale } from "@/i18n/landing-copy";
 
@@ -34,7 +35,7 @@ export function AppMarketingPage({ locale }: { locale: Locale }) {
       <WebsiteHeader locale={locale} path="/app" />
       <main>
         <section className={styles.pageHero}>
-          <div className={styles.inner}>
+          <Reveal className={styles.inner}>
             <p className={styles.eyebrow}>{t.eyebrow}</p>
             <h1>{t.title}</h1>
             <p>{t.body}</p>
@@ -42,7 +43,7 @@ export function AppMarketingPage({ locale }: { locale: Locale }) {
               <Link className={styles.primary} href={`${base}/meets`}>{t.events}</Link>
               <Link className={styles.secondary} href={`${base}/meets/submit`}>{t.add}</Link>
             </div>
-          </div>
+          </Reveal>
         </section>
         <AppShowcase locale={locale} />
       </main>
