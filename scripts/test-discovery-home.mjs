@@ -6,8 +6,8 @@ const rail = fs.readFileSync("src/components/culture/HomepageDiscoveryRail.tsx",
 const railCss = fs.readFileSync("src/components/culture/HomepageDiscoveryRail.module.css", "utf8");
 const layout = fs.readFileSync("src/app/layout.tsx", "utf8");
 
-assert.match(landing, /Car & moto events across Greece\./);
-assert.match(landing, /Car & moto events σε όλη την Ελλάδα\./);
+assert.match(landing, /Greece’s automotive scene, in one place\./);
+assert.match(landing, /Η automotive σκηνή της Ελλάδας, σε ένα μέρος\./);
 assert.match(landing, /HomepageDiscoveryRail/);
 assert.match(landing, /RadarHomeSpotlight/);
 assert.match(landing, /HomepageMapPreview/);
@@ -32,8 +32,8 @@ assert.match(railCss, /scroll-snap-type:\s*x mandatory/);
 assert.match(railCss, /scroll-snap-align:\s*start/);
 assert.match(railCss, /@media \(max-width: 900px\)/);
 
-assert.match(layout, /NOXA — Car & Moto Events in Greece/);
-assert.match(layout, /Discover car and moto events across Greece and explore them on the NOXA automotive map\./);
+assert.match(layout, /NOXA — Automotive Events & Map in Greece/);
+assert.match(layout, /Discover car and moto events, tracks, routes and verified automotive places across Greece with NOXA\./);
 assert.equal(layout.includes("Crews, partners"), false);
 
 console.log("NOXA Discovery homepage fixtures passed.");
