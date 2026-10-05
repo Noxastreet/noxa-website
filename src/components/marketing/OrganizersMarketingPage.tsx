@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
+import { Reveal } from "@/components/motion/Reveal";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import type { Locale } from "@/i18n/landing-copy";
 
@@ -43,7 +44,7 @@ export function OrganizersMarketingPage({ locale }: { locale: Locale }) {
       <WebsiteHeader locale={locale} path="/organizers" />
       <main>
         <section className={styles.organizerHero}>
-          <div className={styles.inner}>
+          <Reveal className={styles.inner}>
             <p className={styles.eyebrow}>{t.eyebrow}</p>
             <h1>{t.title}</h1>
             <p>{t.body}</p>
@@ -51,17 +52,19 @@ export function OrganizersMarketingPage({ locale }: { locale: Locale }) {
               <Link className={styles.primary} href={`${base}/meets/submit`}>{t.primary}</Link>
               <Link className={styles.secondary} href={`${base}/meets`}>{t.secondary}</Link>
             </div>
-          </div>
+          </Reveal>
         </section>
 
-        <section className={styles.organizerSteps} aria-label={t.eyebrow}>
-          {t.steps.map(([index, title, body]) => (
-            <article className={styles.organizerStep} key={index}>
-              <span>{index}</span>
-              <h2>{title}</h2>
-              <p>{body}</p>
-            </article>
-          ))}
+        <section aria-label={t.eyebrow}>
+          <Reveal className={styles.organizerSteps} delay={0.08}>
+            {t.steps.map(([index, title, body]) => (
+              <article className={styles.organizerStep} key={index}>
+                <span>{index}</span>
+                <h2>{title}</h2>
+                <p>{body}</p>
+              </article>
+            ))}
+          </Reveal>
         </section>
       </main>
     </div>
