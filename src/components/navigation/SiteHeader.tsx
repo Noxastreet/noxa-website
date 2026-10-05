@@ -43,6 +43,7 @@ export function SiteHeader({
   const navigationItems = navigationCopy.items;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +52,13 @@ export function SiteHeader({
     if (restoreFocus) {
       window.requestAnimationFrame(() => menuButtonRef.current?.focus());
     }
+  }, []);
+
+  useEffect(() => {
+    const updateHeader = () => setIsScrolled(window.scrollY > 24);
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
   }, []);
 
   useEffect(() => {
@@ -134,10 +142,10 @@ export function SiteHeader({
 
   return (
     <>
-      <header className="site-header fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[#050505]/88 backdrop-blur-[12px] adaptive-backdrop">
-        <div className="page-shell site-header-row flex items-center gap-2">
+      <header className="site-header pointer-events-none fixed inset-x-0 top-0 z-50">
+        <div className={`page-shell site-header-row pointer-events-auto flex items-center gap-2 transition-[margin,background-color,border-color,box-shadow,backdrop-filter] duration-300 ${isScrolled ? "mt-2 rounded-[18px] border border-white/[0.11] bg-[#08080a]/88 shadow-[0_18px_55px_rgba(0,0,0,.34)] backdrop-blur-[18px] min-[1025px]:mt-3" : "border border-transparent bg-transparent"} adaptive-backdrop`}>
           <a
-            className="site-header-brand inline-flex min-h-12 shrink-0 items-center rounded-md"
+            className="site-header-brand inline-flex min-h-12 shrink-0 items-center rounded-md transition-transform duration-300 hover:scale-[1.02]"
             href={homeHref}
             aria-label={navigationCopy.homeLabel}
           >
@@ -156,7 +164,7 @@ export function SiteHeader({
                   key={href}
                   href={href}
                   aria-current={isActive ? "location" : undefined}
-                  className={`inline-flex min-h-12 items-center rounded-full px-4 text-sm font-medium transition-colors duration-[180ms] ${
+                  className={`inline-flex min-h-12 items-center rounded-full px-4 text-sm font-medium transition-[color,background-color,transform] duration-[220ms] hover:-translate-y-px ${
                     isActive
                       ? "bg-white/[0.07] text-white"
                       : "text-[var(--color-text-secondary)] hover:bg-white/[0.05] hover:text-white"
@@ -192,7 +200,7 @@ export function SiteHeader({
           ) : null}
 
           <a
-            className="ml-auto hidden min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08] sm:inline-flex min-[1025px]:ml-0 min-[1025px]:px-5"
+            className="ml-auto hidden min-h-12 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--color-border-strong)] bg-white/[0.04] px-4 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-[220ms] hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.08] sm:inline-flex min-[1025px]:ml-0 min-[1025px]:px-5"
             href={joinHref}
           >
             {navigationCopy.join}

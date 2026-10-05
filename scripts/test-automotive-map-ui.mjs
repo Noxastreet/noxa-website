@@ -55,16 +55,17 @@ assert.ok(mapUi.includes("center: GREECE_CENTER"), "global map must still open f
 assert.ok(mapCss.includes(".main :global(.maplibregl-ctrl-group)"), "map controls must have dedicated responsive treatment");
 assert.ok(mapCss.includes("detailSheetExpanded"), "mobile detail bottom sheet styles must exist");
 assert.ok(mapCss.includes("@media (max-width: 900px)"), "map must have a dedicated mobile layout");
-assert.ok(homepageMap.includes("Open NOXA Map"), "homepage must expose the full automotive map CTA");
-for (const glyph of ["⚑", "⌁", "⌖"]) assert.ok(!homepageMap.includes(glyph), `homepage map preview must not use ${glyph} as a POI icon`);
-assert.ok(homepageMapCss.includes("61svh"), "homepage map preview must have a strong mobile visual presence");
-assert.ok(landing.includes("<HomepageMapPreview locale={locale} />"), "homepage map preview must sit after Radar discovery");
+for (const glyph of ["⚑", "⌁", "⌖"]) assert.ok(!homepageMap.includes(glyph), `legacy homepage map preview must not use ${glyph} as a POI icon`);
+assert.ok(homepageMapCss.includes("61svh"), "legacy homepage map preview styles must remain valid while the component is retained");
+assert.ok(!landing.includes("<HomepageMapPreview locale={locale} />"), "homepage must no longer expose the public web map preview");
+assert.ok(landing.includes("<AppShowcase locale={locale} />"), "homepage must hand users off to the mobile app presentation");
 
 assert.ok(nextConfig.includes("https://tiles.openfreemap.org"), "CSP must allow the OpenFreeMap tile host");
 assert.ok(nextConfig.includes("geolocation=(self)"), "geolocation must be restricted to NOXA itself");
-assert.ok(websiteHeader.includes('["Map", `${base}/map`]'), "website navigation must expose the Map route");
-assert.ok(mapPage.includes('<AutomotiveMap locale="en" />'), "English map route must render the map");
-assert.ok(greekMapPage.includes('<AutomotiveMap locale="el" />'), "Greek map route must render the localized map");
+assert.ok(!websiteHeader.includes('["Map", `${base}/map`]'), "website navigation must not expose the retired public Map route");
+assert.ok(websiteHeader.includes('["App", `${base}/app`]'), "website navigation must expose the App route");
+assert.ok(mapPage.includes('permanentRedirect("/app")'), "legacy English map route must redirect to the App page");
+assert.ok(greekMapPage.includes('permanentRedirect("/el/app")'), "legacy Greek map route must redirect to the localized App page");
 
 assert.ok(mapUi.includes("getClusterExpansionZoom"), "clusters must expand to the MapLibre-calculated zoom level");
 assert.ok(mapUi.includes('"icon-allow-overlap": false'), "POI icons must avoid overlap at high density");

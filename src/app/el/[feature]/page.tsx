@@ -7,8 +7,8 @@ type PageProps = {
 export default async function GreekFeaturePage({ params }: PageProps) {
   const { feature } = await params;
 
-  if (feature === "routes") redirect("/el/map");
-  if (feature === "crews") redirect("/el/meets");
+  if (feature === "routes") redirect("/el/app");
+  if (feature === "crews") redirect("/el/app");
 
   notFound();
 }

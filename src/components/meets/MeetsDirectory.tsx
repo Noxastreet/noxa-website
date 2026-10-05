@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { DocumentLanguage } from "@/components/i18n/DocumentLanguage";
 import { WebsiteHeader } from "@/components/navigation/WebsiteHeader";
 import {
-  buildNoxaMapHref,
   eventDistanceKm,
   rankRecommendations,
   type GeoPoint,
@@ -189,7 +188,6 @@ export function MeetsDirectory({
     date: "weekend",
     q: "",
   }, locale));
-  const exactMapCount = countryEvents.filter((event) => event.locationPrecision === "exact" && event.latitude !== null && event.longitude !== null).length;
   const recommendations = rankRecommendations({
     events: countryEvents,
     savedIds,
@@ -266,9 +264,6 @@ export function MeetsDirectory({
     clearNear: "Όλα τα events",
     saved: "Saved",
     savedBody: "Τα upcoming events που κράτησες.",
-    map: "NOXA Map",
-    mapBody: "Events, tracks, routes και places σε έναν χάρτη.",
-    organizer: "Organizer",
     forYou: "ΓΙΑ ΕΣΕΝΑ",
     recTitle: "Προτάσεις με βάση τα ενδιαφέροντά σου.",
     recBody: "Χρησιμοποιούμε μόνο τα saved σου, τα φίλτρα και — αν το επέλεξες — την τοποθεσία της συσκευής σου.",
@@ -322,9 +317,6 @@ export function MeetsDirectory({
     clearNear: "All events",
     saved: "Saved",
     savedBody: "The upcoming events you kept for later.",
-    map: "NOXA Map",
-    mapBody: "Events, tracks, routes and places on one map.",
-    organizer: "Organizer",
     forYou: "FOR YOU",
     recTitle: "Recommendations shaped around you.",
     recBody: "Based only on your saved events, current filters and — if you chose it — your on-device location.",
@@ -387,8 +379,6 @@ export function MeetsDirectory({
     document.getElementById("events")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const mapBase = locale === "el" ? "/el/map" : "/map";
-
   return (
     <div className={`${styles.page} ${discovery.discoveryPage}`}>
       <DocumentLanguage locale={locale} />
@@ -441,10 +431,6 @@ export function MeetsDirectory({
                   <span className={discovery.quickCardTop}><span className={discovery.quickCardIcon} aria-hidden="true">♥</span><small>{savedIds.length} SAVED</small></span>
                   <span><strong>{t.saved}</strong><p>{t.savedBody}</p></span>
                 </button>
-                <Link className={discovery.quickCard} href={mapBase}>
-                  <span className={discovery.quickCardTop}><span className={discovery.quickCardIcon} aria-hidden="true">⌁</span><small>{exactMapCount} POINTS</small></span>
-                  <span><strong>{t.map}</strong><p>{t.mapBody}</p></span>
-                </Link>
               </div>
               {locationState === "error" ? <div className={discovery.nearStatus}><span>{t.locationError}</span><button type="button" onClick={requestNearby}>{locale === "el" ? "Ξανά" : "Try again"}</button></div> : null}
               {personalMode === "nearby" && userLocation ? <div className={discovery.nearStatus}><strong>{t.nearbyReady}</strong><button type="button" onClick={() => setPersonalMode("all")}>{t.clearNear}</button></div> : null}
@@ -540,7 +526,6 @@ export function MeetsDirectory({
             {lead ? (() => {
               const date = formatEventDate(lead, locale);
               const discoveryLabel = stateLabel(lead);
-              const mapHref = buildNoxaMapHref(lead, locale);
               const distance = distanceLabel(lead, userLocation, locale);
               return (
                 <div className={discovery.featuredShell}>
@@ -561,10 +546,6 @@ export function MeetsDirectory({
                     </div>
                   </Link>
                   <div className={discovery.featuredActions}>
-                    <div className={discovery.actionGroup}>
-                      {lead.organizerSlug ? <Link className={discovery.organizerLink} href={`${locale === "el" ? "/el" : ""}/organizers/${lead.organizerSlug}`}>{t.organizer} · {lead.organizer}</Link> : null}
-                      {mapHref ? <Link className={discovery.actionLink} href={mapHref}>{t.map} ↗</Link> : null}
-                    </div>
                     <SavedEventButton eventId={lead.id} locale={locale} />
                   </div>
                 </div>
@@ -574,7 +555,6 @@ export function MeetsDirectory({
             {remaining.length ? <div className={styles.grid}>{remaining.map((event) => {
               const date = formatEventDate(event, locale);
               const discoveryLabel = stateLabel(event);
-              const mapHref = buildNoxaMapHref(event, locale);
               const distance = distanceLabel(event, userLocation, locale);
               return <article className={discovery.cardShell} key={event.id}>
                 <Link className={styles.card} href={`${locale === "el" ? "/el" : ""}/meets/${event.slug}`}>
@@ -593,10 +573,6 @@ export function MeetsDirectory({
                   <div className={styles.cardFooter}><small className={styles.organizer}>{event.organizer}</small><strong className={styles.cardLink}>{t.view} <span aria-hidden="true">↗</span></strong></div>
                 </Link>
                 <div className={discovery.cardActions}>
-                  <div className={discovery.actionGroup}>
-                    {event.organizerSlug ? <Link className={discovery.organizerLink} href={`${locale === "el" ? "/el" : ""}/organizers/${event.organizerSlug}`}>{t.organizer}</Link> : null}
-                    {mapHref ? <Link className={discovery.actionLink} href={mapHref}>{t.map}</Link> : null}
-                  </div>
                   <SavedEventButton eventId={event.id} locale={locale} compact />
                 </div>
               </article>;

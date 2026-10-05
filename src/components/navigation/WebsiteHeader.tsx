@@ -6,7 +6,7 @@ type Props = { locale: Locale; path?: string; action?: "app" | "submit" };
 export function WebsiteHeader({ locale, path = "" }: Props) {
   const base = locale === "el" ? "/el" : "";
   const copy = landingCopy[locale];
-  const activeRoot = ["/meets", "/map"].find(
+  const activeRoot = ["/meets", "/app", "/organizers"].find(
     (root) => path === root || path.startsWith(`${root}/`),
   );
 
@@ -21,8 +21,9 @@ export function WebsiteHeader({ locale, path = "" }: Props) {
     navigationCopy={{ ...copy.navigation,
       join: locale === "el" ? "Πρόσθεσε Event" : "Add Event",
       items: [
-        ["Meets", `${base}/meets`],
-        ["Map", `${base}/map`],
+        ["Events", `${base}/meets`],
+        ["App", `${base}/app`],
+        [locale === "el" ? "Διοργανωτές" : "Organizers", `${base}/organizers`],
       ],
     }}
   />;

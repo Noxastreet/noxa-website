@@ -4,15 +4,16 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { SitePreferencesGate } from "@/components/preferences/SitePreferencesGate";
 
 import "./globals.css";
 import "./header-logo.css";
 import "./public-feature-visibility.css";
 
-const SITE_TITLE = "NOXA — Car & Moto Events in Greece";
+const SITE_TITLE = "NOXA — Automotive Platform for Greece";
 const SITE_DESCRIPTION =
-  "Discover car and moto events across Greece and explore them on the NOXA automotive map.";
+  "Discover car and moto events across Greece and meet the NOXA app for maps, crews, live drives, profiles and garages.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://noxastreetapp.com"),
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
         url: "/brand/noxa-og-preview.jpg",
         width: 1200,
         height: 630,
-        alt: "NOXA — Car & Moto Events in Greece",
+        alt: "NOXA — Automotive Platform for Greece",
         type: "image/jpeg",
       },
     ],
@@ -80,13 +81,8 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        <link rel="preconnect" href="https://videos.pexels.com" />
-        <link rel="preconnect" href="https://images.pexels.com" />
-        <link rel="dns-prefetch" href="https://videos.pexels.com" />
-      </head>
       <body>
-        <MotionProvider>{children}</MotionProvider>
+        <MotionProvider><ScrollProgress />{children}</MotionProvider>
         <SitePreferencesGate />
         <Analytics />
         <SpeedInsights />

@@ -7,8 +7,10 @@ const checks = [
   ["greek-home", "/el", "text/html"],
   ["meets", "/meets", "text/html"],
   ["greek-meets", "/el/meets", "text/html"],
-  ["map", "/map", "text/html"],
-  ["greek-map", "/el/map", "text/html"],
+  ["app", "/app", "text/html"],
+  ["greek-app", "/el/app", "text/html"],
+  ["organizers", "/organizers", "text/html"],
+  ["greek-organizers", "/el/organizers", "text/html"],
   ["meet-submit", "/meets/submit", "text/html"],
   ["greek-meet-submit", "/el/meets/submit", "text/html"],
   ["privacy", "/privacy", "text/html"],
@@ -45,12 +47,13 @@ for (const expected of [
   "aria-label=\"EN — English\"",
   "aria-label=\"EL — Greek\"",
   "href=\"/meets\"",
-  "href=\"/map\"",
+  "href=\"/app\"",
+  "href=\"/organizers\"",
   "href=\"/meets/submit\"",
   "/brand/noxa-maps-logo.png",
   "THIS WEEKEND IN GREECE",
-  "Car &amp; moto events across Greece.",
-  "Open NOXA Map",
+  "The automotive platform for Greece.",
+  "Discover the app",
 ]) {
   if (!homeHtml.includes(expected)) throw new Error(`Home missing: ${expected}`);
 }
@@ -59,8 +62,8 @@ for (const forbidden of [
   'href="/business"',
   'href="/crews"',
   'href="/routes"',
-  'href="#app"',
-  "NOXA App",
+  'href="/map"',
+  "Open NOXA Map",
   "instagram.com/noxa_app",
 ]) {
   if (homeHtml.includes(forbidden)) throw new Error(`Home still exposes hidden surface: ${forbidden}`);
@@ -69,6 +72,10 @@ for (const forbidden of [
 const pages = [
   ["meets", "/meets", "Find your next meet."],
   ["greek-meets", "/el/meets", "Βρες το επόμενο meet σου."],
+  ["app", "/app", "Built for the road, not the browser."],
+  ["greek-app", "/el/app", "Φτιαγμένο για τον δρόμο, όχι για τον browser."],
+  ["organizers", "/organizers", "Put your event in front of the right automotive audience."],
+  ["greek-organizers", "/el/organizers", "Βάλε το event σου μπροστά στο σωστό automotive κοινό."],
 ];
 for (const [name, pathname, expected] of pages) {
   const html = await (await fetch(new URL(pathname, baseUrl), { headers: { "User-Agent": userAgent } })).text();
@@ -80,14 +87,16 @@ for (const [pathname, expectedLocation] of [
   ["/communities", "/meets"],
   ["/communities/example", "/meets"],
   ["/communities/apply", "/meets"],
-  ["/business", "/meets"],
-  ["/crews", "/meets"],
-  ["/routes", "/map"],
+  ["/business", "/organizers"],
+  ["/map", "/app"],
+  ["/crews", "/app"],
+  ["/routes", "/app"],
   ["/el/communities", "/el/meets"],
   ["/el/communities/example", "/el/meets"],
   ["/el/communities/apply", "/el/meets"],
-  ["/el/crews", "/el/meets"],
-  ["/el/routes", "/el/map"],
+  ["/el/map", "/el/app"],
+  ["/el/crews", "/el/app"],
+  ["/el/routes", "/el/app"],
 ]) {
   const response = await fetch(new URL(pathname, baseUrl), { redirect: "manual", headers: { "User-Agent": userAgent } });
   if (![307, 308].includes(response.status)) throw new Error(`${pathname} expected redirect, got ${response.status}`);
@@ -122,8 +131,10 @@ const sitemapUrls = Array.from(sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g), (ma
 for (const required of [
   "https://noxastreetapp.com/meets",
   "https://noxastreetapp.com/el/meets",
-  "https://noxastreetapp.com/map",
-  "https://noxastreetapp.com/el/map",
+  "https://noxastreetapp.com/app",
+  "https://noxastreetapp.com/el/app",
+  "https://noxastreetapp.com/organizers",
+  "https://noxastreetapp.com/el/organizers",
 ]) {
   if (!sitemapUrls.includes(required)) throw new Error(`Sitemap missing focused surface: ${required}`);
 }
@@ -133,6 +144,8 @@ for (const forbidden of [
   "https://noxastreetapp.com/communities/apply",
   "https://noxastreetapp.com/el/communities/apply",
   "https://noxastreetapp.com/business",
+  "https://noxastreetapp.com/map",
+  "https://noxastreetapp.com/el/map",
   "https://noxastreetapp.com/crews",
   "https://noxastreetapp.com/el/crews",
   "https://noxastreetapp.com/routes",

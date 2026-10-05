@@ -12,8 +12,7 @@ export default function proxy(request: NextRequest) {
   }
 
   if (
-    localizedPath === "/organizers" ||
-    localizedPath.startsWith("/organizers/") ||
+    (localizedPath.startsWith("/organizers/") && localizedPath !== "/organizers") ||
     localizedPath === "/organizer" ||
     localizedPath.startsWith("/organizer/")
   ) {

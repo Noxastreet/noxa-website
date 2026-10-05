@@ -20,14 +20,12 @@ for (const expected of [
   "navigator.geolocation.getCurrentPosition",
   "NEARBY_RADIUS_KM = 100",
   "rankRecommendations",
-  "buildNoxaMapHref",
   "SavedEventButton",
   "MobileDiscoveryDock",
   "FollowSubscriptionForm",
   "QUICK DISCOVERY",
   "This weekend",
   "Saved",
-  "NOXA Map",
 ]) {
   assert.ok(directory.includes(expected), `Meets Discovery missing: ${expected}`);
 }
@@ -68,12 +66,13 @@ for (const expected of [
 
 for (const expected of [
   "loadRelatedEvents",
-  "buildNoxaMapHref",
-  "Open in NOXA Map",
+  "Open location",
   "More events like this.",
 ]) {
   assert.ok(eventPage.includes(expected), `Event discovery bridge missing: ${expected}`);
 }
+assert.equal(eventPage.includes("buildNoxaMapHref"), false, "Event detail must not build a public NOXA web-map link");
+assert.equal(eventPage.includes("Open in NOXA Map"), false, "Event detail must not expose the retired public NOXA Map");
 
 for (const expected of ["Near", "Weekend", "Saved", "Filters", "mobileDock"]) {
   assert.ok(mobileDock.includes(expected), `Mobile dock missing: ${expected}`);

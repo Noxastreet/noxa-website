@@ -3,7 +3,9 @@
   z-index: 4;
   border-top: 1px solid rgba(255, 255, 255, .07);
   border-bottom: 1px solid rgba(255, 255, 255, .07);
-  background: #070708;
+  background:
+    radial-gradient(circle at 50% -40%, rgba(200, 16, 46, .08), transparent 42%),
+    #070708;
 }
 
 .shell {
@@ -16,29 +18,79 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.cardMotion {
+  min-width: 0;
+  display: flex;
+}
+
 .card {
   position: relative;
-  min-height: 228px;
+  min-height: 250px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 28px 26px 26px;
+  overflow: hidden;
+  padding: 30px 28px 28px;
   border-left: 1px solid rgba(255, 255, 255, .07);
   color: #f5f5f7;
   text-decoration: none;
-  transition: background-color 180ms ease, transform 180ms ease;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.018), transparent 55%);
+  transition:
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 300ms ease;
 }
 
-.card:last-child {
+.card::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -150px;
+  bottom: -170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(227, 44, 73, .17), transparent 68%);
+  opacity: 0;
+  transform: scale(.72);
+  transition: opacity 380ms ease, transform 520ms var(--ease-emphasized);
+  pointer-events: none;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: auto 28px 0;
+  height: 1px;
+  background: linear-gradient(90deg, #e32c49, transparent 80%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 420ms var(--ease-emphasized);
+}
+
+.cardMotion:last-child .card {
   border-right: 1px solid rgba(255, 255, 255, .07);
 }
 
 .card:hover {
   z-index: 1;
-  background: rgba(255, 255, 255, .035);
-  transform: translateY(-2px);
+  border-color: rgba(255,255,255,.14);
+  background-color: rgba(255, 255, 255, .032);
+  box-shadow: 0 28px 80px rgba(0,0,0,.2);
+}
+
+.card:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.card:hover::after {
+  transform: scaleX(1);
 }
 
 .topline {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -61,41 +113,50 @@
 }
 
 .card h2 {
+  position: relative;
+  z-index: 1;
   max-width: 13ch;
-  margin: 34px 0 0;
-  font-size: clamp(23px, 2.1vw, 32px);
+  margin: 38px 0 0;
+  font-size: clamp(25px, 2.35vw, 36px);
   font-weight: 720;
-  letter-spacing: -.035em;
-  line-height: 1.03;
+  letter-spacing: -.042em;
+  line-height: 1.01;
 }
 
 .card p {
+  position: relative;
+  z-index: 1;
   max-width: 42ch;
-  margin: 13px 0 0;
+  margin: 14px 0 0;
   color: #9999a0;
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .arrow {
+  position: relative;
+  z-index: 1;
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: 22px;
   color: #f5f5f7;
-  font-size: 18px;
-  transition: transform 180ms ease;
+  font-size: 19px;
+  transition: transform 280ms var(--ease-emphasized);
 }
 
 .card:hover .arrow {
-  transform: translateX(4px);
+  transform: translateX(7px);
+}
+
+.card:focus-visible {
+  outline: 2px solid #e32c49;
+  outline-offset: -3px;
 }
 
 @media (max-width: 900px) {
-  .shell {
-    width: 100%;
-  }
+  .shell { width: 100%; }
 
   .rail {
-    grid-template-columns: repeat(2, minmax(260px, 76vw));
+    grid-template-columns: repeat(2, minmax(270px, 76vw));
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: x mandatory;
@@ -103,39 +164,37 @@
     padding-inline: 18px;
   }
 
-  .rail::-webkit-scrollbar {
-    display: none;
+  .rail::-webkit-scrollbar { display: none; }
+
+  .cardMotion {
+    scroll-snap-align: start;
   }
 
   .card {
-    min-height: 210px;
-    scroll-snap-align: start;
-    border-left: 1px solid rgba(255, 255, 255, .07);
-  }
-
-  .card:last-child {
-    border-right: 1px solid rgba(255, 255, 255, .07);
+    min-height: 222px;
   }
 }
 
 @media (max-width: 520px) {
   .rail {
-    grid-template-columns: repeat(2, minmax(286px, 84vw));
+    grid-template-columns: repeat(2, minmax(292px, 84vw));
   }
 
   .card {
-    min-height: 202px;
-    padding: 24px 22px;
+    min-height: 212px;
+    padding: 25px 22px;
   }
 
   .card h2 {
-    margin-top: 28px;
-    font-size: 27px;
+    margin-top: 30px;
+    font-size: 28px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card,
+  .card::before,
+  .card::after,
   .arrow {
     transition: none;
   }

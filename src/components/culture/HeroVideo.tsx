@@ -6,9 +6,10 @@ type Props = {
   canvasClassName?: string;
   className?: string;
   src: string;
+  poster?: string;
 };
 
-export function HeroVideo({ className, src }: Props) {
+export function HeroVideo({ className, src, poster }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -99,6 +100,7 @@ export function HeroVideo({ className, src }: Props) {
       muted
       playsInline
       preload="auto"
+      poster={poster}
       tabIndex={-1}
     />
   );

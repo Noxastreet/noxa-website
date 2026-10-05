@@ -1,14 +1,21 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
 
-const retiredRoutes = [
+const activeLandingRoutes = [
   "src/app/organizers/page.tsx",
+  "src/app/el/organizers/page.tsx",
+];
+
+for (const path of activeLandingRoutes) {
+  assert.equal(fs.existsSync(path), true, `Organizer landing route must exist: ${path}`);
+}
+
+const retiredRoutes = [
   "src/app/organizers/apply/page.tsx",
   "src/app/organizers/[slug]/page.tsx",
   "src/app/organizers/[slug]/claim/page.tsx",
   "src/app/organizer/page.tsx",
   "src/app/organizer/insights/page.tsx",
-  "src/app/el/organizers/page.tsx",
   "src/app/el/organizers/apply/page.tsx",
   "src/app/el/organizers/[slug]/page.tsx",
   "src/app/el/organizers/[slug]/claim/page.tsx",
@@ -27,14 +34,14 @@ const businessPage = fs.readFileSync("src/components/business/BusinessPartnersPa
 const header = fs.readFileSync("src/components/navigation/WebsiteHeader.tsx", "utf8");
 const homepage = fs.readFileSync("src/components/culture/CultureLandingV2.tsx", "utf8");
 
-assert.match(businessRoute, /redirect\("\/meets"\)/);
+assert.match(businessRoute, /redirect\("\/organizers"\)/);
 assert.match(businessPage, /Featured Partners/);
 assert.match(businessPage, /Business Categories/);
 assert.equal(header.includes('["Business"'), false);
-assert.equal(header.includes('["Organizers"'), false);
+assert.equal(header.includes('`${base}/organizers`'), true);
 assert.equal(homepage.includes("BUSINESS & PARTNERS"), false);
-assert.equal(homepage.includes("Explore Organizers"), false);
 assert.match(homepage, /RadarHomeSpotlight/);
-assert.match(homepage, /HomepageMapPreview/);
+assert.match(homepage, /AppShowcase/);
+assert.equal(homepage.includes("HomepageMapPreview"), false);
 
-console.log("Retired Organizer route surface fixtures passed.");
+console.log("Organizer public landing and retired profile route fixtures passed.");

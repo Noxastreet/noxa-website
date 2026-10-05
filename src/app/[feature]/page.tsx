@@ -7,8 +7,8 @@ type PageProps = {
 export default async function FeaturePage({ params }: PageProps) {
   const { feature } = await params;
 
-  if (feature === "routes") redirect("/map");
-  if (feature === "crews") redirect("/meets");
+  if (feature === "routes") redirect("/app");
+  if (feature === "crews") redirect("/app");
 
   notFound();
 }
