@@ -1,0 +1,191 @@
+.section {
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: #080809;
+  color: #f5f5f7;
+  padding: 96px 0 104px;
+}
+
+.shell {
+  width: min(100% - 36px, 1220px);
+  margin-inline: auto;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(280px,.7fr);
+  gap: 48px;
+  align-items: end;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #e32c49;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.heading h2,
+.pageHero h1,
+.organizerHero h1 {
+  margin: 14px 0 0;
+  max-width: 12ch;
+  color: #f5f5f7;
+  font-size: clamp(44px, 6vw, 82px);
+  font-weight: 760;
+  letter-spacing: -.055em;
+  line-height: .98;
+  text-wrap: balance;
+}
+
+.body,
+.pageHero p,
+.organizerHero p {
+  margin: 0;
+  color: #a9a9b0;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  margin-top: 52px;
+  border-top: 1px solid rgba(255,255,255,.13);
+  border-bottom: 1px solid rgba(255,255,255,.13);
+}
+
+.feature {
+  min-height: 230px;
+  padding: 24px 22px 28px;
+  border-right: 1px solid rgba(255,255,255,.1);
+}
+
+.feature:last-child { border-right: 0; }
+
+.feature span {
+  color: #e32c49;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.feature h3 {
+  margin: 48px 0 10px;
+  font-size: 24px;
+  letter-spacing: -.03em;
+}
+
+.feature p {
+  margin: 0;
+  color: #909096;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.primary,
+.secondary {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.primary { background: #c8102e; color: #fff; }
+.secondary { border: 1px solid rgba(255,255,255,.16); color: #fff; background: rgba(255,255,255,.03); }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: #a9a9b0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e32c49;
+}
+
+.page {
+  min-height: 100svh;
+  background: #050505;
+  color: #f5f5f7;
+}
+
+.pageHero,
+.organizerHero {
+  padding: 170px 0 92px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.pageHero .inner,
+.organizerHero .inner {
+  width: min(100% - 36px, 1220px);
+  margin-inline: auto;
+}
+
+.pageHero h1,
+.organizerHero h1 { max-width: 10ch; }
+
+.pageHero p,
+.organizerHero p {
+  max-width: 54ch;
+  margin-top: 24px;
+}
+
+.organizerSteps {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  width: min(100% - 36px, 1220px);
+  margin: 0 auto;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.organizerStep {
+  padding: 36px 28px 44px;
+  border-right: 1px solid rgba(255,255,255,.1);
+}
+.organizerStep:last-child { border-right: 0; }
+.organizerStep span { color: #e32c49; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+.organizerStep h2 { margin: 28px 0 10px; font-size: 24px; letter-spacing: -.03em; }
+.organizerStep p { margin: 0; color: #96969c; line-height: 1.55; }
+
+@media (max-width: 900px) {
+  .section { padding: 72px 0 78px; }
+  .heading { grid-template-columns: 1fr; gap: 20px; }
+  .heading h2, .pageHero h1, .organizerHero h1 { font-size: clamp(42px, 12vw, 64px); }
+  .featureGrid { grid-template-columns: 1fr 1fr; }
+  .feature { border-bottom: 1px solid rgba(255,255,255,.1); }
+  .feature:nth-child(2n) { border-right: 0; }
+  .feature:last-child { grid-column: 1 / -1; }
+  .organizerSteps { grid-template-columns: 1fr; }
+  .organizerStep { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .organizerStep:last-child { border-bottom: 0; }
+  .pageHero, .organizerHero { padding: 140px 0 70px; }
+}
+
+@media (max-width: 520px) {
+  .featureGrid { grid-template-columns: 1fr; }
+  .feature, .feature:nth-child(2n) { border-right: 0; }
+  .feature:last-child { grid-column: auto; }
+}
