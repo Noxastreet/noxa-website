@@ -322,13 +322,13 @@ export function EventActions({ eventId, eventTitle, eventCategory, startsAt, end
   }, [eventId]);
 
   const t = locale === "el" ? {
-    map: "Χάρτης", share: "Κοινοποίηση", copied: "Αντιγράφηκε", save: "Αποθήκευση", saved: "Αποθηκεύτηκε",
+    map: "Τοποθεσία", share: "Κοινοποίηση", copied: "Αντιγράφηκε", save: "Αποθήκευση", saved: "Αποθηκεύτηκε",
     calendar: "Ημερολόγιο", apple: "Apple / .ics", google: "Google Calendar", nativeShare: "Κοινοποίηση event", copyLink: "Αντιγραφή link", story: "Story Card", report: "Διόρθωση Event",
     reportTitle: "Αναφορά / διόρθωση", reason: "Λόγος", details: "Λεπτομέρειες (προαιρετικό)", email: "Email (προαιρετικό)",
     send: "Αποστολή", sending: "Αποστολή…", sent: "Η αναφορά αποθηκεύτηκε για έλεγχο.", close: "Κλείσιμο",
     reasons: { time: "Λάθος ημερομηνία/ώρα", location: "Λάθος τοποθεσία", cancelled: "Ακυρώθηκε", duplicate: "Διπλό event", other: "Άλλο" },
   } : {
-    map: "Map", share: "Share", copied: "Copied", save: "Save", saved: "Saved",
+    map: "Location", share: "Share", copied: "Copied", save: "Save", saved: "Saved",
     calendar: "Calendar", apple: "Apple / .ics", google: "Google Calendar", nativeShare: "Share event", copyLink: "Copy link", story: "Story Card", report: "Correct Event",
     reportTitle: "Report / correct event", reason: "Reason", details: "Details (optional)", email: "Email (optional)",
     send: "Submit", sending: "Sending…", sent: "Report saved for review.", close: "Close",
