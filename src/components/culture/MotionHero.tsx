@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { preload } from "react-dom";
 import { useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 
@@ -34,11 +33,6 @@ export function MotionHero({
   secondaryHref,
   videoSrc,
 }: Props) {
-  preload("/media/noxa-story-fallback.jpg", {
-    as: "image",
-    fetchPriority: "high",
-  });
-
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -73,7 +67,7 @@ export function MotionHero({
         <HeroVideo
           className={videoStyles.video}
           src={videoSrc}
-          poster="/media/noxa-story-fallback.jpg"
+          poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050505'/%3E%3C/svg%3E"
         />
       </m.div>
 
