@@ -69,8 +69,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/el", .9),
     page("/meets", .98, "daily"),
     page("/el/meets", .95, "daily"),
-    page("/map", .94, "daily"),
-    page("/el/map", .91, "daily"),
+    page("/app", .86, "weekly"),
+    page("/el/app", .83, "weekly"),
+    page("/organizers", .76, "monthly"),
+    page("/el/organizers", .74, "monthly"),
     page("/meets/submit", .72, "monthly"),
     page("/el/meets/submit", .7, "monthly"),
     ...events.flatMap((event) => {
@@ -84,6 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     page("/privacy", .4, "monthly"),
     page("/delete-account", .4, "monthly"),
+    page("/support", .45, "monthly"),
     page("/terms", .4, "monthly"),
   ];
 }
