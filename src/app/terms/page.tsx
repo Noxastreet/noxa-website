@@ -16,7 +16,7 @@ export default function TermsPage() {
     <LegalDocument
       eyebrow="The rules of NOXA"
       title="Terms of Service"
-      updated="2 October 2026"
+      updated="22 October 2026"
       intro={
         <p>
           These terms govern your use of noxastreetapp.com, the NOXA: Car & Moto
@@ -56,12 +56,12 @@ export default function TermsPage() {
           content: (
             <>
               <p>
-                By accessing or using the website, you agree to these terms. If
-                you do not agree, do not use the website or submit the waitlist
-                form.
+                By accessing or using NOXA, you agree to these terms. If you do
+                not agree, do not use the website, mobile applications or related
+                services, or submit the waitlist form.
               </p>
               <p>
-                You must have the legal capacity required under the law
+                You must be at least 18 to use NOXA. You must also have the legal capacity required under the law
                 applicable to you. Anyone using the website on behalf of an
                 organisation confirms that they are authorised to act for that
                 organisation.
