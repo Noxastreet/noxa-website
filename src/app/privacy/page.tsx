@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Privacy at NOXA"
       title="Privacy Policy"
-      updated="2 October 2026"
+      updated="22 October 2026"
       intro={
         <p>
           This policy explains how NOXA collects, uses, shares, retains and
@@ -62,8 +62,8 @@ export default function PrivacyPage() {
               applications, authentication and storage systems, maps, events,
               community features, notifications, support channels and other
               NOXA services that link to this policy. NOXA is not intended for
-              children under 16, and we do not knowingly collect personal data
-              from children under 16. If you believe a child has provided data,
+              anyone under 18, and we do not knowingly collect personal data
+              from anyone under 18. If you believe a minor has provided data,
               contact us so we can review and remove it where appropriate.
             </p>
           ),
@@ -154,22 +154,24 @@ export default function PrivacyPage() {
                 features.
               </p>
               <p>
-                Personal map visibility is intended for foreground use. When
-                NOXA enters the background, personal presence returns to Ghost
-                and the app attempts to remove the active personal-presence
-                record.
+                Personal Live Drive starts only after you choose an audience
+                and explicitly enable sharing with the required permissions.
+                During that session, your precise location may be updated while
+                NOXA is open, minimized, or the screen is locked. Each personal
+                session expires after no more than four hours; a new session
+                requires another explicit action.
               </p>
               <p>
-                Background location is used only for an active Group Drive
-                location-sharing session that you explicitly joined and enabled.
-                It may continue while the app is in the background or the screen
+                Group Drive uses a separate location-sharing session that you
+                explicitly joined and enabled. Its background updates may
+                continue while the app is in the background or the screen
                 is locked so accepted participants can keep the shared drive
                 position current. NOXA does not need continuous background
                 location for ordinary browsing of events, profiles or the map.
               </p>
               <p>
                 Personal location sharing is optional and time-limited. You can
-                stop sharing by selecting Ghost, leaving NOXA in the background,
+                stop personal sharing by selecting Ghost,
                 signing out, or revoking location permission in device settings.
                 The audience that can see active personal location depends on
                 the visibility option you choose and the applicable NOXA access
@@ -345,8 +347,11 @@ export default function PrivacyPage() {
               <p>
                 Personal map sharing is time-limited and is designed to expire
                 after no more than four hours. Active personal location is also
-                designed to be removed when you select Ghost, NOXA enters the
-                background, you sign out, or account deletion completes. Group
+                designed to be removed when you select Ghost, a cold app launch
+                clears a prior process session, you sign out, or account deletion
+                completes. Force-closing the app stops device updates; a bounded
+                freshness window limits stale visibility if cleanup is delayed.
+                Group
                 Drive location follows the participant-scoped drive lifecycle
                 and its cleanup rules.
               </p>
