@@ -62,9 +62,10 @@ export default function TermsPage() {
               </p>
               <p>
                 You must have the legal capacity required under the law
-                applicable to you. Anyone using the website on behalf of an
-                organisation confirms that they are authorised to act for that
-                organisation.
+                applicable to you. The separate NOXA: Car & Moto mobile
+                application is intended for users aged 18 or older. Anyone
+                using the website on behalf of an organisation confirms that
+                they are authorised to act for that organisation.
               </p>
             </>
           ),
