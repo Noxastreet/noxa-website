@@ -83,7 +83,9 @@ export function MotionHero({
         <HeroVideo
           className={videoStyles.video}
           src={videoSrc}
-          poster="/media/noxa-story-fallback.jpg"
+          poster={videoPlaybackState === "blocked" || videoPlaybackState === "error"
+            ? "/media/noxa-story-fallback.jpg"
+            : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050505'/%3E%3C/svg%3E"}
           videoRef={videoRef}
           onPlaybackStateChange={setVideoPlaybackState}
         />
