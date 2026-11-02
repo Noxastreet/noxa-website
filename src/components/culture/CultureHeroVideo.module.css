@@ -1,5 +1,5 @@
 .media.media {
-  background: #050505 url("/media/noxa-story-fallback.jpg") center / cover no-repeat;
+  background: #050505;
   animation: none;
   filter: none;
   transform: scale(1.015);
