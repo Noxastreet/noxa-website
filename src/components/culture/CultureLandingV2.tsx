@@ -25,6 +25,7 @@ const copy = {
       body: "Discover car & moto events today. The full NOXA app brings together the map, crews, live drives, profiles and your garage.",
       primary: "Explore Events",
       app: "Discover the app",
+      playVideo: "Play background video",
     },
     footer: { meets: "Events", app: "App" },
   },
@@ -36,6 +37,7 @@ const copy = {
       body: "Ανακάλυψε car & moto events σήμερα. Η πλήρης εμπειρία NOXA στο app ενώνει map, crews, live drives, profiles και το garage σου.",
       primary: "Δες Events",
       app: "Δες το app",
+      playVideo: "Παίξε το βίντεο",
     },
     footer: { meets: "Events", app: "App" },
   },
@@ -67,6 +69,7 @@ export function CultureLandingV2({ locale }: Props) {
           primaryHref={meets}
           secondaryHref={app}
           videoSrc={HERO_VIDEO_URL}
+          playVideoLabel={t.hero.playVideo}
         />
 
         <HomepageDiscoveryRail locale={locale} />
