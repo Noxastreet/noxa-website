@@ -65,3 +65,11 @@
     font-size: 12px;
   }
 }
+
+.fallbackImage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #050505 url("/media/noxa-story-fallback.jpg") center / cover no-repeat;
+  pointer-events: none;
+}
