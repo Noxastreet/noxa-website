@@ -20,8 +20,9 @@ export function HeroVideo({
   onPlaybackStateChange,
 }: Props) {
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const currentVideo = videoRef.current;
+    if (!currentVideo) return;
+    const video: HTMLVideoElement = currentVideo;
 
     let disposed = false;
     let gestureRetryArmed = false;
