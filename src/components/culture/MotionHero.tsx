@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 
-import { HeroVideo } from "./HeroVideo";
+import { HeroVideo, type HeroVideoPlaybackState } from "./HeroVideo";
 import videoStyles from "./CultureHeroVideo.module.css";
 import styles from "./CultureLandingV2.module.css";
 import refine from "./CultureLandingV2Refine.module.css";
@@ -20,6 +20,7 @@ type Props = {
   primaryHref: string;
   secondaryHref: string;
   videoSrc: string;
+  playVideoLabel: string;
 };
 
 export function MotionHero({
@@ -32,8 +33,23 @@ export function MotionHero({
   primaryHref,
   secondaryHref,
   videoSrc,
+  playVideoLabel,
 }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoPlaybackState, setVideoPlaybackState] = useState<HeroVideoPlaybackState>("loading");
+
+  const playManually = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    try {
+      const attempt = video.play();
+      if (attempt) void attempt.then(() => setVideoPlaybackState("playing")).catch(() => setVideoPlaybackState(video.error ? "error" : "blocked"));
+    } catch {
+      setVideoPlaybackState(video.error ? "error" : "blocked");
+    }
+  };
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -68,11 +84,21 @@ export function MotionHero({
           className={videoStyles.video}
           src={videoSrc}
           poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050505'/%3E%3C/svg%3E"
+          videoRef={videoRef}
+          onPlaybackStateChange={setVideoPlaybackState}
         />
+        {videoPlaybackState === "blocked" || videoPlaybackState === "error" ? (
+          <div className={videoStyles.fallbackImage} aria-hidden="true" />
+        ) : null}
       </m.div>
 
       <div className={styles.heroShade} aria-hidden="true" />
       <div className={styles.heroSignal} aria-hidden="true" />
+      {videoPlaybackState === "blocked" ? (
+        <button type="button" className={videoStyles.playAction} onClick={playManually} aria-label={playVideoLabel}>
+          <span aria-hidden="true">▶</span> {playVideoLabel}
+        </button>
+      ) : null}
 
       <div className={styles.shell}>
         <m.div
