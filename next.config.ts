@@ -26,9 +26,9 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
-const heroVideoPreload = {
+const heroPosterPreload = {
   key: "Link",
-  value: '</media/noxa-hero-720p.mp4?v=20260905-1>; rel="preload"; as="video"; type="video/mp4"',
+  value: '</media/noxa-story-fallback.jpg>; rel="preload"; as="image"',
 };
 
 const nextConfig: NextConfig = {
@@ -90,11 +90,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/",
-        headers: [heroVideoPreload],
+        headers: [heroPosterPreload],
       },
       {
         source: "/el",
-        headers: [{ key: "Content-Language", value: "el" }, heroVideoPreload],
+        headers: [{ key: "Content-Language", value: "el" }, heroPosterPreload],
       },
       {
         source: "/el/:path*",
