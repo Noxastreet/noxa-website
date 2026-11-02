@@ -26,11 +26,6 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
-const heroPosterPreload = {
-  key: "Link",
-  value: '</media/noxa-story-fallback.jpg>; rel="preload"; as="image"',
-};
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -89,12 +84,8 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
       {
-        source: "/",
-        headers: [heroPosterPreload],
-      },
-      {
         source: "/el",
-        headers: [{ key: "Content-Language", value: "el" }, heroPosterPreload],
+        headers: [{ key: "Content-Language", value: "el" }],
       },
       {
         source: "/el/:path*",
